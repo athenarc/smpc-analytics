@@ -46,33 +46,22 @@ D uint64[[2]] histogram(D T[[1]] arr1, D T[[1]] arr2, uint64 cells1, uint64 cell
 //     pd_shared3p float64[[1]] data_float = {0.2,1.2,2.2,3.3,4.1,5,6.1,7,8.1};
 //     pd_shared3p float64 min_float = min(data_float), max_float = max(data_float);
 //     pd_shared3p uint64[[1]] hist_float = histogram(data_float, cells, min_float, max_float);
-//     print(_vectorToString(declassify(hist_float)));
+//     print(arrayToString(declassify(hist_float)));
 //
 //     /* Test 1d histogram with integers */
 //     pd_shared3p uint64[[1]] data_int = {0,1,2,3,4,5,6,7,8};
 //     pd_shared3p uint64 min_int = min(data_int), max_int = max(data_int);
 //     pd_shared3p uint64[[1]] hist_int = histogram(data_int, cells, min_int, max_int);
-//     print(_vectorToString(declassify(hist_int)));
+//     print(arrayToString(declassify(hist_int)));
 //
 //     /* Test 2d histogram with floats */
 //     pd_shared3p float64[[1]] data1 = {0,1,2,3,4,5,6,7,8}, data2 = {0,1,2,3,4,5,6,7,8};
 //     pd_shared3p float64 min1_f = min(data1), max1_f = max(data1), min2_f = min(data2), max2_f = max(data2);
 //     pd_shared3p uint64[[2]] hist = histogram(data1, data2, cells, cells, min1_f, max1_f, min2_f, max2_f);
-//     for(uint64 i = 0; i < cells; i++){
-//         for(uint64 j = 0; j < cells; j++){
-//             print(declassify(hist[i,j]));
-//         }
-//         print("\n");
-//     }
-//     print("\n");
+//     print(arrayToString(declassify(hist)));
 //
 //     /* Test 2d histogram with integers */
 //     pd_shared3p float64 min1_i = min(data1), max1_i = max(data1), min2_i = min(data2), max2_i = max(data2);
 //     hist = histogram(data1, data2, cells, cells, min1_i, max1_i, min2_i, max2_i);
-//     for(uint64 i = 0; i < cells; i++){
-//         for(uint64 j = 0; j < cells; j++){
-//             print(declassify(hist[i,j]));
-//         }
-//         print("\n");
-//     }
+//     print(arrayToString(declassify(hist)));
 // }
