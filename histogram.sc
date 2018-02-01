@@ -39,6 +39,34 @@ D uint64[[2]] histogram(D T[[1]] arr1, D T[[1]] arr2, uint64 cells1, uint64 cell
     return output;
 }
 
+//TODO: extensive testing multiD, templates, dimensions
+// template<dim N>
+pd_shared3p uint64[[1]] histogram(pd_shared3p float64[[2]] arr, uint64[[1]] cells, pd_shared3p float64[[1]] mins, pd_shared3p float64[[1]] maxs){
+    uint64[[1]] array_shape = shape(arr);
+    uint64 dims = array_shape[0];
+    uint64 individuals = array_shape[1];
+    uint64 len = product(cells);
+    pd_shared3p uint64[[1]] hist_1d(len);
+    pd_shared3p uint64[[1]] cell_widths(dims) = (uint64)ceiling((maxs+1 - mins) / (float64)cells);
+    for(uint64 j = 0; j < individuals; j++){
+        pd_shared3p uint64[[1]] positions(dims);
+        for(uint64 i = 0; i < dims; i++){
+            positions[i] = (uint64)(arr[i,j] / (float64)cell_widths[i]);
+        }
+        pd_shared3p uint64 pos = 0;
+        for(uint64 i = 0; i < dims; i++){
+            uint64 prod = product(cells[i+1:]);
+            pos += positions[i] * prod;
+        }
+        for(uint64 i = 0; i < len; i++){
+            pd_shared3p bool eq = (pos == i);
+            hist_1d[i] += (uint64)eq;
+        }
+    }
+    return hist_1d;
+}
+
+
 /* Test Histogram */
 // void main() {
 //     uint64 cells = 3;
