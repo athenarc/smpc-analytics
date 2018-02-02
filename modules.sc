@@ -39,3 +39,23 @@ pd_shared3p float64 median(pd_shared3p uint64[[1]] arr){
     }
     return ((float64)sorted[(len/2)-1] + (float64)sorted[len/2]) / 2;
 }
+
+template <domain D, type T>
+D bool exists(D T[[1]] arr, D T element) {
+    D uint64 exists = 0;
+    for (uint64 i = 1; i < size(arr); i++) {
+        exists += (uint64)(arr[i] == element);
+    }
+    return exists > 0;
+}
+
+template <domain D, type T>
+D uint64 exists_in_index(D T[[1]] arr, D T element) {
+    D uint64 idx = 0;
+    for (uint64 i = 1; i < size(arr); i++) {
+        D uint64 eq = (uint64)(arr[i] == element);
+        idx = eq * i + (1-eq) * idx;
+    }
+    return idx;
+}
+
