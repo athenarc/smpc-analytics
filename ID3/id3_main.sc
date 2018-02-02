@@ -3,7 +3,8 @@ import shared3p_random;
 import shared3p_string;
 import shared3p_sort;
 import stdlib;
-import modules;
+
+domain pd_shared3p shared3p;
 
 /**
  * ID3 Summary
@@ -14,6 +15,14 @@ import modules;
  * 4. Recurse on subsets using remaining attributes.
 **/
 
+/**
+ * weather = ['sun', 'wind', 'rain']
+ * relatives = ['yes', 'no']
+ * money = ['a-lot', 'little']
+ * day = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+ * month = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ]
+ * decision = ['cinema', 'kart', 'house', 'shopping']
+**/
 
 /**
  * typedef struct attribute {
