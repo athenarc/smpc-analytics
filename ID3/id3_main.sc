@@ -15,64 +15,53 @@ domain pd_shared3p shared3p;
  * 4. Recurse on subsets using remaining attributes.
 **/
 
-/**
- * weather = ['sun', 'wind', 'rain'] 																// = [0, 1, 2]
- * relatives = ['yes', 'no'] 																		// = [0, 1]
- * money = ['a-lot', 'little'] 																		// = [0, 1]
- * day = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] 			// = [0, 1, 2, 3, 4, 5, 6]
- * month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]	// = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
- * decision = ['cinema', 'kart', 'house', 'shopping'] 												// = [0, 1, 2, 3]
-**/
+uint64 rows = 14;
+uint64 columns = 5;
+uint64 possible_classes = 2;
+pd_shared3p int64[[2]] original_examples(rows,columns) = reshape({0,0,1,0,1,
+                                                                    0,0,1,1,1,
+                                                                    1,0,1,0,0,
+                                                                    2,1,1,0,0,
+                                                                    2,2,0,0,0,
+                                                                    2,2,0,1,1,
+                                                                    1,2,0,1,0,
+                                                                    0,1,1,0,1,
+                                                                    0,2,0,0,0,
+                                                                    2,1,0,0,0,
+                                                                    0,1,0,1,0,
+                                                                    1,1,1,1,0,
+                                                                    1,0,0,0,0,
+                                                                    2,1,1,1,1}, rows, columns);
 
-/**
- * typedef struct attribute {
- *	  uint64 count;
- *	  string data;
- * } Attribute;
-**/
 
+pd_shared3p uint64 mylen(pd_shared3p int64[[2]] array){
+    pd_shared3p uint64 len = 0;
+    uint64[[1]] dims = shape(array);
+    for(uint64 i = 0; i < dims[0]; i++){
+        len += (uint64)(array[i,0] != -1);
+    }
+    return len;
+}
 
-uint64 max_attribute_values = 12;
-uint64 rows = 10;
-uint64 columns = 6;
-pd_shared3p uint64[[1]] attribute_sizes(columns) = { 3, 2, 2, 7, 12, 4 };
+pd_shared3p bool all_examples_same(pd_shared3p int64[[2]] examples){
+    uint64[[1]] dims = shape(examples);
+    uint64 rows = dims[0];
+    uint64 columns = dims[1];
+    pd_shared3p uint64 res = 0;
+    pd_shared3p uint64[[1]] class_counts(possible_classes);
+    for(uint64 c = 0; c < possible_classes; c++){
+        for(uint64 i = 0; i < rows; i++){
+            pd_shared3p bool neq = (examples[i,columns-1] == (int64)c);
+            class_counts[c] += (uint64)(neq); // counter for class i
+        }
+        res += (uint64)(class_counts[c] == mylen(examples));
+    }
+    return (bool)res;
+}
 
 void main() {
-    /* Generate Input */
-    pd_shared3p uint64[[2]] matrix(rows, columns);
-
-    for (uint64 i = 0; i < rows; i++) {
-        matrix[i,:] = randomize(matrix[i,:]) % attribute_sizes;
-        print(arrayToString(declassify(matrix[i,:])));
-    }
-	print("\n");
-
-    pd_shared3p int64[[2]] collection_attribute_values(columns, max_attribute_values);
-    for (uint64 i = 0; i < columns; i++) {
-        for (uint64 j = 0; j < max_attribute_values ; j++) {
-            pd_shared3p bool eq = j < attribute_sizes[i];
-            collection_attribute_values[i,j] = (int64)eq * (int64)j + ((1 - (int64)eq) * (-1));
-        }
-    }
-    print(arrayToString(declassify(collection_attribute_values)));
-	print("\n");
-
-	/* Compute Counts (count-vector) for each attribute */
-    pd_shared3p uint64[[2]] collection_attribute_counts(columns, max_attribute_values);
-    for (uint64 i = 0; i < columns; i++) {
-        for (uint64 j = 0; j < rows; j++) {
-            pd_shared3p int64 value = (int64)matrix[j,i];
-            pd_shared3p int64[[1]] attribute_values = collection_attribute_values[i,:];
-
-            for (uint64 k = 0 ; k < max_attribute_values ; k++) {
-                pd_shared3p bool eq = (attribute_values[k] == value);
-                collection_attribute_counts[i,k] += (uint64) eq;
-            }
-        }
-        print(arrayToString(declassify(collection_attribute_counts[i,:])));
-    }
-    print("\n");
-
+    print(arrayToString(declassify(original_examples)));
+    print(declassify(all_examples_same(original_examples)));
 }
 
 
