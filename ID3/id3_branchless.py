@@ -74,7 +74,7 @@ def best(examples, attributes):
 def most_common_label(examples):
     num_of_classes = len(possible_values[class_attribute])
     label_counts = [0]*num_of_classes # array of 2 values (Yes:0, No:0)
-    for i in range(mylen(examples)):
+    for i in range(len(examples)):
         example = examples[i]
         class_attribute_index = len(example)-1
         label = example[class_attribute_index]
@@ -101,8 +101,8 @@ def information_gain(examples, attribute):
     attribute_index = original_attributes.index(attribute)
     for i in range(len(possible_values[attribute])):
         value = possible_values[attribute][i]
-        subset = [[-1]*len(original_examples[0]) for _ in range(mylen(original_examples))]
-        for j in range(mylen(original_examples)):
+        subset = [[-1]*len(original_examples[0]) for _ in range(len(original_examples))]
+        for j in range(len(original_examples)):
             example = examples[j]
             eq = example[attribute_index] == value
             for k in range(len(example)): #can be done with simd
@@ -128,8 +128,8 @@ def id3(examples, attributes):
     branches = []
     for value in possible_values[best_attribute]:
         branch = '[' + best_attribute + ' == ' + str(value) +']'
-        subset = [[-1] * len(original_examples[0]) for _ in range(mylen(original_examples))]
-        for j in range(mylen(original_examples)):
+        subset = [[-1] * len(original_examples[0]) for _ in range(len(original_examples))]
+        for j in range(len(original_examples)):
             example = examples[j]
             eq = example[best_attribute_original_index] == value
             for k in range(len(example)): #can be done with simd
