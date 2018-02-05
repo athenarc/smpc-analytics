@@ -19,7 +19,7 @@ uint64 rows = 14;
 uint64 columns = 5;
 uint64 max_attribute_values = 3;
 uint64 class_index = columns-1;
-pd_shared3p uint64[[1]] original_attributes(columns) = {0,1,2,3,4}; //private?
+pd_shared3p uint64[[1]] original_attributes(columns) = {0,1,2,3,4}; //private? //iota
 pd_shared3p int64[[2]] original_examples(rows,columns) = reshape({0,0,1,0,1,
                                                                     0,0,1,1,1,
                                                                     1,0,1,0,0,
@@ -41,6 +41,7 @@ pd_shared3p int64[[2]] possible_values(columns,max_attribute_values) = reshape({
                                                                                 0,1,-1,
                                                                                 0,1,-1}, columns, max_attribute_values);
 
+
 template <domain D, type T>
 D uint64 index_of(D T[[1]] arr, D T element) {
     D uint64 idx = 0;
@@ -51,7 +52,8 @@ D uint64 index_of(D T[[1]] arr, D T element) {
     return idx;
 }
 
-pd_shared3p float64 log2(pd_shared3p float64 n){
+
+pd_shared3p float64 log2(pd_shared3p float64 n) {
     pd_shared3p float64[[1]] base2 = {2};
     pd_shared3p float64[[1]] n_arr = {n};
     pd_shared3p bool neq = (n != 0);
@@ -59,7 +61,8 @@ pd_shared3p float64 log2(pd_shared3p float64 n){
     return log(n_arr, base2)[0];
 }
 
-pd_shared3p uint64 mylen(pd_shared3p int64[[2]] array){
+
+pd_shared3p uint64 mylen(pd_shared3p int64[[2]] array) {
     pd_shared3p uint64 len = 0;
     uint64[[1]] dims = shape(array);
     for(uint64 i = 0; i < dims[0]; i++){
@@ -68,13 +71,15 @@ pd_shared3p uint64 mylen(pd_shared3p int64[[2]] array){
     return len;
 }
 
-pd_shared3p uint64 mylen(pd_shared3p int64[[1]] array){
+
+pd_shared3p uint64 mylen(pd_shared3p int64[[1]] array) {
     pd_shared3p uint64 len = 0;
     for(uint64 i = 0; i < size(array); i++){
         len += (uint64)(array[i] != -1);
     }
     return len;
 }
+
 
 pd_shared3p bool all_examples_same(pd_shared3p int64[[2]] examples) {
     uint64[[1]] dims = shape(examples);
@@ -93,6 +98,7 @@ pd_shared3p bool all_examples_same(pd_shared3p int64[[2]] examples) {
     }
     return (bool)res;
 }
+
 
 pd_shared3p float64 entropy(pd_shared3p int64[[2]] examples) {
     uint64[[1]] dims = shape(examples);
@@ -113,7 +119,8 @@ pd_shared3p float64 entropy(pd_shared3p int64[[2]] examples) {
     return entropy;
 }
 
-pd_shared3p float64 information_gain(pd_shared3p int64[[2]] examples, pd_shared3p uint64 attribute){
+
+pd_shared3p float64 information_gain(pd_shared3p int64[[2]] examples, pd_shared3p uint64 attribute) {
     pd_shared3p float64 gain = entropy(examples);
     pd_shared3p int64[[1]] attribute_values(max_attribute_values);
     for (uint64 i = 0; i < columns; i++) {
@@ -124,7 +131,7 @@ pd_shared3p float64 information_gain(pd_shared3p int64[[2]] examples, pd_shared3
         pd_shared3p int64 value = attribute_values[v];
         pd_shared3p int64[[2]] subset(rows,columns);
         pd_shared3p int64[[1]] minus_ones = reshape(-1,columns);
-        for(uint64 i = 0; i < rows; i++){
+        for (uint64 i = 0; i < rows; i++){
             pd_shared3p int64[[1]] example = examples[i,:];
             pd_shared3p uint64 eq = 0;
             for (uint64 j = 0 ; j < columns ; j++) {
@@ -138,6 +145,7 @@ pd_shared3p float64 information_gain(pd_shared3p int64[[2]] examples, pd_shared3
     }
     return gain;
 }
+
 
 pd_shared3p uint64 best(pd_shared3p int64[[2]] examples, pd_shared3p uint64[[1]] attributes) {
     pd_shared3p float64 max_gain = information_gain(examples, attributes[0]);
@@ -153,14 +161,14 @@ pd_shared3p uint64 best(pd_shared3p int64[[2]] examples, pd_shared3p uint64[[1]]
 }
 
 
-pd_shared3p int64 most_common_label(pd_shared3p int64[[2]] examples){
+pd_shared3p int64 most_common_label(pd_shared3p int64[[2]] examples) {
     pd_shared3p int64[[1]] possible_classes = possible_values[class_index,:];
     pd_shared3p uint64[[1]] label_counts(max_attribute_values);
     for (uint64 i = 0; i < rows; i++) {
         pd_shared3p int64[[1]] example = examples[i,:];
         pd_shared3p int64 label = example[class_index];
         pd_shared3p uint64 label_index = index_of(possible_classes, label); //needs optimization
-        for (uint64 c = 0; c < max_attribute_values; c++){ //maybe simd
+        for (uint64 c = 0; c < max_attribute_values; c++) { //maybe simd
             pd_shared3p bool eq = (label_index == c);
             label_counts[c] += (uint64)eq;
         }
@@ -169,19 +177,94 @@ pd_shared3p int64 most_common_label(pd_shared3p int64[[2]] examples){
     return (int64)index_of(label_counts, max_count);
 }
 
-// pd_shared3p xor_uint8[[1]] result = bl_str("sun");
-// pd_shared3p xor_uint8[[1]] r2 = bl_str("{}");
-// result = bl_strCat(result, r2);
-// print(bl_strDeclassify(result));
+
+pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint64[[1]] attributes) {
+    if (declassify(all_examples_same(examples))) {
+        pd_shared3p int64 label = -1;
+        for (uint64 i = 0; i < rows; i++) {
+            pd_shared3p int64[[1]] example = examples[i,:];
+            pd_shared3p bool neq = example[class_index] != -1;
+            label = (int64)neq * example[class_index] + (1-(int64)neq)*(label);
+        }
+        return bl_str(arrayToString(declassify(label)));
+    }
+    if (size(attributes) == 0) {
+        pd_shared3p xor_uint8[[1]] label;
+        return label;
+    }
+    pd_shared3p uint64 best_attribute = best(examples, attributes); // find best attribute
+    pd_shared3p uint64 best_attribute_original_index = index_of(original_attributes, best_attribute); // maybe 1 for loop
+    pd_shared3p uint64 best_attribute_index = index_of(attributes, best_attribute);
+    pd_shared3p xor_uint8[[1]] branches;
+  	pd_shared3p int64[[1]] best_attribute_values(max_attribute_values);
+    for (uint64 i = 0; i < columns; i++) {
+        pd_shared3p bool eq = (i == best_attribute_original_index);
+      	best_attribute_values += (int64)eq * possible_values[i,:]; // simd
+    }
+
+  	for (uint64 v = 0 ; v < max_attribute_values ; v++) {
+		pd_shared3p int64 value = best_attribute_values[v];
+        if (declassify(value == -1)) {
+            continue;
+        }
+        pd_shared3p int64[[2]] subset(rows,columns);
+        pd_shared3p int64[[1]] minus_ones = reshape(-1,columns);
+        for(uint64 i = 0; i < rows; i++){
+            pd_shared3p int64[[1]] example = examples[i,:];
+            pd_shared3p uint64 eq = 0;
+            for (uint64 j = 0 ; j < columns ; j++) {
+                eq += (uint64)(example[j] == value) * (uint64)(j == best_attribute_original_index);
+            }
+            subset[i,:] = (int64)eq * example + (int64)(1-eq) * minus_ones; // simd
+        }
+        pd_shared3p xor_uint8[[1]] branch = bl_str("[");
+        pd_shared3p xor_uint8[[1]] best_attribute_str = bl_str(arrayToString(declassify(best_attribute)));
+        branch = bl_strCat(branch, best_attribute_str);
+        pd_shared3p xor_uint8[[1]] temp = bl_str(" == "); branch = bl_strCat(branch, temp);
+        pd_shared3p xor_uint8[[1]] value_str = bl_str(arrayToString(declassify(value))); branch = bl_strCat(branch, value_str);
+        temp = bl_str("]"); branch = bl_strCat(branch, temp);
+        temp = bl_str(" --> ");
+        branch = bl_strCat(branch, temp);
+
+      	if (declassify(mylen(subset) == 0)) {
+          	pd_shared3p int64 mcl = most_common_label(examples);
+            pd_shared3p xor_uint8[[1]] mcl_str = bl_str(arrayToString(declassify(mcl)));
+            branch = bl_strCat(branch, mcl_str);
+        } else {
+            pd_shared3p int64[[1]] first_half(size(attributes));
+            pd_shared3p int64[[1]] second_half(size(attributes));
+            for (uint64 i = 0; i < size(attributes); i++) { // Fill first & second
+                pd_shared3p bool lt = (i < best_attribute_index);
+                pd_shared3p bool gt = (i > best_attribute_index);
+                first_half[i] += (int64)lt * (int64)attributes[i] + (1-(int64)lt) * (-1);
+                second_half[i] += (int64)gt * (int64)attributes[i] + (1-(int64)gt) * (-1);
+            }
+            pd_shared3p int64[[1]] new_attribs(size(attributes)-1) = first_half[:size(attributes)-1];
+            for (uint64 i = size(attributes)-1; i > 0; i--) {
+                pd_shared3p bool neq = (second_half[i] != -1);
+                new_attribs[i-1] += (int64)neq * (1+second_half[i]);
+            }
+
+            pd_shared3p xor_uint8[[1]] res = id3(subset, (uint64)new_attribs);
+            branch = bl_strCat(branch, res);
+        }
+        branches = bl_strCat(branches, branch);
+        temp = bl_str(" ");
+        branches = bl_strCat(branches, temp);
+    }
+
+    pd_shared3p xor_uint8[[1]] root = bl_str("{");
+    root = bl_strCat(root, branches);
+    pd_shared3p xor_uint8[[1]] rbr = bl_str("}");
+    root = bl_strCat(root, rbr);
+    return root;
+}
 
 void main() {
-    print(arrayToString(declassify(original_examples)));
-    print(declassify(all_examples_same(original_examples)));
-    print(declassify(entropy(original_examples)));
-    pd_shared3p uint64 at = 3;
-    print(declassify(information_gain(original_examples, at)));
-    print(declassify(best(original_examples, original_attributes[1:4])));
-    print(declassify(most_common_label(original_examples)));
+
+    pd_shared3p xor_uint8[[1]] root = id3(original_examples, original_attributes[:4]);
+    print(bl_strDeclassify(root));
+
 }
 
 

@@ -1,6 +1,6 @@
 import math
 
-original_attributes = ['Outlook','Temperature','Humidity','Wind','Play ball?']
+original_attributes = [0,1,2,3,4]
 
 # examples = [['Sunny','Hot','High','Weak','No'],
 #             ['Sunny','Hot','High','Strong','No'],
@@ -38,12 +38,12 @@ original_examples = [[0,0,1,0,1],
                     [1,0,0,0,0],
                     [2,1,1,1,1]]
 
-possible_values = {'Outlook':[0, 1, 2],
-                    'Temperature':[0, 1, 2],
-                    'Humidity':[0, 1],
-                    'Wind':[0, 1],
-                    'Play ball?':[0, 1]}
-class_attribute = 'Play ball?'
+possible_values = {0:[0, 1, 2],
+                    1:[0, 1, 2],
+                    2:[0, 1, -1],
+                    3:[0, 1, -1],
+                    4:[0, 1, -1]}
+class_attribute = 4
 
 def mylen(data):
     len = 0
@@ -56,7 +56,7 @@ def all_examples_same(examples):
     class_counts = [0]*len(possible_values[class_attribute])
     for i in range(len(possible_values[class_attribute])):
         for example in examples:
-            class_counts[i] += int(example[-1] == i)
+            class_counts[i] += int(example[-1] == i) * int(i != -1)
         res += int(class_counts[i] == mylen(examples))
     return res
 
@@ -87,6 +87,8 @@ def most_common_label(examples):
 def entropy(examples):
     entropy = 0.0
     for value in possible_values[class_attribute]: # [Yes, No]
+        if value == -1:
+            continue
         count = 0
         for example in examples:
             count += example[len(example)-1] == value
@@ -101,6 +103,8 @@ def information_gain(examples, attribute):
     attribute_index = original_attributes.index(attribute)
     for i in range(len(possible_values[attribute])):
         value = possible_values[attribute][i]
+        if value == -1:
+            continue
         subset = [[-1]*len(original_examples[0]) for _ in range(len(original_examples))]
         for j in range(len(original_examples)):
             example = examples[j]
@@ -127,7 +131,9 @@ def id3(examples, attributes):
     best_attribute_index = attributes.index(best_attribute)
     branches = []
     for value in possible_values[best_attribute]:
-        branch = '[' + best_attribute + ' == ' + str(value) +']'
+        if value == -1:
+            continue
+        branch = '[' + str(best_attribute) + ' == ' + str(value) +']'
         subset = [[-1] * len(original_examples[0]) for _ in range(len(original_examples))]
         for j in range(len(original_examples)):
             example = examples[j]
@@ -138,7 +144,6 @@ def id3(examples, attributes):
             branch += ' --> ' + str(most_common_label(examples))
         else:
             branch += ' --> ' + str(id3(subset, attributes[:best_attribute_index]+attributes[best_attribute_index+1:]))
-
         branches.append(branch)
     root = '{'+ ','.join(branches) +'}'
     return root
