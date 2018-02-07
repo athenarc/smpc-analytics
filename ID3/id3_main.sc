@@ -4,6 +4,9 @@ import shared3p_string;
 import shared3p_sort;
 import stdlib;
 
+import oblivious;
+import shared3p_oblivious;
+
 domain pd_shared3p shared3p;
 
 /**
@@ -41,6 +44,42 @@ pd_shared3p int64[[2]] possible_values(columns,max_attribute_values) = reshape({
                                                                                 0,1,-1,
                                                                                 0,1,-1}, columns, max_attribute_values);
 
+
+template <type T>
+pd_shared3p xor_uint8[[1]] itoa(pd_shared3p T x){
+    pd_shared3p uint8[[1]] stru(20);
+    uint[[1]] div = {10000000000000000000,1000000000000000000,100000000000000000,10000000000000000,1000000000000000,100000000000000,10000000000000,1000000000000,100000000000,10000000000,1000000000,100000000,10000000,1000000,100000,10000,1000,100,10,1};
+    stru = (uint8) (((uint64)x / div) % 10);
+
+    // Number of zeroes on the left
+    pd_shared3p bool[[1]] mask = stru == 0;
+    pd_shared3p uint8 nzero = (uint8) truePrefixLength(mask);
+
+    // Add ASCII offset to non-zero symbols
+    pd_shared3p uint8[[1]] idx(20);
+    for (uint i = 0; i < 20; ++i) {
+        idx[i] = (uint8) i;
+    }
+    mask = idx < nzero;
+
+    pd_shared3p uint8[[1]] zero(20) = 0;
+    pd_shared3p uint8[[1]] offset(20) = 48;
+    stru = stru + choose(mask, zero, offset);
+    pd_shared3p xor_uint8[[1]] str = reshare(stru);
+
+    // Rotate left so that the zeroes would move to the right
+    idx -= nzero;
+    pd_shared3p xor_uint8[[2]] mat(20, 2);
+    mat[:, 0] = reshare(idx);
+    mat[:, 1] = str;
+    str = quicksort(mat, 0 :: uint, true)[:, 1];
+    uint64 bound = 20;
+    pd_shared3p xor_uint8[[1]] zero_string(20) = bl_str("0", bound);
+
+    pd_shared3p bool eqz = (x == 0);
+    pd_shared3p uint8[[1]] res = choose(eqz, reshare(zero_string), reshare(str));
+    return reshare(res);
+}
 
 template <domain D, type T>
 D uint64 index_of(D T[[1]] arr, D T element) {
@@ -186,7 +225,7 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
             pd_shared3p bool neq = example[class_index] != -1;
             label = (int64)neq * example[class_index] + (1-(int64)neq)*(label);
         }
-        return bl_str(arrayToString(declassify(label)));
+        return itoa(label);
     }
     if (size(attributes) == 0) {
         pd_shared3p xor_uint8[[1]] label;
@@ -218,17 +257,19 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
             subset[i,:] = (int64)eq * example + (int64)(1-eq) * minus_ones; // simd
         }
         pd_shared3p xor_uint8[[1]] branch = bl_str("[");
-        pd_shared3p xor_uint8[[1]] best_attribute_str = bl_str(arrayToString(declassify(best_attribute)));
+        pd_shared3p xor_uint8[[1]] best_attribute_str = itoa(best_attribute);
         branch = bl_strCat(branch, best_attribute_str);
-        pd_shared3p xor_uint8[[1]] temp = bl_str(" == "); branch = bl_strCat(branch, temp);
-        pd_shared3p xor_uint8[[1]] value_str = bl_str(arrayToString(declassify(value))); branch = bl_strCat(branch, value_str);
+        pd_shared3p xor_uint8[[1]] temp = bl_str(" == ");
+        branch = bl_strCat(branch, temp);
+        pd_shared3p xor_uint8[[1]] value_str = itoa(value);
+        branch = bl_strCat(branch, value_str);
         temp = bl_str("]"); branch = bl_strCat(branch, temp);
         temp = bl_str(" --> ");
         branch = bl_strCat(branch, temp);
 
       	if (declassify(mylen(subset) == 0)) {
           	pd_shared3p int64 mcl = most_common_label(examples);
-            pd_shared3p xor_uint8[[1]] mcl_str = bl_str(arrayToString(declassify(mcl)));
+            pd_shared3p xor_uint8[[1]] mcl_str = itoa(mcl);
             branch = bl_strCat(branch, mcl_str);
         } else {
             pd_shared3p int64[[1]] first_half(size(attributes));
@@ -261,10 +302,8 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
 }
 
 void main() {
-
     pd_shared3p xor_uint8[[1]] root = id3(original_examples, original_attributes[:4]);
     print(bl_strDeclassify(root));
-
 }
 
 
