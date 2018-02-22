@@ -4,6 +4,9 @@ import shared3p_sort;
 import stdlib;
 import modules;
 
+import shared3p_table_database;
+import table_database;
+
 template <domain D, type T>
 D uint64[[1]] histogram(D T[[1]] arr, uint64 cells, D T min, D T max){
     D uint64[[1]] output(cells);
@@ -67,6 +70,52 @@ pd_shared3p uint64[[1]] histogram(pd_shared3p float64[[2]] arr, uint64[[1]] cell
 }
 
 
+/**
+ * private arr: 2D array of all data tuples. size N x M, where N: #tuples, M: #attributes
+ * public attributes: attributes of arr, for which we compute their histograms (column indexes of arr)
+ * public cells_list: list of number of cells for each histogram
+ * private mins: list of min values for each attribute
+ * private maxs: list of max values for each attribute
+**/
+template <domain D>
+uint64 multiple_1d_histograms(D float64[[2]] arr, uint64[[1]] attributes, uint64[[1]] cells_list, D float64[[1]] mins, D float64[[1]] maxs) {
+    uint64 histograms = tdbVmapNew(); // map of all histograms to compute; histograms[0] contains histogram 0, etc
+    uint64 number_of_histograms = size(attributes);                             // = size(cells_list);
+    for (uint64 h = 0; h < number_of_histograms; h++) {                         // initialize each histogram
+        D uint64[[1]] histogram(cells_list[h]);
+        tdbVmapAddValue(histograms, arrayToString(h), histogram);
+    }
+
+    // compute cell widths for each histogram
+    D uint64[[1]] cell_widths(number_of_histograms);                            // list of cell-widths for each histogram
+    for (uint64 h = 0; h < number_of_histograms; h++) {                         // for each histogram
+        uint64 number_of_cells = cells_list[h];
+        D float64 max = maxs[attributes[h]];
+        D float64 min = mins[attributes[h]];
+        cell_widths[h] = (uint64) ceiling((max+1 - min) / (float64)number_of_cells);
+    }
+
+    uint64[[1]] array_shape = shape(arr);
+    uint64 N = array_shape[0];                                                  // number of tuples
+    for (uint64 t = 0; t < N; t++) {                                            // for each tuple
+        for (uint64 h = 0; h < number_of_histograms; h++) {                     // for each histogram
+            uint64 a = attributes[h];
+            D float64 value = arr[t, a];                                        // value for column attributes[h] of tuple t
+
+            D uint64 cell = (uint64)(value / (float64)cell_widths[h]);          // histogram cell that value belongs
+            D uint64[[1]] histogram = tdbVmapGetValue(histograms, arrayToString(h), 0 :: uint64);
+            tdbVmapErase(histograms, arrayToString(h));
+            for (uint64 j = 0; j < cells_list[h]; j++) {                        // for each cell of histogram h
+                D bool eq = (cell == j);
+                histogram[j] += (uint64)eq;
+            }
+            tdbVmapAddValue(histograms, arrayToString(h), histogram);
+        }
+
+    }
+    return histograms;
+}
+
 /* Test Histogram */
 // void main() {
 //     uint64 cells = 3;
@@ -92,4 +141,21 @@ pd_shared3p uint64[[1]] histogram(pd_shared3p float64[[2]] arr, uint64[[1]] cell
 //     pd_shared3p float64 min1_i = min(data1), max1_i = max(data1), min2_i = min(data2), max2_i = max(data2);
 //     hist = histogram(data1, data2, cells, cells, min1_i, max1_i, min2_i, max2_i);
 //     print(arrayToString(declassify(hist)));
+//
+//
+//     pd_shared3p float64[[2]] data = reshape({1,2,3,4,1,3,5,2,2,4,3,2,7,6,4,1,6,3,2,2,6,2,5,3}, 6, 4);
+//     pd_shared3p float64[[1]] mins = {1,2,2,1};
+//     pd_shared3p float64[[1]] maxs = {7,6,5,4};
+//     uint64[[1]] attributes = {0,1,3};
+//     uint64[[1]] cells_list = {3,3,3};
+//     uint64 histograms = multiple_1d_histograms(data, attributes, cells_list, mins, maxs);
+//
+//     pd_shared3p uint64[[1]] res = tdbVmapGetValue(histograms, "0", 0 :: uint64);
+//     printVector(declassify(res));
+//     res = tdbVmapGetValue(histograms, "1", 0 :: uint64);
+//     printVector(declassify(res));
+//     res = tdbVmapGetValue(histograms, "2", 0 :: uint64);
+//     printVector(declassify(res));
+//
 // }
+
