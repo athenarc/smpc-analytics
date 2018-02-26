@@ -126,7 +126,7 @@ uint64 multiple_1d_histograms(D float64[[2]] arr, uint64[[1]] attributes, uint64
  * private maxs: list of max values for each attribute
 **/
 template <domain D>
-uint64 multiple_2d_histograms(D float64[[2]] arr, uint64 number_of_histograms, uint64 attributes_vmap, uint64 cells_vmap, D float64[[1]] mins, D float64[[1]] maxs) {
+uint64 multiple_histograms(D float64[[2]] arr, uint64 number_of_histograms, uint64 attributes_vmap, uint64 cells_vmap, D float64[[1]] mins, D float64[[1]] maxs) {
     uint64 histograms = tdbVmapNew();                                           // map of all histograms to compute; histograms[0] contains histogram 0, etc
     for (uint64 h = 0; h < number_of_histograms; h++) {                         // initialize each histogram
         uint64[[1]] cells = tdbVmapGetValue(cells_vmap, arrayToString(h), 0 :: uint64);
@@ -136,40 +136,43 @@ uint64 multiple_2d_histograms(D float64[[2]] arr, uint64 number_of_histograms, u
     }
 
     // compute cell widths for each histogram
-    uint64[[1]] first_cells = tdbVmapGetValue(cells_vmap, "0", 0 :: uint64);
-    uint64 wanted_attributes = size(first_cells);
-    D uint64[[2]] cell_widths(number_of_histograms, wanted_attributes);         // list of cell-widths for each histogram
+    uint64 cell_widths = tdbVmapNew();                                          // map of cell-widths for each histogram
     for (uint64 h = 0; h < number_of_histograms; h++) {                         // for each histogram
+        uint64[[1]] cells = tdbVmapGetValue(cells_vmap, arrayToString(h), 0 :: uint64);
+        uint64 wanted_attributes = size(cells);                                 // amount of attributes wanted for this histogram
+        D uint64[[1]] widths(wanted_attributes);                                // widths for each cell of histogram h
         for (uint64 a = 0; a < wanted_attributes; a++) {                        // for each attribute
             uint64 number_of_cells = tdbVmapGetValue(cells_vmap, arrayToString(h), 0 :: uint64)[a];
             D float64 max = maxs[tdbVmapGetValue(attributes_vmap, arrayToString(h), 0 :: uint64)[a]];
             D float64 min = mins[tdbVmapGetValue(attributes_vmap, arrayToString(h), 0 :: uint64)[a]];
-            cell_widths[h,a] = (uint64) ceiling((max+1 - min) / (float64)number_of_cells);
+            widths[a] = (uint64) ceiling((max+1 - min) / (float64)number_of_cells);
         }
+        tdbVmapAddValue(cell_widths, arrayToString(h), widths);
     }
 
     uint64[[1]] array_shape = shape(arr);
     uint64 N = array_shape[0];                                                  // number of tuples
     for (uint64 t = 0; t < N; t++) {                                            // for each tuple
         for (uint64 h = 0; h < number_of_histograms; h++) {                     // for each histogram
-
+            uint64[[1]] cells = tdbVmapGetValue(cells_vmap, arrayToString(h), 0 :: uint64);
+            uint64 wanted_attributes = size(cells);                             // amount of attributes wanted for this histogram
             D uint64[[1]] positions(wanted_attributes);                         // multiple indexes as we had a multi-dimensional array
+
+            D uint64[[1]] widths = tdbVmapGetValue(cell_widths, arrayToString(h), 0 :: uint64);
 
             for (uint64 a = 0; a < wanted_attributes; a++) {                    // for each attribute
                 uint64 attribute = tdbVmapGetValue(attributes_vmap, arrayToString(h), 0 :: uint64)[a];
                 D float64 value = arr[t, attribute];                            // value for column attributes[h] of tuple t
 
-                D uint64 cell = (uint64)(value / (float64)cell_widths[h,a]);    // histogram cell that value belongs
+                D uint64 cell = (uint64)(value / (float64)widths[a]);           // histogram cell that value belongs
                 positions[a] = cell;
             }
 
             D uint64 pos = 0;                                                   // compute 1-d index from multiple indexes
-            uint64[[1]] cells = tdbVmapGetValue(cells_vmap, arrayToString(h), 0 :: uint64);
             for(uint64 i = 0; i < wanted_attributes; i++){
                 uint64 prod = product(cells[i+1:]);
                 pos += positions[i] * prod;
             }
-
             D uint64[[1]] histogram = tdbVmapGetValue(histograms, arrayToString(h), 0 :: uint64);
             tdbVmapErase(histograms, arrayToString(h));
             for (uint64 j = 0; j < size(histogram); j++) {                      // for each cell of histogram h
@@ -234,7 +237,7 @@ uint64 multiple_2d_histograms(D float64[[2]] arr, uint64 number_of_histograms, u
 //     pd_shared3p float64[[1]] maxs = {7,6,5,4};
 //
 //     uint64 attributes_vmap = tdbVmapNew();
-//     uint64[[1]] value = {0,1};
+//     uint64[[1]] value = {1,2,3};
 //     tdbVmapAddValue(attributes_vmap, "0", value);
 //     value = {1,2};
 //     tdbVmapAddValue(attributes_vmap, "1", value);
@@ -242,14 +245,14 @@ uint64 multiple_2d_histograms(D float64[[2]] arr, uint64 number_of_histograms, u
 //     tdbVmapAddValue(attributes_vmap, "2", value);
 //
 //     uint64 cells_vmap = tdbVmapNew();
-//     value = {3,3};
+//     value = {3,3,3};
 //     tdbVmapAddValue(cells_vmap, "0", value);
 //     value = {3,3};
 //     tdbVmapAddValue(cells_vmap, "1", value);
 //     value = {3,3};
 //     tdbVmapAddValue(cells_vmap, "2", value);
 //
-//     uint64 histograms = multiple_2d_histograms(data, 3::uint64, attributes_vmap, cells_vmap, mins, maxs);
+//     uint64 histograms = multiple_histograms(data, 3::uint64, attributes_vmap, cells_vmap, mins, maxs);
 //
 //     pd_shared3p uint64[[1]] res = tdbVmapGetValue(histograms, "0", 0 :: uint64);
 //     printVector(declassify(res));
