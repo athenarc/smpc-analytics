@@ -6,6 +6,7 @@ import modules;
 
 import shared3p_table_database;
 import table_database;
+import data_input;
 
 template <domain D, type T>
 D uint64[[1]] histogram(D T[[1]] arr, uint64 cells, D T min, D T max){
@@ -260,5 +261,27 @@ uint64 multiple_histograms(D float64[[2]] arr, uint64 number_of_histograms, uint
 //     printVector(declassify(res));
 //     res = tdbVmapGetValue(histograms, "2", 0 :: uint64);
 //     printVector(declassify(res));
+//
+//   uint64[[1]] array_shape = shape(array); // array -> variable from data_input.sc
+//   uint64 N = array_shape[0];
+//   uint64 M = array_shape[1];
+//   pd_shared3p float64[[1]] mins(M);
+//   pd_shared3p float64[[1]] maxs(M);
+//   for(uint64 j = 0; j < M; j++ ) {
+//       mins[j] = min(array[:,j]);
+//       maxs[j] = max(array[:,j]);
+//   }
+//
+//   uint64 attributes_vmap = tdbVmapNew();
+//   uint64[[1]] value = {11,12};
+//   tdbVmapAddValue(attributes_vmap, "0", value);
+//
+//   uint64 cells_vmap = tdbVmapNew();
+//   value = {3,5};
+//   tdbVmapAddValue(cells_vmap, "0", value);
+//
+//   uint64 histograms = multiple_histograms(array, 1::uint64, attributes_vmap, cells_vmap, mins, maxs);
+//   pd_shared3p uint64[[1]] res = tdbVmapGetValue(histograms, "0", 0 :: uint64);
+//   printVector(declassify(res));
 // }
 
