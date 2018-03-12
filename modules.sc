@@ -5,6 +5,8 @@ import stdlib;
 
 domain pd_shared3p shared3p;
 
+float64 FLOAT64_POS_MIN = 0.00000000000001;
+
 pd_shared3p float64 min(pd_shared3p float64 x, pd_shared3p float64 y){
     return (x+y)/2 - abs(x-y)/2;
 }
