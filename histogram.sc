@@ -13,7 +13,7 @@ D uint64[[1]] histogram(D T[[1]] arr, uint64 cells, D T min, D T max){
     D uint64 cell_width = (uint64) ceiling((float64)(max+1 - min) / (float64)cells);
     uint64 len = size(arr);
     for (uint64 i = 0; i < len; i++) {
-        D uint64 cell = (uint64)(arr[i] / (T)cell_width);
+        D uint64 cell = (uint64)((arr[i] - min) / (T)cell_width);
         for (uint64 j = 0; j < cells; j++) {
             D bool eq = (cell == j);
             output[j] += (uint64)eq;
@@ -29,8 +29,8 @@ D uint64[[2]] histogram(D T[[1]] arr1, D T[[1]] arr2, uint64 cells1, uint64 cell
     D uint64 cell_width2 = (uint64) ceiling((max2+1 - min2) / (float64)cells2);
     uint64 len = size(arr1);
     for (uint64 k = 0; k < len; k++) {
-        D uint64 cell1 = (uint64)(arr1[k] / (T)cell_width1);
-        D uint64 cell2 = (uint64)(arr2[k] / (T)cell_width2);
+        D uint64 cell1 = (uint64)((arr1[k] - min1) / (T)cell_width1);
+        D uint64 cell2 = (uint64)((arr2[k] - min2) / (T)cell_width2);
         for (uint64 i = 0; i < cells1; i++) {
             for (uint64 j = 0; j < cells2; j++) {
                 D bool eq1 = (cell1 == i);
@@ -54,7 +54,7 @@ pd_shared3p uint64[[1]] histogram(pd_shared3p float64[[2]] arr, uint64[[1]] cell
     for(uint64 j = 0; j < individuals; j++){
         pd_shared3p uint64[[1]] positions(dims);
         for(uint64 i = 0; i < dims; i++){
-            positions[i] = (uint64)(arr[i,j] / (float64)cell_widths[i]);
+            positions[i] = (uint64)((arr[i,j] - mins[i]) / (float64)cell_widths[i]);
         }
         pd_shared3p uint64 pos = 0;
         for(uint64 i = 0; i < dims; i++){
@@ -102,7 +102,7 @@ uint64 multiple_1d_histograms(D float64[[2]] arr, uint64[[1]] attributes, uint64
             uint64 a = attributes[h];
             D float64 value = arr[t, a];                                        // value for column attributes[h] of tuple t
 
-            D uint64 cell = (uint64)(value / (float64)cell_widths[h]);          // histogram cell that value belongs
+            D uint64 cell = (uint64)((value - mins[a]) / (float64)cell_widths[h]);          // histogram cell that value belongs
             D uint64[[1]] histogram = tdbVmapGetValue(histograms, arrayToString(h), 0 :: uint64);
             tdbVmapErase(histograms, arrayToString(h));
             for (uint64 j = 0; j < cells_list[h]; j++) {                        // for each cell of histogram h
@@ -164,7 +164,7 @@ uint64 multiple_histograms(D float64[[2]] arr, uint64 number_of_histograms, uint
                 uint64 attribute = tdbVmapGetValue(attributes_vmap, arrayToString(h), 0 :: uint64)[a];
                 D float64 value = arr[t, attribute];                            // value for column attributes[h] of tuple t
 
-                D uint64 cell = (uint64)(value / (float64)widths[a]);           // histogram cell that value belongs
+                D uint64 cell = (uint64)((value - mins[attribute]) / (float64)widths[a]);           // histogram cell that value belongs
                 positions[a] = cell;
             }
 
