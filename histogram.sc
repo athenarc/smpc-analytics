@@ -17,13 +17,14 @@ import data_input;
 template <domain D, type T>
 D uint64[[1]] histogram(D T[[1]] arr, uint64 cells, D T min, D T max) {
     D uint64[[1]] output(cells);
-    D float64 cell_width = ((float64) max + FLOAT64_POS_MIN - (float64) min) / (float64)cells;
+    D float64 cell_width = ((float64) max - (float64) min) / (float64)cells;
     uint64 len = size(arr);
     for (uint64 i = 0; i < len; i++) {
         D uint64 cell = (uint64)((float64)(arr[i] - min) / cell_width);
+        cell -= (uint64)(cell == cells);
         for (uint64 j = 0; j < cells; j++) {
-            D bool eq = (cell == j);
-            output[j] += (uint64)eq;
+            D uint64 eq = (uint64)(cell == j);
+            output[j] += eq;
         }
     }
     return output;
@@ -38,10 +39,11 @@ D uint64[[1]] histogram(D T[[1]] arr, uint64 cells, D T min, D T max) {
 template <domain D, type T>
 D uint64[[1]] histogram_simd(D T[[1]] arr, uint64 cells, D T min, D T max) {
     D uint64[[1]] output(cells);
-    D float64 cell_width = ((float64) max + FLOAT64_POS_MIN - (float64) min) / (float64)cells;
+    D float64 cell_width = ((float64) max - (float64) min) / (float64)cells;
     uint64 len = size(arr);
     for (uint64 j = 0; j < cells; j++) {
-        D bool[[1]] eq = ((uint64)((float64)(arr-min)/cell_width) == j);
+        D uint64[[1]] bitmap = ((float64)(arr-min)/cell_width);
+        D uint64[[1]] eq = (uint64)(bitmap == j) * (uint64)(bitmap == cells);
         output[j] = sum(eq);
     }
     return output;
@@ -73,21 +75,22 @@ D uint64[[1]] histogram(D T[[2]] arr, uint64[[1]] cells_list, D T[[1]] mins, D T
     uint64 individuals = array_shape[1];
     uint64 len = product(cells_list);
     D uint64[[1]] hist_1d(len);
-    D float64[[1]] cell_widths(dims) = (((float64) maxs+FLOAT64_POS_MIN - (float64) mins) / (float64)cells_list);
+    D float64[[1]] cell_widths(dims) = (((float64) maxs - (float64) mins) / (float64)cells_list);
     for (uint64 j = 0; j < individuals; j++) {
         D uint64 pos = 0;
         for (uint64 i = 0; i < dims; i++) {
             uint64 prod = product(cells_list[i+1:]);
-            pos += (uint64)((float64)(arr[i,j] - mins[i]) / cell_widths[i]) * prod;
+            D uint64 cell = (uint64)((float64)(arr[i,j] - (float64)mins[i]) / (float64)cell_widths[i]);
+            cell -= (uint64)(cell == cells_list[i]);
+            pos += cell * prod;
         }
         for (uint64 i = 0; i < len; i++) {
-            D bool eq = (pos == i);
-            hist_1d[i] += (uint64)eq;
+            D uint64 eq = (uint64)(pos == i);
+            hist_1d[i] += eq;
         }
     }
     return hist_1d;
 }
-
 
 
 /**
@@ -114,7 +117,7 @@ uint64 multiple_histograms(D float64[[2]] arr, uint64 number_of_histograms, uint
             uint64 number_of_cells = tdbVmapGetValue(cells_vmap, arrayToString(h), 0 :: uint64)[a];
             D float64 max = maxs[tdbVmapGetValue(attributes_vmap, arrayToString(h), 0 :: uint64)[a]];
             D float64 min = mins[tdbVmapGetValue(attributes_vmap, arrayToString(h), 0 :: uint64)[a]];
-            widths[a] = ((float64) max + FLOAT64_POS_MIN - (float64) min) / (float64)number_of_cells;
+            widths[a] = ((float64) max - (float64) min) / (float64)number_of_cells;
         }
         tdbVmapAddValue(cell_widths, arrayToString(h), widths);
     }
@@ -133,7 +136,8 @@ uint64 multiple_histograms(D float64[[2]] arr, uint64 number_of_histograms, uint
                 uint64 attribute = tdbVmapGetValue(attributes_vmap, arrayToString(h), 0 :: uint64)[a];
                 D float64 value = arr[t, attribute];                            // value for column attributes[h] of tuple t
 
-                D uint64 cell = (uint64)((float64)(value - mins[attribute]) / (float64)widths[a]);           // histogram cell that value belongs
+                D uint64 cell = (uint64)((float64)(value - (float64)mins[attribute]) / (float64)widths[a]);           // histogram cell that value belongs
+                cell -= (uint64)(cell == cells[a]);
                 uint64 prod = product(cells[a+1:]);
                 pos += cell * prod;
             }
@@ -152,84 +156,87 @@ uint64 multiple_histograms(D float64[[2]] arr, uint64 number_of_histograms, uint
 }
 
 /* Test Histogram */
-// void main() {
-//     uint64 cells = 3;
-//     /* Test 1d histogram with floats */
-//     pd_shared3p float64[[1]] data_float = {0,1,2,3,4,5,6,7,8,9};
-//     pd_shared3p float64 min_float = min(data_float), max_float = max(data_float);
-//     pd_shared3p uint64[[1]] hist_float = histogram(data_float, cells, min_float, max_float);
-//     print(arrayToString(declassify(hist_float)));
-//
-//     /* Test 1d histogram with integers */
-//     pd_shared3p uint64[[1]] data_int = {0,1,2,3,4,5,6,7,8};
-//     pd_shared3p uint64 min_int = min(data_int), max_int = max(data_int);
-//     pd_shared3p uint64[[1]] hist_int = histogram(data_int, cells, min_int, max_int);
-//     print(arrayToString(declassify(hist_int)));
-//
-//
-//     /* Test multi-dimensional histogram with floats */
-//     pd_shared3p float64[[2]] data = reshape({0,1,2,3,4,5,6,7,8,9,
-//                                             0,1,2,3,4,5,6,7,8,9}, 2, 10);
-//     uint64[[1]] cells_list = {3,3};
-//     pd_shared3p float64[[1]] mins = {0,0};
-//     pd_shared3p float64[[1]] maxs = {9,9};
-//     printVector(declassify(histogram(data, cells_list, mins, maxs)));
-//
-//     /* Test multiple_histograms with floats */
-//     pd_shared3p float64[[2]] data = reshape({1,2,3,4,
-//                                             1,3,5,2,
-//                                             2,4,3,2,
-//                                             7,6,4,1,
-//                                             6,3,2,2,
-//                                             6,2,5,3}, 6, 4);
-//     pd_shared3p float64[[1]] mins = {1,2,2,1};
-//     pd_shared3p float64[[1]] maxs = {7,6,5,4};
-//
-//     uint64 attributes_vmap = tdbVmapNew();
-//     uint64[[1]] value = {1,2,3};
-//     tdbVmapAddValue(attributes_vmap, "0", value);
-//     value = {1,2};
-//     tdbVmapAddValue(attributes_vmap, "1", value);
-//     value = {2,3};
-//     tdbVmapAddValue(attributes_vmap, "2", value);
-//
-//     uint64 cells_vmap = tdbVmapNew();
-//     value = {3,3,3};
-//     tdbVmapAddValue(cells_vmap, "0", value);
-//     value = {3,3};
-//     tdbVmapAddValue(cells_vmap, "1", value);
-//     value = {3,3};
-//     tdbVmapAddValue(cells_vmap, "2", value);
-//
-//     uint64 histograms = multiple_histograms(data, 3::uint64, attributes_vmap, cells_vmap, mins, maxs);
-//
-//     pd_shared3p uint64[[1]] res = tdbVmapGetValue(histograms, "0", 0 :: uint64);
-//     printVector(declassify(res));
-//     res = tdbVmapGetValue(histograms, "1", 0 :: uint64);
-//     printVector(declassify(res));
-//     res = tdbVmapGetValue(histograms, "2", 0 :: uint64);
-//     printVector(declassify(res));
-//
-//     /* Test multiple_histograms with imported data */
-//     uint64[[1]] array_shape = shape(array); // array -> variable from data_input.sc
-//     uint64 N = array_shape[0];
-//     uint64 M = array_shape[1];
-//     pd_shared3p float64[[1]] mins(M);
-//     pd_shared3p float64[[1]] maxs(M);
-//     for (uint64 j = 0; j < M; j++ ) {
-//       mins[j] = min(array[:,j]);
-//       maxs[j] = max(array[:,j]);
-//     }
-//
-//     uint64 attributes_vmap = tdbVmapNew();
-//     uint64[[1]] value = {11,12};
-//     tdbVmapAddValue(attributes_vmap, "0", value);
-//
-//     uint64 cells_vmap = tdbVmapNew();
-//     value = {3,5};
-//     tdbVmapAddValue(cells_vmap, "0", value);
-//
-//     uint64 histograms = multiple_histograms(array, 1::uint64, attributes_vmap, cells_vmap, mins, maxs);
-//     pd_shared3p uint64[[1]] res = tdbVmapGetValue(histograms, "0", 0 :: uint64);
-//     printVector(declassify(res));
-// }
+void main() {
+    /* Test 1d histogram with floats */
+    uint64 cells = 3;
+    pd_shared3p float64[[1]] data_float = {0,1,2,3,4,5,6,7,8,9};
+    pd_shared3p float64 min_float = min(data_float), max_float = max(data_float);
+    pd_shared3p uint64[[1]] hist_float = histogram(data_float, cells, min_float, max_float);
+    print(arrayToString(declassify(hist_float)));
+
+
+    /* Test 1d histogram with integers */
+    pd_shared3p uint64[[1]] data_int = {0,1,2,3,4,5,6,7,8};
+    pd_shared3p uint64 min_int = min(data_int), max_int = max(data_int);
+    pd_shared3p uint64[[1]] hist_int = histogram(data_int, cells, min_int, max_int);
+    print(arrayToString(declassify(hist_int)));
+
+
+    /* Test multi-dimensional histogram with floats */
+    pd_shared3p float64[[2]] data = reshape({0,1,2,3,4,5,6,7,8,9,
+                                            0,1,2,3,4,5,6,7,8,9}, 2, 10);
+    uint64[[1]] cells_list = {3,3};
+    pd_shared3p float64[[1]] mins = {0,0};
+    pd_shared3p float64[[1]] maxs = {9,9};
+    printVector(declassify(histogram(data, cells_list, mins, maxs)));
+
+
+    /* Test multiple_histograms with floats */
+    pd_shared3p float64[[2]] data2 = reshape({1,2,3,4,
+                                            1,3,5,2,
+                                            2,4,3,2,
+                                            7,6,4,1,
+                                            6,3,2,2,
+                                            6,2,5,3}, 6, 4);
+    pd_shared3p float64[[1]] mins2 = {1,2,2,1};
+    pd_shared3p float64[[1]] maxs2 = {7,6,5,4};
+
+    uint64 attributes_vmap = tdbVmapNew();
+    uint64[[1]] value = {1,2,3};
+    tdbVmapAddValue(attributes_vmap, "0", value);
+    value = {1,2};
+    tdbVmapAddValue(attributes_vmap, "1", value);
+    value = {2,3};
+    tdbVmapAddValue(attributes_vmap, "2", value);
+
+    uint64 cells_vmap = tdbVmapNew();
+    value = {3,3,3};
+    tdbVmapAddValue(cells_vmap, "0", value);
+    value = {3,3};
+    tdbVmapAddValue(cells_vmap, "1", value);
+    value = {3,3};
+    tdbVmapAddValue(cells_vmap, "2", value);
+
+    uint64 histograms = multiple_histograms(data2, 3::uint64, attributes_vmap, cells_vmap, mins2, maxs2);
+
+    pd_shared3p uint64[[1]] res = tdbVmapGetValue(histograms, "0", 0 :: uint64);
+    printVector(declassify(res));
+    res = tdbVmapGetValue(histograms, "1", 0 :: uint64);
+    printVector(declassify(res));
+    res = tdbVmapGetValue(histograms, "2", 0 :: uint64);
+    printVector(declassify(res));
+
+
+    /* Test multiple_histograms with imported data */
+    uint64[[1]] array_shape = shape(array); // array -> variable from data_input.sc
+    uint64 N = array_shape[0];
+    uint64 M = array_shape[1];
+    pd_shared3p float64[[1]] mins3(M);
+    pd_shared3p float64[[1]] maxs3(M);
+    for (uint64 j = 0; j < M; j++ ) {
+      mins3[j] = min(array[:,j]);
+      maxs3[j] = max(array[:,j]);
+    }
+
+    uint64 attributes_vmap2 = tdbVmapNew();
+    uint64[[1]] value2 = {11,12};
+    tdbVmapAddValue(attributes_vmap2, "0", value2);
+
+    uint64 cells_vmap2 = tdbVmapNew();
+    value2 = {3,5};
+    tdbVmapAddValue(cells_vmap2, "0", value2);
+
+    uint64 histograms2 = multiple_histograms(array, 1::uint64, attributes_vmap2, cells_vmap2, mins3, maxs3);
+    res = tdbVmapGetValue(histograms2, "0", 0 :: uint64);
+    printVector(declassify(res));
+}
