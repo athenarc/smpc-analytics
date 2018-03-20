@@ -30,6 +30,37 @@ D uint64[[1]] histogram(D T[[1]] arr, uint64 cells, D T min, D T max) {
 }
 
 /**
+ * private arr: 1D array of all data. size M, where M: #attributes
+ * public cells: number of the histogram's cell
+ * private min: min value of arr
+ * private max: max value of arr
+**/
+template <domain D, type T>
+D uint64[[1]] histogram_simd(D T[[1]] arr, uint64 cells, D T min, D T max) {
+    D uint64[[1]] output(cells);
+    D float64 cell_width = ((float64) max + FLOAT64_POS_MIN - (float64) min) / (float64)cells;
+    uint64 len = size(arr);
+    for (uint64 j = 0; j < cells; j++) {
+        D bool[[1]] eq = ((uint64)((float64)(arr-min)/cell_width) == j);
+        output[j] = sum(eq);
+    }
+    return output;
+}
+
+/**
+ * public string datasource: name of the datasource
+ * public string table: name of the table
+ * public uint64 index: column index in the table
+ * public cells: number of the histogram's cell
+ * private min: min value of arr
+ * private max: max value of arr
+**/
+template <domain D, type T>
+D uint64[[1]] histogram(string datasource, string table, uint64 index, uint64 cells, D T min, D T max) {
+    return(histogram(tdbReadColumn(datasource, table, index), cells, min, max));
+}
+
+/**
  * private arr: 2D array of all data tuples. size M x N, where M: #attributes, N: #tuples
  * public cells_list: list of numbers of cells for each histogram
  * private mins: list of min values for each attribute
@@ -107,8 +138,6 @@ uint64 multiple_histograms(D float64[[2]] arr, uint64 number_of_histograms, uint
                 pos += cell * prod;
             }
 
-            for (uint64 i = 0; i < requested_attributes; i++) {
-            }
             D uint64[[1]] histogram = tdbVmapGetValue(histograms, arrayToString(h), 0 :: uint64);
             tdbVmapErase(histograms, arrayToString(h));
             for (uint64 j = 0; j < size(histogram); j++) {                      // for each cell of histogram h
@@ -204,4 +233,3 @@ uint64 multiple_histograms(D float64[[2]] arr, uint64 number_of_histograms, uint
 //     pd_shared3p uint64[[1]] res = tdbVmapGetValue(histograms, "0", 0 :: uint64);
 //     printVector(declassify(res));
 // }
-
