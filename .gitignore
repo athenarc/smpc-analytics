@@ -55,3 +55,6 @@ dkms.conf
 *.sb
 *.src
 *.log
+
+# CSV files
+*.csv

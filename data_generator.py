@@ -6,6 +6,7 @@ import math
 
 DATASET = 'syndata_upload_and_scaling_tests/centricity_identified.csv'
 OUTPUT = 'data_input.sc'
+ROW_LIMIT = 1000
 
 def is_number(s):
     try:
@@ -18,7 +19,7 @@ def main():
     df=pd.read_csv(DATASET,sep=',')
     A = np.array(df)
     N = A.shape[0]
-    N = min(N,100)
+    N = min(N,ROW_LIMIT)
     M = A.shape[1]
     with open(OUTPUT,'w') as output:
         output.write('/* Rows: ' + str(N) + ' */' + '\n')
