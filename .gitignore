@@ -58,3 +58,5 @@ dkms.conf
 
 # CSV files
 *.csv
+
+*data_input.sc
