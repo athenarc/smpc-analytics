@@ -59,7 +59,8 @@ D uint64[[1]] histogram_simd(D T[[1]] arr, uint64 cells, D T min, D T max) {
 **/
 template <domain D, type T>
 D uint64[[1]] histogram(string datasource, string table, uint64 index, uint64 cells, D T min, D T max) {
-    return(histogram(tdbReadColumn(datasource, table, index), cells, min, max));
+    D T[[1]] column = tdbReadColumn(datasource, table, index);
+    return(histogram(column, cells, min, max));
 }
 
 /**
