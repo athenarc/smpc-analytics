@@ -18,28 +18,6 @@ template <domain D, type T>
 D uint64[[1]] histogram(D T[[1]] arr, uint64 cells, D T min, D T max) {
     D uint64[[1]] output(cells);
     D float64 cell_width = ((float64) max - (float64) min) / (float64)cells;
-    uint64 len = size(arr);
-    for (uint64 i = 0; i < len; i++) {
-        D uint64 cell = (uint64)((float64)(arr[i] - min) / cell_width);
-        cell -= (uint64)(cell == cells);
-        for (uint64 j = 0; j < cells; j++) {
-            D uint64 eq = (uint64)(cell == j);
-            output[j] += eq;
-        }
-    }
-    return output;
-}
-
-/**
- * private arr: 1D array of all data. size M, where M: #attributes
- * public cells: number of the histogram's cell
- * private min: min value of arr
- * private max: max value of arr
-**/
-template <domain D, type T>
-D uint64[[1]] histogram_simd(D T[[1]] arr, uint64 cells, D T min, D T max) {
-    D uint64[[1]] output(cells);
-    D float64 cell_width = ((float64) max - (float64) min) / (float64)cells;
     D uint64[[1]] bitmap = (uint64)((float64)(arr-min)/cell_width);
     for (uint64 j = 0; j < cells; j++) {
         D uint64[[1]] eq = (uint64)(bitmap == j) + ((uint64)(bitmap == cells) * (uint64)(j == cells-1));
@@ -104,51 +82,65 @@ D uint64[[1]] histogram(D T[[2]] arr, uint64[[1]] cells_list, D T[[1]] mins, D T
 template <domain D>
 uint64 multiple_histograms(D float64[[2]] arr, uint64 number_of_histograms, uint64 attributes_vmap, uint64 cells_vmap, D float64[[1]] mins, D float64[[1]] maxs) {
     uint64 histograms = tdbVmapNew();                                           // map of all histograms to compute; histograms[0] contains histogram 0, etc
-    // compute cell widths for each histogram
-    uint64 cell_widths = tdbVmapNew();                                          // map of cell-widths for each histogram
+    uint64 N = shape(arr)[0];                                                  // number of tuples
     for (uint64 h = 0; h < number_of_histograms; h++) {                         // for each histogram
+        D uint64[[1]] positions(N);
         uint64[[1]] cells = tdbVmapGetValue(cells_vmap, arrayToString(h), 0 :: uint64);
-        uint64 length = product(cells);
-        D uint64[[1]] histogram(length);
-        tdbVmapAddValue(histograms, arrayToString(h), histogram);                  // initialize each histogram
         uint64 requested_attributes = size(cells);                                 // amount of attributes wanted for this histogram
-        D float64[[1]] widths(requested_attributes);                               // widths for each cell of histogram h
         for (uint64 a = 0; a < requested_attributes; a++) {                        // for each attribute
             uint64 number_of_cells = tdbVmapGetValue(cells_vmap, arrayToString(h), 0 :: uint64)[a];
-            D float64 max = maxs[tdbVmapGetValue(attributes_vmap, arrayToString(h), 0 :: uint64)[a]];
-            D float64 min = mins[tdbVmapGetValue(attributes_vmap, arrayToString(h), 0 :: uint64)[a]];
-            widths[a] = ((float64) max - (float64) min) / (float64)number_of_cells;
-        }
-        tdbVmapAddValue(cell_widths, arrayToString(h), widths);
-    }
-
-    uint64[[1]] array_shape = shape(arr);
-    uint64 N = array_shape[0];                                                  // number of tuples
-    for (uint64 h = 0; h < number_of_histograms; h++) {                     // for each histogram
-        uint64[[1]] cells = tdbVmapGetValue(cells_vmap, arrayToString(h), 0 :: uint64);
-        uint64 requested_attributes = size(cells);                             // amount of attributes wanted for this histogram
-
-        D float64[[1]] widths = tdbVmapGetValue(cell_widths, arrayToString(h), 0 :: uint64);
-
-        D uint64[[1]] positions(N);                                                   // compute 1-d index from multiple indexes
-        for (uint64 a = 0; a < requested_attributes; a++) {                    // for each attribute
             uint64 attribute = tdbVmapGetValue(attributes_vmap, arrayToString(h), 0 :: uint64)[a];
-            D uint64[[1]] cellmap = (uint64)((float64)(arr[:,attribute]-mins[attribute])/(float64)widths[a]);
+            D float64 max = maxs[attribute];
+            D float64 min = mins[attribute];
+            D float64 width = (((float64) (max - min)) / (float64) number_of_cells);
+            D uint64[[1]] cellmap = (uint64) ((float64) (arr[:,attribute] - mins[attribute]) / width);
             cellmap -= (uint64)(cellmap == cells[a]);
             uint64 prod = product(cells[a+1:]);
             positions += cellmap * prod;
         }
-        D uint64[[1]] histogram = tdbVmapGetValue(histograms, arrayToString(h), 0 :: uint64);
-        tdbVmapErase(histograms, arrayToString(h));
-        for (uint64 j = 0; j < size(histogram); j++) {                      // for each cell of histogram h
+        uint64 length = product(cells);
+        D uint64[[1]] histogram(length);
+        for (uint64 j = 0; j < length ; j++) {                      // for each cell of histogram h
             D bool[[1]] eq = (positions == j);
             histogram[j] = sum(eq);
         }
         tdbVmapAddValue(histograms, arrayToString(h), histogram);
-
     }
     return histograms;
 }
+
+template <domain D>
+uint64 multiple_histograms(string datasource, string table, uint64 number_of_histograms, uint64 attributes_vmap, uint64 cells_vmap, D float64[[1]] mins, D float64[[1]] maxs) {
+    uint64 histograms = tdbVmapNew();                                           // map of all histograms to compute; histograms[0] contains histogram 0, etc
+    uint64 N = tdbGetRowCount(datasource, table);                               // number of tuples
+    for (uint64 h = 0; h < number_of_histograms; h++) {                         // for each histogram
+        D uint64[[1]] positions(N);
+        uint64[[1]] cells = tdbVmapGetValue(cells_vmap, arrayToString(h), 0 :: uint64);
+        uint64 requested_attributes = size(cells);                                 // amount of attributes wanted for this histogram
+        for (uint64 a = 0; a < requested_attributes; a++) {                        // for each attribute
+            uint64 number_of_cells = tdbVmapGetValue(cells_vmap, arrayToString(h), 0 :: uint64)[a];
+            uint64 attribute = tdbVmapGetValue(attributes_vmap, arrayToString(h), 0 :: uint64)[a];
+            D float64 max = maxs[attribute];
+            D float64 min = mins[attribute];
+            D float64 width = (((float64) (max - min)) / (float64) number_of_cells);
+            D float64[[1]] column = tdbReadColumn(datasource, table, attribute);
+            D uint64[[1]] cellmap = (uint64) ((float64) (column - min) / width);
+            cellmap -= (uint64)(cellmap == cells[a]);
+            uint64 prod = product(cells[a+1:]);
+            positions += cellmap * prod;
+        }
+        uint64 length = product(cells);
+        D uint64[[1]] histogram(length);
+        for (uint64 j = 0; j < length ; j++) {                      // for each cell of histogram h
+            D bool[[1]] eq = (positions == j);
+            histogram[j] = sum(eq);
+        }
+        tdbVmapAddValue(histograms, arrayToString(h), histogram);
+    }
+    return histograms;
+}
+
+
 
 /* Test Histogram */
 void main() {
@@ -213,6 +205,7 @@ void main() {
 
 
     /* Test multiple_histograms with imported data */
+    print("Computing mins, maxs");
     uint64[[1]] array_shape = shape(array); // array -> variable from data_input.sc
     uint64 N = array_shape[0];
     uint64 M = array_shape[1];
@@ -231,7 +224,30 @@ void main() {
     value2 = {3,5};
     tdbVmapAddValue(cells_vmap2, "0", value2);
 
+    print("Computing histograms");
     uint64 histograms2 = multiple_histograms(array, 1::uint64, attributes_vmap2, cells_vmap2, mins3, maxs3);
-    res = tdbVmapGetValue(histograms2, "0", 0 :: uint64);
-    printVector(declassify(res));
+    pd_shared3p uint64[[1]] res1 = tdbVmapGetValue(histograms2, "0", 0 :: uint64);
+    printVector(declassify(res1));
+
+    string ds = "DS1"; // Data source name
+    string tbl = "centricity_identified-100_edited"; // Table name
+
+    // Open database before running operations on it
+    tdbOpenConnection(ds);
+    print("Computing mins, maxs");
+    uint64 column_count = tdbGetColumnCount(ds, tbl);
+    pd_shared3p float64[[1]] mins4(column_count);
+    pd_shared3p float64[[1]] maxs4(column_count);
+    for (uint64 j = 0; j < column_count; j++ ) {
+      pd_shared3p float64[[1]] column = tdbReadColumn(ds, tbl, j);
+      mins4[j] = min(column);
+      maxs4[j] = max(column);
+    }
+
+    print("Computing histograms");
+    uint64 histograms3 = multiple_histograms(ds, tbl, 1::uint64, attributes_vmap2, cells_vmap2, mins4, maxs4);
+    pd_shared3p uint64[[1]] res2 = tdbVmapGetValue(histograms3, "0", 0 :: uint64);
+    printVector(declassify(res2));
+
+    tdbCloseConnection(ds);
 }
