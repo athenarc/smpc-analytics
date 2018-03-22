@@ -4,7 +4,11 @@ import numpy as np
 import sys
 import math
 
-DATASET = 'syndata_upload_and_scaling_tests/centricity_identified.csv'
+if len(sys.argv) > 1:
+    DATASET = sys.argv[1]
+else:
+    DATASET = 'syndata_upload_and_scaling_tests/centricity_identified.csv'
+
 OUTPUT = 'data_input.sc'
 ROW_LIMIT = 1000
 
@@ -27,7 +31,7 @@ def main():
         output.write('/**' + '\n')
         for i in range(len(df.columns)):
             col = df.columns[i]
-            output.write(' * '+ col + ' (' + str(i) + ')' + '\n')
+            output.write(' * '+ col + ' (' + str(i) + ') : ' + str(df[col].dtype) + '\n')
         output.write('**/' + '\n')
         array = '{'
         for i in range(N):
