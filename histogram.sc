@@ -203,19 +203,7 @@ void main() {
     res = tdbVmapGetValue(histograms, "2", 0 :: uint64);
     printVector(declassify(res));
 
-
     /* Test multiple_histograms with imported data */
-    print("Computing mins, maxs");
-    uint64[[1]] array_shape = shape(array); // array -> variable from data_input.sc
-    uint64 N = array_shape[0];
-    uint64 M = array_shape[1];
-    pd_shared3p float64[[1]] mins3(M);
-    pd_shared3p float64[[1]] maxs3(M);
-    for (uint64 j = 0; j < M; j++ ) {
-      mins3[j] = min(array[:,j]);
-      maxs3[j] = max(array[:,j]);
-    }
-
     uint64 attributes_vmap2 = tdbVmapNew();
     uint64[[1]] value2 = {11,12};
     tdbVmapAddValue(attributes_vmap2, "0", value2);
@@ -225,7 +213,7 @@ void main() {
     tdbVmapAddValue(cells_vmap2, "0", value2);
 
     print("Computing histograms");
-    uint64 histograms2 = multiple_histograms(array, 1::uint64, attributes_vmap2, cells_vmap2, mins3, maxs3);
+    uint64 histograms2 = multiple_histograms(imported_array, 1::uint64, attributes_vmap2, cells_vmap2, imported_mins, imported_maxs);
     pd_shared3p uint64[[1]] res1 = tdbVmapGetValue(histograms2, "0", 0 :: uint64);
     printVector(declassify(res1));
 
