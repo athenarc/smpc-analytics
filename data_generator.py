@@ -30,6 +30,17 @@ def main():
         for i in range(N):
             for j in range(M):
                 array += str(A[i,j]) + ','
+        array = array[:-1]
+        array += '}'
+        var = 'pd_shared3p float64[[2]] imported_array'
+        command = 'reshape('+ array +', '+ str(N) +', '+ str(M) +');'
+        output.write(var + ' = ' + command + '\n')
+        mins = [str(min([A[i,j] for i in range(N)])) for j in range(M)]
+        mins = '{' + ','.join(mins) + '}'
+        maxs = [str(max([A[i,j] for i in range(N)])) for j in range(M)]
+        maxs = '{' + ','.join(maxs) + '}'
+        output.write('pd_shared3p float64[[1]] imported_mins(' + str(M) + ') = ' + mins + ';\n')
+        output.write('pd_shared3p float64[[1]] imported_maxs(' + str(M) + ') = ' + maxs + ';\n')
 
 
 if __name__ == '__main__':
