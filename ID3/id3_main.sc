@@ -7,7 +7,7 @@ import stdlib;
 import oblivious;
 import shared3p_oblivious;
 
-domain pd_shared3p shared3p;
+import data_input;
 
 /**
  * ID3 Summary
@@ -18,31 +18,31 @@ domain pd_shared3p shared3p;
  * 4. Recurse on subsets using remaining attributes.
 **/
 
-uint64 rows = 14;
-uint64 columns = 5;
-uint64 max_attribute_values = 3;
-uint64 class_index = columns-1;
-pd_shared3p uint64[[1]] original_attributes(columns) = {0,1,2,3,4}; //private? //iota
-pd_shared3p int64[[2]] original_examples(rows,columns) = reshape({0,0,1,0,1,
-                                                                    0,0,1,1,1,
-                                                                    1,0,1,0,0,
-                                                                    2,1,1,0,0,
-                                                                    2,2,0,0,0,
-                                                                    2,2,0,1,1,
-                                                                    1,2,0,1,0,
-                                                                    0,1,1,0,1,
-                                                                    0,2,0,0,0,
-                                                                    2,1,0,0,0,
-                                                                    0,1,0,1,0,
-                                                                    1,1,1,1,0,
-                                                                    1,0,0,0,0,
-                                                                    2,1,1,1,1}, rows, columns);
-
-pd_shared3p int64[[2]] possible_values(columns,max_attribute_values) = reshape({0,1,2,
-                                                                                0,1,2,
-                                                                                0,1,-1,
-                                                                                0,1,-1,
-                                                                                0,1,-1}, columns, max_attribute_values);
+// uint64 rows = 14;
+// uint64 columns = 5;
+// uint64 max_attribute_values = 3;
+// uint64 class_index = columns-1;
+// pd_shared3p uint64[[1]] original_attributes(columns) = {0,1,2,3,4}; //private? //iota
+// pd_shared3p int64[[2]] original_examples(rows,columns) = reshape({0,0,1,0,1,
+//                                                                     0,0,1,1,1,
+//                                                                     1,0,1,0,0,
+//                                                                     2,1,1,0,0,
+//                                                                     2,2,0,0,0,
+//                                                                     2,2,0,1,1,
+//                                                                     1,2,0,1,0,
+//                                                                     0,1,1,0,1,
+//                                                                     0,2,0,0,0,
+//                                                                     2,1,0,0,0,
+//                                                                     0,1,0,1,0,
+//                                                                     1,1,1,1,0,
+//                                                                     1,0,0,0,0,
+//                                                                     2,1,1,1,1}, rows, columns);
+//
+// pd_shared3p int64[[2]] possible_values(columns,max_attribute_values) = reshape({0,1,2,
+//                                                                                 0,1,2,
+//                                                                                 0,1,-1,
+//                                                                                 0,1,-1,
+//                                                                                 0,1,-1}, columns, max_attribute_values);
 
 
 template <type T>
