@@ -302,7 +302,7 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
 }
 
 void main() {
-    pd_shared3p xor_uint8[[1]] root = id3(original_examples, original_attributes[:4]);
+    pd_shared3p xor_uint8[[1]] root = id3(original_examples, original_attributes[:columns-1]);
     print(bl_strDeclassify(root));
 }
 
