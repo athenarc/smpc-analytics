@@ -256,14 +256,14 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
             }
             subset[i,:] = (int64)eq * example + (int64)(1-eq) * minus_ones; // simd
         }
-        pd_shared3p xor_uint8[[1]] branch = bl_str("[");
+        pd_shared3p xor_uint8[[1]] branch = bl_str("[ ");
         pd_shared3p xor_uint8[[1]] best_attribute_str = itoa(best_attribute);
         branch = bl_strCat(branch, best_attribute_str);
         pd_shared3p xor_uint8[[1]] temp = bl_str(" == ");
         branch = bl_strCat(branch, temp);
         pd_shared3p xor_uint8[[1]] value_str = itoa(value);
         branch = bl_strCat(branch, value_str);
-        temp = bl_str("]"); branch = bl_strCat(branch, temp);
+        temp = bl_str(" ]"); branch = bl_strCat(branch, temp);
         temp = bl_str(" --> ");
         branch = bl_strCat(branch, temp);
 
