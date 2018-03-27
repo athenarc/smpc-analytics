@@ -56,7 +56,8 @@ dkms.conf
 *.src
 *.log
 
-# CSV files
+# CSV & JSON files
 *.csv
+*.json
 
 *data_input.sc
