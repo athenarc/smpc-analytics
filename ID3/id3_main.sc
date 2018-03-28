@@ -105,7 +105,7 @@ pd_shared3p float64 log2(pd_shared3p float64 n) {
 }
 
 
-pd_shared3p uint64 mylen(pd_shared3p int64[[2]] array) {
+pd_shared3p uint64 count_positives(pd_shared3p int64[[2]] array) {
     pd_shared3p uint64 len = 0;
     uint64[[1]] dims = shape(array);
     for(uint64 i = 0; i < dims[0]; i++){
@@ -115,7 +115,7 @@ pd_shared3p uint64 mylen(pd_shared3p int64[[2]] array) {
 }
 
 
-pd_shared3p uint64 mylen(pd_shared3p int64[[1]] array) {
+pd_shared3p uint64 count_positives(pd_shared3p int64[[1]] array) {
     pd_shared3p uint64 len = 0;
     for(uint64 i = 0; i < size(array); i++){
         len += (uint64)(array[i] != -1);
@@ -137,7 +137,7 @@ pd_shared3p bool all_examples_same(pd_shared3p int64[[2]] examples) {
             pd_shared3p bool eq = (examples[i,columns-1] == label);
             class_counts[c] += (uint64)neq*(uint64)(eq); // counter for class i
         }
-        res += (uint64)(class_counts[c] == mylen(examples));
+        res += (uint64)(class_counts[c] == count_positives(examples));
     }
     return (bool)res;
 }
@@ -156,7 +156,7 @@ pd_shared3p float64 entropy(pd_shared3p int64[[2]] examples) {
         for (uint64 i = 0 ; i < rows ; i++) {
             count += (uint64)neq * (uint64)(examples[i, columns-1] == label);
         }
-        pd_shared3p float64 percentage = (float64)count / (float64)mylen(examples);
+        pd_shared3p float64 percentage = (float64)count / (float64)count_positives(examples);
         entropy -= (percentage * log2(percentage));
     }
     return entropy;
@@ -182,7 +182,7 @@ pd_shared3p float64 information_gain(pd_shared3p int64[[2]] examples, pd_shared3
             }
             subset[i,:] = (int64)eq * example + (int64)(1-eq) * minus_ones; //simd
         }
-        pd_shared3p float64 percentage = (float64)mylen(subset) / (float64)mylen(examples);
+        pd_shared3p float64 percentage = (float64)count_positives(subset) / (float64)count_positives(examples);
         pd_shared3p bool neq = (percentage != 0);
         gain -= (float64)neq * percentage * entropy(subset);
     }
@@ -233,8 +233,7 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
         return itoa(label);
     }
     if (size(attributes) == 0) {
-        pd_shared3p xor_uint8[[1]] label = itoa(most_common_label(examples));
-        return label;
+        return itoa(most_common_label(examples));
     }
     pd_shared3p uint64 best_attribute = best(examples, attributes); // find best attribute
     pd_shared3p uint64 best_attribute_original_index = index_of(original_attributes, best_attribute); // maybe 1 for loop
@@ -247,7 +246,7 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
     }
 
   	for (uint64 v = 0 ; v < max_attribute_values ; v++) {
-		pd_shared3p int64 value = best_attribute_values[v];
+		    pd_shared3p int64 value = best_attribute_values[v];
         if (declassify(value == -1)) {
             continue;
         }
@@ -261,21 +260,14 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
             }
             subset[i,:] = (int64)eq * example + (int64)(1-eq) * minus_ones; // simd
         }
-        pd_shared3p xor_uint8[[1]] branch = bl_str("[ ");
-        pd_shared3p xor_uint8[[1]] best_attribute_str = itoa(best_attribute);
-        branch = bl_strCat(branch, best_attribute_str);
-        pd_shared3p xor_uint8[[1]] temp = bl_str(" == ");
-        branch = bl_strCat(branch, temp);
-        pd_shared3p xor_uint8[[1]] value_str = itoa(value);
-        branch = bl_strCat(branch, value_str);
-        temp = bl_str(" ]"); branch = bl_strCat(branch, temp);
-        temp = bl_str(" --> ");
-        branch = bl_strCat(branch, temp);
+        pd_shared3p xor_uint8[[1]] branch = bl_strCat(left_br_str, itoa(best_attribute));
+        branch = bl_strCat(branch, eq_str);
+        branch = bl_strCat(branch, itoa(value));
+        branch = bl_strCat(branch, right_br_str);
+        branch = bl_strCat(branch, arrow_str);
 
-      	if (declassify(mylen(subset) == 0)) {
-          	pd_shared3p int64 mcl = most_common_label(examples);
-            pd_shared3p xor_uint8[[1]] mcl_str = itoa(mcl);
-            branch = bl_strCat(branch, mcl_str);
+      	if (declassify(count_positives(subset) == 0)) {
+            branch = bl_strCat(branch, itoa(most_common_label(examples)));
         } else {
             pd_shared3p int64[[1]] first_half(size(attributes));
             pd_shared3p int64[[1]] second_half(size(attributes));
@@ -291,25 +283,33 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
                 new_attribs[i-1] += (int64)neq * (1+second_half[i]);
             }
 
-            pd_shared3p xor_uint8[[1]] res = id3(subset, (uint64)new_attribs);
-            branch = bl_strCat(branch, res);
+            branch = bl_strCat(branch, id3(subset, (uint64)new_attribs));
         }
         branches = bl_strCat(branches, branch);
-        temp = bl_str(" ");
-        branches = bl_strCat(branches, temp);
+        branches = bl_strCat(branches, space_str);
     }
 
-    pd_shared3p xor_uint8[[1]] root = bl_str("{ ");
-    root = bl_strCat(root, branches);
-    pd_shared3p xor_uint8[[1]] rbr = bl_str("}");
-    root = bl_strCat(root, rbr);
-    return root;
+    pd_shared3p xor_uint8[[1]] root = bl_strCat(left_curly_br_str, branches);
+    return bl_strCat(root, right_curly_br_str);
 }
 
 void main() {
+    left_br_str = bl_str("[ ");
+    right_br_str = bl_str(" ]");
+    eq_str = bl_str(" == ");
+    space_str = bl_str(" ");
+    arrow_str = bl_str(" --> ");
+    left_curly_br_str = bl_str("{ ");
+    right_curly_br_str = bl_str("}");
+
     pd_shared3p xor_uint8[[1]] root = id3(original_examples, original_attributes[:columns-1]);
     print(bl_strDeclassify(root));
 }
 
-
-
+pd_shared3p xor_uint8[[1]] left_br_str;
+pd_shared3p xor_uint8[[1]] right_br_str;
+pd_shared3p xor_uint8[[1]] eq_str;
+pd_shared3p xor_uint8[[1]] space_str;
+pd_shared3p xor_uint8[[1]] arrow_str;
+pd_shared3p xor_uint8[[1]] left_curly_br_str;
+pd_shared3p xor_uint8[[1]] right_curly_br_str;
