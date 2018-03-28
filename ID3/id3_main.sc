@@ -84,9 +84,13 @@ pd_shared3p xor_uint8[[1]] itoa(pd_shared3p T x){
 template <domain D, type T>
 D uint64 index_of(D T[[1]] arr, D T element) {
     D uint64 idx = 0;
+    D uint64 cnt = 0;
+    D uint64 found = 0;
     for (uint64 i = 1; i < size(arr); i++) {
         D uint64 eq = (uint64)(arr[i] == element);
-        idx = eq * i + (1-eq) * idx;
+        cnt += eq;
+        idx = (1-found) * (eq * i + (1-eq) * idx) + found * idx;
+        found = (uint64)(cnt > 0);
     }
     return idx;
 }
@@ -206,10 +210,11 @@ pd_shared3p int64 most_common_label(pd_shared3p int64[[2]] examples) {
     for (uint64 i = 0; i < rows; i++) {
         pd_shared3p int64[[1]] example = examples[i,:];
         pd_shared3p int64 label = example[class_index];
+        pd_shared3p bool neq = (label != -1);
         pd_shared3p uint64 label_index = index_of(possible_classes, label); //needs optimization
         for (uint64 c = 0; c < max_attribute_values; c++) { //maybe simd
             pd_shared3p bool eq = (label_index == c);
-            label_counts[c] += (uint64)eq;
+            label_counts[c] += (uint64)neq*(uint64)(eq);
         }
     }
     pd_shared3p uint64 max_count = max(label_counts); //needs optimization

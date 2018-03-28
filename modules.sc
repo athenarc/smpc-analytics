@@ -52,11 +52,15 @@ D bool exists(D T[[1]] arr, D T element) {
 }
 
 template <domain D, type T>
-D uint64 exists_in_index(D T[[1]] arr, D T element) {
+D uint64 index_of(D T[[1]] arr, D T element) {
     D uint64 idx = 0;
+    D uint64 cnt = 0;
+    D uint64 found = 0;
     for (uint64 i = 1; i < size(arr); i++) {
         D uint64 eq = (uint64)(arr[i] == element);
-        idx = eq * i + (1-eq) * idx;
+        cnt += eq;
+        idx = (1-found) * (eq * i + (1-eq) * idx) + found * idx;
+        found = (uint64)(cnt > 0);
     }
     return idx;
 }

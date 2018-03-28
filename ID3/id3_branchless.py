@@ -44,6 +44,7 @@ possible_values = {0:[0, 1, 2],
                     3:[0, 1, -1],
                     4:[0, 1, -1]}
 class_attribute = 4
+
 def mylen(data):
     len = 0
     for d in data:
@@ -75,12 +76,12 @@ def most_common_label(examples):
     label_counts = [0]*num_of_classes # array of 2 values (Yes:0, No:0)
     for i in range(len(examples)):
         example = examples[i]
-        class_attribute_index = len(example)-1
-        label = example[class_attribute_index]
+        label = example[class_attribute]
         label_index = 0;
         if label != -1:
             label_index = possible_values[class_attribute].index(label)
-        label_counts[label_index] += 1 * (label == -1)
+        label_counts[label_index] += 1 * (label != -1)
+    print(label_counts)
     return label_counts.index(max(label_counts))
 
 def entropy(examples):
