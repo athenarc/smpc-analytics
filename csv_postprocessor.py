@@ -36,9 +36,17 @@ def main():
 
     prev_word = ""
     prev_attribute = ""
+    tabs = 0
     for line in data_file:
         for word in line.split():
-            if "[" in prev_word:
+            if "{" == word :
+                tabs +=1
+                print('{')
+            elif "}" == word :
+                tabs -=1
+                print("\t"*tabs, end='')
+                print('}')
+            elif "[" in prev_word:
                 prev_attribute = df.columns[int(word)]
                 print(prev_attribute, end=' ')
             elif "==" == prev_word:
@@ -46,7 +54,10 @@ def main():
                 print(getValue(mapped_values, int(word))[0], end=' ')
             elif "-->" == prev_word and '[' not in word and '}' not in word and '{' not in word:
                 mapped_values = attribute_map[df.columns[-1]]
-                print(getValue(mapped_values, int(word))[0], end=' ')
+                print(getValue(mapped_values, int(word))[0], end='\n')
+            elif "[" == word :
+                print("\t"*tabs, end='')
+                print("[", end=' ')
             else:
                 print(word, end=' ')
             prev_word = word
