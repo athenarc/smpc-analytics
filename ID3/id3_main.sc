@@ -294,7 +294,7 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
         branches = bl_strCat(branches, temp);
     }
 
-    pd_shared3p xor_uint8[[1]] root = bl_str("{");
+    pd_shared3p xor_uint8[[1]] root = bl_str("{ ");
     root = bl_strCat(root, branches);
     pd_shared3p xor_uint8[[1]] rbr = bl_str("}");
     root = bl_strCat(root, rbr);

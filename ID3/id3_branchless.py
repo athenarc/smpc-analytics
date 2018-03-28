@@ -132,7 +132,7 @@ def id3(examples, attributes):
     for value in possible_values[best_attribute]:
         if value == -1:
             continue
-        branch = '[' + str(best_attribute) + ' == ' + str(value) +']'
+        branch = '[ ' + str(best_attribute) + ' == ' + str(value) +' ]'
         subset = [[-1] * len(original_examples[0]) for _ in range(len(original_examples))]
         for j in range(len(original_examples)):
             example = examples[j]
@@ -144,7 +144,7 @@ def id3(examples, attributes):
         else:
             branch += ' --> ' + str(id3(subset, attributes[:best_attribute_index]+attributes[best_attribute_index+1:]))
         branches.append(branch)
-    root = '{'+ ','.join(branches) +'}'
+    root = '{ '+ ' '.join(branches) +' }'
     return root
 
 
