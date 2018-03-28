@@ -43,15 +43,20 @@ def main():
                 print(prev_attribute, end=' ')
             elif "==" == prev_word:
                 mapped_values = attribute_map[prev_attribute]
-                print (mapped_values[int(word)])
+                print(getValue(mapped_values, int(word))[0], end=' ')
+            elif "-->" == prev_word and '[' not in word and '}' not in word and '{' not in word:
+                mapped_values = attribute_map[df.columns[-1]]
+                print(getValue(mapped_values, int(word))[0], end=' ')
             else:
                 print(word, end=' ')
             prev_word = word
 
-
     print("\n\nClosing files ...")
     map_file.close()
     data_file.close()
+
+def getValue(dict, value):
+     return [key for key in dict.keys() if (dict[key] == value)]
 
 if __name__ == '__main__':
     main()
