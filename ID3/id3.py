@@ -86,14 +86,14 @@ def id3(examples, attributes):
     best_attribute_index = attributes.index(best_attribute)
     branches = []
     for value in possible_values[best_attribute]:
-        branch = '['+str(best_attribute)+' == '+str(value)+']'
+        branch = '[ '+str(best_attribute)+' == '+str(value)+' ]'
         subset = [example for example in examples if example[best_attribute_original_index] == value]
         if len(subset) == 0:
             branch += ' --> ' + str(most_common_label(examples))
         else:
             branch  += ' --> ' + str(id3(subset, attributes[:best_attribute_index]+attributes[best_attribute_index+1:]))
         branches.append(branch)
-    root = '{'+ ','.join(branches) +'}'
+    root = '{ '+ ' '.join(branches) +' }'
     return root
 
 print(id3(examples,original_attributes[:-1]))
