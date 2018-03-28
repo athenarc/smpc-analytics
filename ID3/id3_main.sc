@@ -228,7 +228,7 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
         return itoa(label);
     }
     if (size(attributes) == 0) {
-        pd_shared3p xor_uint8[[1]] label;
+        pd_shared3p xor_uint8[[1]] label = itoa(most_common_label(examples));
         return label;
     }
     pd_shared3p uint64 best_attribute = best(examples, attributes); // find best attribute

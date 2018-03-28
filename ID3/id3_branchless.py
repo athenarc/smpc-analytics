@@ -44,7 +44,6 @@ possible_values = {0:[0, 1, 2],
                     3:[0, 1, -1],
                     4:[0, 1, -1]}
 class_attribute = 4
-
 def mylen(data):
     len = 0
     for d in data:
@@ -125,7 +124,7 @@ def id3(examples, attributes):
             label = neq * example[-1] + (1-neq)*(label)
         return label
     if len(attributes) == 0:
-        return ''
+        return most_common_label(examples)
     best_attribute = best(examples, attributes) #find best attribute
     best_attribute_original_index = original_attributes.index(best_attribute)
     best_attribute_index = attributes.index(best_attribute)

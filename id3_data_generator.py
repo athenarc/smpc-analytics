@@ -53,6 +53,7 @@ def main():
 
         for a in df.columns:
             attribute_values = json_data[a].values()
+            attribute_values.sort()
             length = len(attribute_values)
             padding = ',-1' * (max_values - length)
             array += ','.join([str(v) for v in attribute_values]) + padding + ',' + '\n'
