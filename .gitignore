@@ -60,4 +60,7 @@ dkms.conf
 *.csv
 *.json
 
+# Html files
+*.html
+
 *data_input.sc
