@@ -149,14 +149,18 @@ void main() {
     pd_shared3p float64[[1]] data_float = {0,1,2,3,4,5,6,7,8,9};
     pd_shared3p float64 min_float = min(data_float), max_float = max(data_float);
     pd_shared3p uint64[[1]] hist_float = histogram(data_float, cells, min_float, max_float);
+    print("{",1,", ",cells,"} Histogram");
     print(arrayToString(declassify(hist_float)));
+    print("\n");
 
 
     /* Test 1d histogram with integers */
     pd_shared3p uint64[[1]] data_int = {0,1,2,3,4,5,6,7,8};
     pd_shared3p uint64 min_int = min(data_int), max_int = max(data_int);
     pd_shared3p uint64[[1]] hist_int = histogram(data_int, cells, min_int, max_int);
+    print("{",1,", ",cells,"} Histogram");
     print(arrayToString(declassify(hist_int)));
+    print("\n");
 
 
     /* Test multi-dimensional histogram with floats */
@@ -165,7 +169,9 @@ void main() {
     uint64[[1]] cells_list = {3,3};
     pd_shared3p float64[[1]] mins = {0,0};
     pd_shared3p float64[[1]] maxs = {9,9};
+    print(arrayToString(cells_list), " Histogram");
     printVector(declassify(histogram(data, cells_list, mins, maxs)));
+    print("\n");
 
 
     /* Test multiple_histograms with floats */
@@ -197,11 +203,20 @@ void main() {
     uint64 histograms = multiple_histograms(data2, 3::uint64, attributes_vmap, cells_vmap, mins2, maxs2);
 
     pd_shared3p uint64[[1]] res = tdbVmapGetValue(histograms, "0", 0 :: uint64);
+    uint64[[1]] cells_res = tdbVmapGetValue(cells_vmap, "0", 0 :: uint64);
+    print(arrayToString(cells_res), " Histogram");
     printVector(declassify(res));
+    print("\n");
     res = tdbVmapGetValue(histograms, "1", 0 :: uint64);
+    cells_res = tdbVmapGetValue(cells_vmap, "1", 0 :: uint64);
+    print(arrayToString(cells_res), " Histogram");
     printVector(declassify(res));
+    print("\n");
     res = tdbVmapGetValue(histograms, "2", 0 :: uint64);
+    cells_res = tdbVmapGetValue(cells_vmap, "2", 0 :: uint64);
+    print(arrayToString(cells_res), " Histogram");
     printVector(declassify(res));
+    print("\n");
 
     /* Test multiple_histograms with imported data */
     uint64 attributes_vmap2 = tdbVmapNew();
@@ -215,10 +230,23 @@ void main() {
     print("Computing histograms");
     uint64 histograms2 = multiple_histograms(imported_array, 1::uint64, attributes_vmap2, cells_vmap2, imported_mins, imported_maxs);
     pd_shared3p uint64[[1]] res1 = tdbVmapGetValue(histograms2, "0", 0 :: uint64);
+    uint64[[1]] cells_res1 = tdbVmapGetValue(cells_vmap2, "0", 0 :: uint64);
+    print(arrayToString(cells_res1), " Histogram");
     printVector(declassify(res1));
+    print("\n");
+
 
     string ds = "DS1"; // Data source name
     string tbl = "centricity_identified-100_edited"; // Table name
+
+    /* Test multiple_histograms with imported data */
+    uint64 attributes_vmap3 = tdbVmapNew();
+    uint64[[1]] value3 = {11,12};
+    tdbVmapAddValue(attributes_vmap3, "0", value3);
+
+    uint64 cells_vmap3 = tdbVmapNew();
+    value3 = {3,5};
+    tdbVmapAddValue(cells_vmap3, "0", value3);
 
     // Open database before running operations on it
     tdbOpenConnection(ds);
@@ -233,9 +261,12 @@ void main() {
     }
 
     print("Computing histograms");
-    uint64 histograms3 = multiple_histograms(ds, tbl, 1::uint64, attributes_vmap2, cells_vmap2, mins4, maxs4);
+    uint64 histograms3 = multiple_histograms(ds, tbl, 1::uint64, attributes_vmap3, cells_vmap3, mins4, maxs4);
     pd_shared3p uint64[[1]] res2 = tdbVmapGetValue(histograms3, "0", 0 :: uint64);
+    uint64[[1]] cells_res2 = tdbVmapGetValue(cells_vmap3, "0", 0 :: uint64);
+    print(arrayToString(cells_res2), " Histogram");
     printVector(declassify(res2));
+    print("\n");
 
     tdbCloseConnection(ds);
 }
