@@ -11,11 +11,11 @@ with open('out.txt', 'r') as results:
             y = dimensions[1]
             if len(dimensions) == 2 and 1 in dimensions:
                 data = [go.Bar(y=histogram)]
-                plotly.offline.plot(data, filename='1D_Histogram'+str(ai))
+                plotly.offline.plot(data, filename='visuals/1D_Histogram'+str(ai))
             elif len(dimensions) == 2 and 1 not in dimensions:
                 sublists = [histogram[i:i+y] for i in xrange(0, len(histogram), y)]
                 trace = go.Heatmap(z=sublists)
                 data=[trace]
-                plotly.offline.plot(data, filename='2D_Histogram'+str(ai))
+                plotly.offline.plot(data, filename='visuals/2D_Histogram'+str(ai))
             ai += 1
 
