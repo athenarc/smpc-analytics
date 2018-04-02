@@ -52,17 +52,19 @@ def main():
                         attribute_counter[attribute] += 1
                         mapped_values[value] = new_value
                     else:
-                        minimum =  attribute_min[attribute]
-                        width = (attribute_max[attribute] - minimum) / CELLS
-                        new_value = int((value - minimum) / width)
-                        if new_value == CELLS:
-                            new_value -= 1
-                        start = minimum + new_value*width
-                        # print('[' + str(start) + ', ' + str(start+width) + ')')
-                        # print(new_value)
-                        # mapped_values[value] = new_value
-                        mapped_values['[' + str(start) + ', ' + str(start+width) + ')'] = new_value
-
+                        if len(sys.argv) > 2 and sys.argv[2] == '--id3':
+                            minimum =  attribute_min[attribute]
+                            width = (attribute_max[attribute] - minimum) / CELLS
+                            new_value = int((value - minimum) / width)
+                            if new_value == CELLS:
+                                new_value -= 1
+                            start = minimum + new_value*width
+                            # print('[' + str(start) + ', ' + str(start+width) + ')')
+                            # print(new_value)
+                            # mapped_values[value] = new_value
+                            mapped_values['[' + str(start) + ', ' + str(start+width) + ')'] = new_value
+                        else:
+                            new_value = value
                     row[attribute] = new_value
 
             attribute_map[attribute] = mapped_values
