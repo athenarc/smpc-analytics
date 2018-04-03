@@ -37,7 +37,7 @@ def main():
         sys.exit(1)
 
     number_of_histograms = 1
-    j=configuration = json.load(open(configuration))
+    configuration = json.load(open(configuration))
     df=pd.read_csv(DATASET,sep=',')
     if isinstance(configuration['attributes'], list): # Multiple attributes
         attribute_indexes = [df.columns.get_loc(attribute) for attribute in configuration['attributes'] ]
