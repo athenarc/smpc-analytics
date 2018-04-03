@@ -39,7 +39,10 @@ def main():
     number_of_histograms = 1
     j=configuration = json.load(open(configuration))
     df=pd.read_csv(DATASET,sep=',')
-    attribute_indexes = [df.columns.get_loc(attribute) for attribute in configuration['attributes'] ]
+    if isinstance(configuration['attributes'], list): # Multiple attributes
+        attribute_indexes = [df.columns.get_loc(attribute) for attribute in configuration['attributes'] ]
+    else: # Single attribute
+        attribute_indexes = [df.columns.get_loc(configuration['attributes'])]
     attributes_vmap = '{'+ ', '.join([str(x) for x in attribute_indexes]) +'}'
     main_f += '''
     uint64[[1]] vector_value;
