@@ -63,7 +63,9 @@ dkms.conf
 # Visuals
 visuals/
 
+# Auto generated files
 *data_input.sc
+histogram_main.sc
 
 #NodeJS
 
