@@ -7,7 +7,9 @@ var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 var frontend = __dirname + "/frontend/";
+var visuals = __dirname + "/visuals/";
 global.__basedir = __dirname;
+
 app.get('/', (req, res) => res.sendFile(path.join(frontend + 'index.html')));
 
 app.post('/histogram', function(req, res) {
@@ -66,7 +68,11 @@ app.post('/histogram', function(req, res) {
         console.log(`stdout: ${stdout}`);
         console.log(`stderr: ${stderr}`);
     });
-    res.end()
+    if (Array.isArray(req.body['attributes']) && req.body['attributes'].length == 2){
+        res.sendFile(path.join(visuals + '2D_Histogram1.html'));
+    } else {
+        res.sendFile(path.join(visuals + '1D_Histogram1.html'));
+    }
 });
 
 
