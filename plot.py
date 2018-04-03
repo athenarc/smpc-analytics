@@ -63,11 +63,10 @@ with open('out.txt', 'r') as results:
                     figure = go.Figure(data=data, layout=layout)
                 else:
                     figure = go.Figure(data=data)
-                plotly.offline.plot(figure, filename='visuals/1D_Histogram'+str(ai))
+                plotly.offline.plot(figure, filename='web/visuals/1D_Histogram'+str(ai), auto_open = False)
             elif len(dimensions) == 2 and 1 not in dimensions:
                 y = dimensions[1]
                 sublists = [histogram[i:i+y] for i in xrange(0, len(histogram), y)]
-                print(sublists)
                 trace = go.Heatmap(z=sublists)
                 data = [trace]
                 if isinstance(configuration['attributes'], list) and len(configuration['attributes']) == 2:
@@ -93,6 +92,6 @@ with open('out.txt', 'r') as results:
                     figure = go.Figure(data=data, layout=layout)
                 else:
                     figure = go.Figure(data=data)
-                plotly.offline.plot(figure, filename='visuals/2D_Histogram'+str(ai))
+                plotly.offline.plot(figure, filename='web/visuals/2D_Histogram'+str(ai), auto_open = False)
             ai += 1
 
