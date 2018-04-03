@@ -5,6 +5,7 @@ const fs = require('fs');
 var path = require('path');
 var bodyParser = require('body-parser');
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'frontend'))) // public/static files
 app.use(bodyParser.urlencoded({ extended: true }));
 var frontend = __dirname + "/frontend/";
 var visuals = __dirname + "/visuals/";
