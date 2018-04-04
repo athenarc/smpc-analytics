@@ -4,6 +4,7 @@ import plotly
 import plotly.graph_objs as go
 import json
 import pandas as pd
+import numpy as np
 
 configuration = json.load(open('configuration.json'))
 
@@ -96,6 +97,53 @@ with open('out.txt', 'r') as results:
                 else:
                     figure = go.Figure(data=data)
                 filename = 'web/visuals/2D_Histogram'+'_'+str(os.getpid())+'_'+str(ai)+'.html'
+                plotly.offline.plot(figure, filename=filename, auto_open = False)
+                print('/'.join(filename.split('/')[2:]))
+            elif len(dimensions) == 3 and 1 not in dimensions:
+                y = dimensions[1]
+                z = dimensions[2]
+                data = []
+                sublists = [histogram[i:i+x*y] for i in xrange(0, len(histogram), x*y)]
+                for i in range(z):
+                    array = [i]*(x*y)
+                    array = [array[i:i+x] for j in xrange(0, len(array), x)]
+                    colors = sublists[i]
+                    colors = [colors[i:i+x] for j in xrange(0, len(colors), x)]
+                    text = [map(str,j) for j in colors]
+                    data.append(go.Surface(z = array, surfacecolor = colors, text = text))
+                if isinstance(configuration['attributes'], list) and len(configuration['attributes']) == 3:
+                    attribute_indexes = [df.columns.get_loc(attribute) for attribute in configuration['attributes'] ]
+                    attribute_mins = [mins[i] for i in attribute_indexes]
+                    attribute_maxs = [maxs[i] for i in attribute_indexes]
+                    cell_widths = [(attribute_maxs[i] - attribute_mins[i]) / dimensions[i] for i in range(len(dimensions))]
+                    layout = go.Layout(
+                        scene = dict(
+                            zaxis=dict(
+                                # type = 'category',
+                                tickvals = list(range(dimensions[2])),
+                                ticktext = compute_axis_labels(attribute_mins[2], attribute_maxs[2], cell_widths[2], dimensions[2]),
+                                title = configuration['attributes'][2]
+                            ),
+                            yaxis=dict(
+                                # type = 'category',
+                                tickangle = -45,
+                                tickvals = list(range(dimensions[1])),
+                                ticktext = compute_axis_labels(attribute_mins[1], attribute_maxs[1], cell_widths[1], dimensions[1]),
+                                title = configuration['attributes'][1]
+                            ),
+                            xaxis=dict(
+                                # type = 'category',
+                                tickangle = -45,
+                                tickvals = list(range(dimensions[0])),
+                                ticktext = compute_axis_labels(attribute_mins[0], attribute_maxs[0], cell_widths[0], dimensions[0]),
+                                title = configuration['attributes'][0]
+                            )
+                        )
+                    )
+                    figure = go.Figure(data=data, layout=layout)
+                else:
+                    figure = go.Figure(data=data)
+                filename = 'web/visuals/3D_Histogram'+'_'+str(os.getpid())+'_'+str(ai)+'.html'
                 plotly.offline.plot(figure, filename=filename, auto_open = False)
                 print('/'.join(filename.split('/')[2:]))
             ai += 1
