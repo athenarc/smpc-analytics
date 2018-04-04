@@ -21,59 +21,50 @@ app.post('/histogram', function(req, res) {
             return console.log(err);
         }
 
-        console.log("The file was saved!");
     });
+    console.log("[NODE] Configuration file was saved.");
     execSync('python main_generator.py configuration.json', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
         if (err) {
             console.error(`exec error: ${err}`);
             return;
         }
-        console.log(`stdout: ${stdout}`);
-        console.log(`stderr: ${stderr}`);
     });
-    fs.stat(parent+'/.histogram_main.sb.src', function (err, stats) {
-        console.log(stats);//here we got all information of file in stats variable
-
-        if (err) {
-            return console.error(err);
+    console.log("[NODE] Main generated.");
+    fs.existsSync(parent+'/.histogram_main.sb.src', function(exists) {
+        if(exists){
+            fs.unlinkSync(parent+'/.histogram_main.sb.src', function(err){
+                if(err){
+                    return console.log(err);
+                }
+                console.log('file deleted successfully');
+            });
         }
-
-        fs.unlink(parent+'/.histogram_main.sb.src', function(err){
-            if(err){
-                return console.log(err);
-            }
-            console.log('file deleted successfully');
-        });
     });
+    console.log("[NODE] Old .histogram_main.sb.src deleted.");
     execSync('./compile.sh histogram_main.sc', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
         if (err) {
             console.error(`exec error: ${err}`);
             return;
         }
-        console.log(`stdout: ${stdout}`);
-        console.log(`stderr: ${stderr}`);
     });
+    console.log("[NODE] Program compiled.");
     execSync('./run.sh histogram_main.sb 2> out.txt', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
         if (err) {
             console.error(`exec error: ${err}`);
             return;
         }
-        console.log(`stdout: ${stdout}`);
-        console.log(`stderr: ${stderr}`);
     });
-    execSync('python plot.py', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
+    console.log("[NODE] Program executed.");
+    var result = execSync('python plot.py', {cwd: parent}, (err, stdout, stderr) => {
         if (err) {
             console.error(`exec error: ${err}`);
             return;
         }
-        console.log(`stdout: ${stdout}`);
-        console.log(`stderr: ${stderr}`);
     });
-    if (Array.isArray(req.body['attributes']) && req.body['attributes'].length == 2){
-        res.sendFile(path.join(visuals + '2D_Histogram1.html'));
-    } else {
-        res.sendFile(path.join(visuals + '1D_Histogram1.html'));
-    }
+    console.log("[NODE] Plotting done.");
+    var graph_name = result.toString();
+    graph_name = graph_name.slice(0,-1);
+    res.sendFile(path.join(visuals +graph_name));
 });
 
 

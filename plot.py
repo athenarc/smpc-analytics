@@ -1,3 +1,4 @@
+import os
 import sys
 import plotly
 import plotly.graph_objs as go
@@ -63,7 +64,9 @@ with open('out.txt', 'r') as results:
                     figure = go.Figure(data=data, layout=layout)
                 else:
                     figure = go.Figure(data=data)
-                plotly.offline.plot(figure, filename='web/visuals/1D_Histogram'+str(ai), auto_open = False)
+                filename =  'web/visuals/1D_Histogram'+'_'+str(os.getpid())+'_'+str(ai)+'.html'
+                plotly.offline.plot(figure, filename=filename, auto_open = False)
+                print('/'.join(filename.split('/')[2:]))
             elif len(dimensions) == 2 and 1 not in dimensions:
                 y = dimensions[1]
                 sublists = [histogram[i:i+y] for i in xrange(0, len(histogram), y)]
@@ -92,6 +95,8 @@ with open('out.txt', 'r') as results:
                     figure = go.Figure(data=data, layout=layout)
                 else:
                     figure = go.Figure(data=data)
-                plotly.offline.plot(figure, filename='web/visuals/2D_Histogram'+str(ai), auto_open = False)
+                filename = 'web/visuals/2D_Histogram'+'_'+str(os.getpid())+'_'+str(ai)+'.html'
+                plotly.offline.plot(figure, filename=filename, auto_open = False)
+                print('/'.join(filename.split('/')[2:]))
             ai += 1
 
