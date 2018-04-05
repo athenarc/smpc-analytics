@@ -14,52 +14,27 @@
     </div>
     
     <div class="form-check">
-    <form action="http://127.0.0.1:3000/histogram" method="post">
-      <p>
-        <table id="myTable">
-          <tr>
-            <td scope="col">
-              <div class="checkbox">
-                <label>
-                  <input type="checkbox" name="attributes" value="Age"> Age
-                </label>
-              </div>
-            </td>
-            <td scope="col">
-              <input type="number" id="AgeCells" name="cells" min="1" max="5" style="display:none;" class="answer_list" placeholder="3">
-            </td>
-          </tr>
-          <tr>
-              <td scope="col">
-                <div class="checkbox">
-                  <label>
-                    <input type="checkbox" name="attributes" value="Height"> Height
-                  </label>
-                </div>
-              </td>
-              <td scope="col">
-                <input type="number" id="HeightCells" name="cells" min="1" max="5" style="display:none;" class="answer_list" placeholder="3">
-              </td>
-          </tr>
-          <tr>
-              <td scope="col">
-                <div class="checkbox">
-                  <label>
-                    <input type="checkbox" name="attributes" value="Weight"> Weight
-                  </label>
-                </div>
-              </td>
-              <td scope="col">
-                <input type="number" id="WeightCells" name="cells" min="1" max="5" style="display:none;" class="answer_list" placeholder="3">
-              </td>
-          </tr>
-        </table>
-      </p>
-
-      <p>
-        <input type="submit" class="btn btn-info" value="Compute Histogram(s)">
-      </p>
-    </form>
+      <form action="http://127.0.0.1:3000/histogram" method="post">
+        <p>
+          <ul class="list-group">
+            <li class="list-group-item">
+              <input type="checkbox"> Age
+              <span style="float:right;"><input type="number" id="AgeCells" name="cells" min="1" max="15" style="display:none;right" class="answer_list" placeholder="3"></span>
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox"> Height &ensp;
+              <span style="float:right;"><input type="number" id="HeightCells" name="cells" min="1" max="15" style="display:none;" class="answer_list" placeholder="3"></span>
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox"> Weight &ensp;
+              <span style="float:right;"><input type="number" id="WeightCells" name="cells" min="1" max="15" style="display:none;" class="answer_list" placeholder="3"></span>
+            </li>
+          </ul>
+        </p>
+        <p>
+          <input type="submit" class="btn btn-info" value="Compute Histogram(s)">
+        </p>
+      </form>
     </div>
 
 </div>
