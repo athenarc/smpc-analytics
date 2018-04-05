@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Histogram Secure Computations</title>
+  <title>Histogram Secure Computations</title>
 
-<link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 <body>
-  <div class="all-wrap">
-    <h1>Histogram Secure Computations</h1>
+<div class="container">
+    <div class="jumbotron">
+      <h1>Histogram Secure Computations</h1>
 
-    <p>Select attrubutes to create histogram</p>
-
+      <p>Select attrubutes to create histogram</p>
+    </div>
+    
+    <div class="form-check">
     <form action="http://127.0.0.1:3000/histogram" method="post">
       <p>
         <table id="myTable">
           <tr>
             <td scope="col">
-                <input type="checkbox" name="attributes" value="Age">Age
+                <input type="checkbox" name="attributes" value="Age"> Age
             </td>
             <td scope="col">
               <input type="number" id="AgeCells" name="cells" min="1" max="5" style="display:none;" class="answer_list" placeholder="3">
@@ -24,7 +27,7 @@
           </tr>
           <tr>
               <td scope="col">
-                  <input type="checkbox" name="attributes" value="Height">Height
+                  <input type="checkbox" name="attributes" value="Height"> Height
               </td>
               <td scope="col">
                 <input type="number" id="HeightCells" name="cells" min="1" max="5" style="display:none;" class="answer_list" placeholder="3">
@@ -32,7 +35,7 @@
           </tr>
           <tr>
               <td scope="col">
-                  <input type="checkbox" name="attributes" value="Weight">Weight
+                  <input type="checkbox" name="attributes" value="Weight"> Weight
               </td>
               <td scope="col">
                 <input type="number" id="WeightCells" name="cells" min="1" max="5" style="display:none;" class="answer_list" placeholder="3">
@@ -45,11 +48,16 @@
         <input type="submit">
       </p>
     </form>
+    </div>
 
-  </div>
+</div>
 </body>
 
+<!--  scripts -->
+
 <script src='./logic.js'></script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
 </html>
 
