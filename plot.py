@@ -104,13 +104,21 @@ with open('out.txt', 'r') as results:
                 z = dimensions[2]
                 data = []
                 sublists = [histogram[i:i+x*y] for i in xrange(0, len(histogram), x*y)]
+
                 for i in range(z):
                     array = [i]*(x*y)
                     array = [array[i:i+x] for j in xrange(0, len(array), x)]
                     colors = sublists[i]
                     colors = [colors[i:i+x] for j in xrange(0, len(colors), x)]
                     text = [map(str,j) for j in colors]
-                    data.append(go.Surface(z = array, surfacecolor = colors, text = text))
+                    data.append(go.Surface(z = array,
+                                            surfacecolor = colors,
+                                            text = text,
+                                            colorscale = [[0, 'rgb('+ ','.join(map(str,list(np.random.choice(range(256), size=3)))) +')'], [1, 'rgb('+ ','.join(map(str,list(np.random.choice(range(256), size=3)))) +')']],
+                                            colorbar = dict(
+                                                x = 1+0.05*i
+                                                )
+                                            ))
                 if isinstance(configuration['attributes'], list) and len(configuration['attributes']) == 3:
                     attribute_indexes = [df.columns.get_loc(attribute) for attribute in configuration['attributes'] ]
                     attribute_mins = [mins[i] for i in attribute_indexes]
