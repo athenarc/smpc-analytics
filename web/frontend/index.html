@@ -19,7 +19,11 @@
         <table id="myTable">
           <tr>
             <td scope="col">
-                <input type="checkbox" name="attributes" value="Age"> Age
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="attributes" value="Age"> Age
+                </label>
+              </div>
             </td>
             <td scope="col">
               <input type="number" id="AgeCells" name="cells" min="1" max="5" style="display:none;" class="answer_list" placeholder="3">
@@ -27,7 +31,11 @@
           </tr>
           <tr>
               <td scope="col">
-                  <input type="checkbox" name="attributes" value="Height"> Height
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" name="attributes" value="Height"> Height
+                  </label>
+                </div>
               </td>
               <td scope="col">
                 <input type="number" id="HeightCells" name="cells" min="1" max="5" style="display:none;" class="answer_list" placeholder="3">
@@ -35,7 +43,11 @@
           </tr>
           <tr>
               <td scope="col">
-                  <input type="checkbox" name="attributes" value="Weight"> Weight
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" name="attributes" value="Weight"> Weight
+                  </label>
+                </div>
               </td>
               <td scope="col">
                 <input type="number" id="WeightCells" name="cells" min="1" max="5" style="display:none;" class="answer_list" placeholder="3">
@@ -45,7 +57,7 @@
       </p>
 
       <p>
-        <input type="submit">
+        <input type="submit" class="btn btn-info" value="Compute Histogram(s)">
       </p>
     </form>
     </div>
