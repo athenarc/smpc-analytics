@@ -44,7 +44,9 @@ def main():
             for attribute in df.columns:
                 mapped_values = attribute_map[attribute]
                 value = row[attribute]
-                if value in mapped_values:
+                if str(value) == 'nan': # Missing value
+                    row[attribute] = 0
+                elif value in mapped_values:
                     row[attribute] = mapped_values[value]
                 else:
                     if str(df[attribute].dtype) == 'object':
@@ -59,9 +61,6 @@ def main():
                             if new_value == CELLS:
                                 new_value -= 1
                             start = minimum + new_value*width
-                            # print('[' + str(start) + ', ' + str(start+width) + ')')
-                            # print(new_value)
-                            # mapped_values[value] = new_value
                             mapped_values['[' + str(start) + ', ' + str(start+width) + ')'] = new_value
                         else:
                             new_value = value
