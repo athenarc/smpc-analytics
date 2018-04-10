@@ -7,7 +7,7 @@ import math
 if len(sys.argv) > 1:
     DATASET = sys.argv[1]
 else:
-    DATASET = 'syndata_upload_and_scaling_tests/centricity_identified_edited.csv'
+    DATASET = 'datasets/analysis_test_data/cvi_identified_edited.csv'
 
 OUTPUT = 'data_input.sc'
 ROW_LIMIT = 1000

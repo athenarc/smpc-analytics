@@ -31,7 +31,7 @@ def main():
         if len(sys.argv) > 2:
             DATASET = sys.argv[2]
         else:
-            DATASET = 'syndata_upload_and_scaling_tests/centricity_identified_filtered_edited.csv'
+            DATASET = 'datasets/analysis_test_data/cvi_identified.csv'
     else:
         print('No arguement provided')
         sys.exit(1)

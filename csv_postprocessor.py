@@ -12,7 +12,7 @@ if len(sys.argv) > 1:
     INITIAL_DATASET = sys.argv[2]
 else:
     ID3_RESULTS = 'syndata_upload_and_scaling_tests/id3.out'
-    INITIAL_DATASET = 'syndata_upload_and_scaling_tests/centricity_identified_filtered_edited.csv'
+    INITIAL_DATASET = 'datasets/analysis_test_data/cvi_identified_filtered_edited.csv'
 
 # Directory and name of json file
 DIRECTORY, INITIAL_BASENAME = os.path.split(INITIAL_DATASET)

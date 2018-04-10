@@ -11,7 +11,7 @@ from pprint import pprint
 if len(sys.argv) > 1:
     DATASET = sys.argv[1]
 else:
-    DATASET = 'syndata_upload_and_scaling_tests/centricity_identified_filtered_edited.csv'
+    DATASET = 'datasets/analysis_test_data/cvi_identified_filtered_edited.csv'
 
 OUTPUT = 'ID3/data_input.sc'
 DIRECTORY, BASENAME = os.path.split(DATASET)

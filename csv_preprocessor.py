@@ -10,7 +10,7 @@ import csv
 if len(sys.argv) > 1:
     DATASET = sys.argv[1]
 else:
-    DATASET = 'syndata_upload_and_scaling_tests/centricity_identified_filtered.csv'
+    DATASET = 'datasets/analysis_test_data/cvi_identified_filtered.csv'
 
 DIRECTORY, BASENAME = os.path.split(DATASET)
 BASENAME = os.path.splitext(BASENAME)[0]
