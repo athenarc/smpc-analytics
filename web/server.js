@@ -4,14 +4,19 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 var path = require('path');
 var bodyParser = require('body-parser');
+var parse = require('csv-parse')
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'frontend'))) // public/static files
 app.use(bodyParser.urlencoded({ extended: true }));
 var frontend = __dirname + "/frontend/";
 var visuals = __dirname + "/visuals/";
 global.__basedir = __dirname;
 
-app.get('/', (req, res) => res.sendFile(path.join(frontend + 'index.html')));
+app.get('/', function (req, res) {
+     // buildHtml(req);
+    res.sendFile(path.join(frontend + 'index.html'));
+});
+
+app.use(express.static(path.join(__dirname, 'frontend'))) // public/static files
 
 app.post('/histogram', function(req, res) {
     var parent = path.dirname(__basedir)
@@ -66,6 +71,47 @@ app.post('/histogram', function(req, res) {
     graph_name = graph_name.slice(0,-1);
     res.sendFile(path.join(visuals +graph_name));
 });
+
+
+function buildHtml(req) {
+    fs.readFile('cvi_summary.csv', function (err, fileData) {
+        var form = `
+<form action="/histogram" method="post">
+    <p>
+        <ul class="list-group">
+`;
+        parse(fileData, {columns: true, delimiter: ','}, function(err, rows) {
+            for (var i = 0; i < rows.length; i++) {
+                var field_name = rows[i]['Field']
+                form = form + `
+             <li class="list-group-item">
+                <input type="checkbox" name="attributes" value="`+ field_name +`"> ` + field_name + ` &ensp;
+                <span style="float:right;"><input type="number" id="`+ field_name +`Cells" name="cells" min="1" max="15" style="display:none;"></span>
+            </li>
+`;
+            }
+            form = form + `
+        </ul>
+    </p>
+    <p>
+        <input type="submit" class="btn btn-info" value="Compute Histogram(s)">
+    </p>
+</form>
+`;
+
+            fs.writeFile(frontend+'form.html', form, function(err) {
+                if(err) {
+                    return console.log(err);
+                }
+
+                console.log("[NODE] form.html saved.");
+            });
+
+        })
+    })
+};
+
+
 
 
 app.listen(3000, () => console.log('Example app listening on port 3000!'))
