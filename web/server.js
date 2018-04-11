@@ -1,5 +1,5 @@
-const express = require('express')
-const app = express()
+const express = require('express');
+const app = express();
 const { execSync } = require('child_process');
 const fs = require('fs');
 var path = require('path');
@@ -16,11 +16,13 @@ app.get('/', function (req, res) {
     res.sendFile(path.join(frontend + 'index.html'));
 });
 
-app.use(express.static(path.join(__dirname, 'frontend'))) // public/static files
+app.use(express.static(path.join(__dirname, 'frontend'))); // public/static files
+app.use("/visuals", express.static(__dirname + '/visuals'));
 
 app.post('/histogram', function(req, res) {
-    var parent = path.dirname(__basedir)
-    const content = JSON.stringify(req.body);
+    var parent = path.dirname(__basedir);
+    var content = JSON.stringify(req.body);
+    console.log(content);
     fs.writeFileSync(parent+'/configuration.json', content, 'utf8', function (err) {
         if (err) {
             return console.log(err);
@@ -69,7 +71,8 @@ app.post('/histogram', function(req, res) {
     console.log("[NODE] Plotting done.");
     var graph_name = result.toString();
     graph_name = graph_name.slice(0,-1);
-    res.sendFile(path.join(visuals +graph_name));
+    // res.sendFile(path.join(visuals + graph_name));
+    res.send('visuals/' + graph_name);
 });
 
 
