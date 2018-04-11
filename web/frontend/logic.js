@@ -1,10 +1,10 @@
-$(document).ready(function(){ 
+$(document).ready(function(){
 $('#btnAdd').click(function (e) {
     	var nextTab = $('#tabs li').length+1;
-  	
+
     	// create the tab
-    	$('<li class="nav-item"><a class="nav-link" href="#tab'+nextTab+'" id="tab'+nextTab+'-tab" data-toggle="tab">Tab '+nextTab+'</a></li>').appendTo('#tabs');
-    	
+    	$('<li class="nav-item"><a class="nav-link" href="#tab'+nextTab+'" id="tab'+nextTab+'-tab" data-toggle="tab">Histogram '+nextTab+'</a></li>').appendTo('#tabs');
+
     	// create the tab content
     	$('<div class="tab-pane fade" id="tab'+nextTab+'">'+`  <form action="/histogram" method="post" id="hist_`+nextTab+`">
           <p>
@@ -150,30 +150,34 @@ $('#btnAdd').click(function (e) {
             <input type="submit" class="btn btn-info" value="Compute Histogram(s)">
           </p>
         </form>`+'</div>').appendTo('.tab-content');
-    	
+
     	// make the new tab active
     	$('#tabs a:last').tab('show');
+        assignButtons();
   });
 });
 
-var checkboxes = document.querySelectorAll('input[type="checkbox"]');
-var cells = document.querySelectorAll('input[type="number"]');
+function assignButtons(){
+    var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    var cells = document.querySelectorAll('input[type="number"]');
 
-for (var i = 0; i < checkboxes.length; i++) {
-    var closureMaker = function(i) {
-        return function(event){
-            if(checkboxes[i].checked){
-                cells[i].style.display = "inline";
-                cells[i].value = "5";
-                cells[i].required = "true";
-            } else {
-                cells[i].style.display = "none";
-                cells[i].value = "";
-                cells[i].required = "false";
-            }
+    for (var i = 0; i < checkboxes.length; i++) {
+        console.log(i);
+        var closureMaker = function(i) {
+            return function(event){
+                if(checkboxes[i].checked){
+                    cells[i].style.display = "inline";
+                    cells[i].value = "5";
+                    cells[i].required = "true";
+                } else {
+                    cells[i].style.display = "none";
+                    cells[i].value = "";
+                    cells[i].required = "false";
+                }
+            };
         };
-    };
-    var closure = closureMaker( i );
-    checkboxes[i].addEventListener('click', closure, false);
+        var closure = closureMaker( i );
+        checkboxes[i].addEventListener('click', closure, false);
+    }
 }
-
+assignButtons();
