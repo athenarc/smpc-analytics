@@ -154,6 +154,7 @@ $('#btnAdd').click(function (e) {
     	// make the new tab active
     	$('#tabs a:last').tab('show');
         assignButtons();
+        ajaxCall();
   });
 });
 
@@ -162,7 +163,6 @@ function assignButtons(){
     var cells = document.querySelectorAll('input[type="number"]');
 
     for (var i = 0; i < checkboxes.length; i++) {
-        console.log(i);
         var closureMaker = function(i) {
             return function(event){
                 if(checkboxes[i].checked){
@@ -181,3 +181,17 @@ function assignButtons(){
     }
 }
 assignButtons();
+
+ajaxCall = function(){
+    var forms = document.getElementsByTagName("FORM");
+    for (var i=0; i<forms.length; i++){
+        var formId = forms[i].id;
+        var tabid = forms[i].parentElement.id;
+        $('#'+formId).ajaxForm({
+            success : function (response) {
+                document.getElementById(tabid).innerHTML = '<iframe width="900" height="800" frameborder="0" scrolling="no" src="' + response+ '"></iframe>';
+            }
+        });
+    }
+};
+ajaxCall();

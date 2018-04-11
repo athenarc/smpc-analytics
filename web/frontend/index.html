@@ -3,19 +3,8 @@
 <head>
   <title>Histogram Secure Computations</title>
   <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js" integrity="sha384-FzT3vTVGXqf7wRfy8k4BiyzvbNfeYjK+frTVqZeNDFl8woCbF0CYG6g2fMEFFo/i" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js" integrity="sha384-FzT3vTVGXqf7wRfy8k4BiyzvbNfeYjK+frTVqZeNDFl8woCbF0CYG6g2fMEFFo/i" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-
-  <script>
-    $(function() {
-        $('#hist_1').ajaxForm({
-            success : function (response) {
-                document.getElementById("tab1").innerHTML = '<iframe width="900" height="800" frameborder="0" scrolling="no" src="' + response+ '"></iframe>';
-            }
-        });
-    });
-
-   </script>
 
 </head>
 <body>
@@ -26,7 +15,6 @@
       <p>Select attributes for histogram creation</p>
     </div>
 
-    <!-- <iframe width="900" height="800" frameborder="0" scrolling="no" src="./2D_Histogram_9028_1.html"></iframe> -->
 
     <div class="well">
       <a href="#" id="btnAdd"><input type="submit" class="btn btn-info" value="Add Histogram" id="tabButton"></input></a>
