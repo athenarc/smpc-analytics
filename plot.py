@@ -6,14 +6,15 @@ import json
 import pandas as pd
 import numpy as np
 
-configuration = json.load(open('configuration.json'))
+req_counter = sys.argv[1]
+configuration = json.load(open('configuration_' + req_counter + '.json'))
 
 mins = []
 maxs = []
 
 
-if len(sys.argv) > 1:
-    DATASET = sys.argv[1]
+if len(sys.argv) > 2:
+    DATASET = sys.argv[2]
 else:
     DATASET = 'datasets/analysis_test_data/cvi_identified.csv'
 
@@ -38,7 +39,7 @@ with open('data_input.sc', 'r') as data_input: # Temporary solution
     df = pd.read_csv(DATASET,sep=',')
 
 
-with open('out.txt', 'r') as results:
+with open('out_' + req_counter + '.txt', 'r') as results:
     ai = 1
     for line in results:
         if line.startswith('{') and 'Histogram' in line:

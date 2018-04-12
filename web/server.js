@@ -32,16 +32,16 @@ app.post('/histogram', function(req, res) {
         }
 
     });
-    console.log("[NODE] Configuration file was saved.");
-    
+    console.log("[NODE] Configuration file was saved.\n");
+
     execSync('python main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
         if (err) {
             console.error(`exec error: ${err}`);
             return;
         }
     });
-    console.log("[NODE] Main generated.");
-    
+    console.log("[NODE] Main generated.\n");
+
     fs.existsSync(parent+'/.histogram_main_' + req_counter + '.sb.src', function(exists) {
         if(exists){
             fs.unlinkSync(parent+'/.histogram_main_' + req_counter + '.sb.src', function(err){
@@ -52,29 +52,32 @@ app.post('/histogram', function(req, res) {
             });
         }
     });
-    console.log("[NODE] Old .histogram_main.sb.src deleted.");
-    
+    console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
+
     execSync('./compile.sh histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
         if (err) {
             console.error(`exec error: ${err}`);
             return;
         }
     });
-    console.log("[NODE] Program compiled.");
-    execSync('./run.sh histogram_main_' + req_counter + '.sb 2> out.txt', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
+    console.log("[NODE] Program compiled.\n");
+
+    execSync('./run.sh histogram_main_' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
         if (err) {
             console.error(`exec error: ${err}`);
             return;
         }
     });
-    console.log("[NODE] Program executed.");
-    var result = execSync('python plot.py', {cwd: parent}, (err, stdout, stderr) => {
+    console.log("[NODE] Program executed.\n");
+
+    var result = execSync('python plot.py ' + req_counter, {cwd: parent}, (err, stdout, stderr) => {
         if (err) {
             console.error(`exec error: ${err}`);
             return;
         }
     });
-    console.log("[NODE] Plotting done.");
+    console.log("[NODE] Plotting done.\n");
+
     var graph_name = result.toString();
     graph_name = graph_name.slice(0,-1);
     // res.sendFile(path.join(visuals + graph_name));
