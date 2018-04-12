@@ -174,6 +174,7 @@ function assignButtons(){
                     cells[i].style.display = "inline";
                     cells[i].value = "5";
                     cells[i].required = "true";
+                    cells[i].disabled = false;
                 } else {
                     cells[i].style.display = "none";
                     cells[i].value = "";
