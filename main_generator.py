@@ -35,7 +35,9 @@ def main():
     else:
         print('No arguement provided')
         sys.exit(1)
-
+    
+    main_counter = configuration[14:-5]
+    
     number_of_histograms = 1
     configuration = json.load(open(configuration))
     df=pd.read_csv(DATASET,sep=',')
@@ -72,7 +74,7 @@ def main():
     print("\\n");
 }
     '''
-    with open('histogram_main.sc', 'w') as output:
+    with open('histogram_main_' + main_counter + '.sc', 'w') as output:
         output.write(imports)
         output.write(main_f)
 

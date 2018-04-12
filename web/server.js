@@ -19,27 +19,32 @@ app.get('/', function (req, res) {
 app.use(express.static(path.join(__dirname, 'frontend'))); // public/static files
 app.use("/visuals", express.static(__dirname + '/visuals'));
 
+var req_counter = 0; // count the requests and give each new request a new ID
+
 app.post('/histogram', function(req, res) {
     var parent = path.dirname(__basedir);
     var content = JSON.stringify(req.body);
     console.log(content);
-    fs.writeFileSync(parent+'/configuration.json', content, 'utf8', function (err) {
+    req_counter++;
+    fs.writeFileSync(parent+'/configuration_' + req_counter + '.json', content, 'utf8', function (err) {
         if (err) {
             return console.log(err);
         }
 
     });
     console.log("[NODE] Configuration file was saved.");
-    execSync('python main_generator.py configuration.json', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
+    
+    execSync('python main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
         if (err) {
             console.error(`exec error: ${err}`);
             return;
         }
     });
     console.log("[NODE] Main generated.");
-    fs.existsSync(parent+'/.histogram_main.sb.src', function(exists) {
+    
+    fs.existsSync(parent+'/.histogram_main_' + req_counter + '.sb.src', function(exists) {
         if(exists){
-            fs.unlinkSync(parent+'/.histogram_main.sb.src', function(err){
+            fs.unlinkSync(parent+'/.histogram_main_' + req_counter + '.sb.src', function(err){
                 if(err){
                     return console.log(err);
                 }
@@ -48,14 +53,15 @@ app.post('/histogram', function(req, res) {
         }
     });
     console.log("[NODE] Old .histogram_main.sb.src deleted.");
-    execSync('./compile.sh histogram_main.sc', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
+    
+    execSync('./compile.sh histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
         if (err) {
             console.error(`exec error: ${err}`);
             return;
         }
     });
     console.log("[NODE] Program compiled.");
-    execSync('./run.sh histogram_main.sb 2> out.txt', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
+    execSync('./run.sh histogram_main_' + req_counter + '.sb 2> out.txt', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
         if (err) {
             console.error(`exec error: ${err}`);
             return;
