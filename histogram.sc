@@ -109,6 +109,15 @@ uint64 multiple_histograms(D float64[[2]] arr, uint64 number_of_histograms, uint
     return histograms;
 }
 
+/**
+ * public datasource: name of the datasource
+ * public table: name of the table
+ * public number_of_histograms: the number of histograms to be computed
+ * public attributes_vmap: list(vmap) of attributes of the table, for which we compute their histograms (column indexes)
+ * public cells_vmap: list(vmap) of numbers of cells for each histogram
+ * private mins: list of min values for each attribute
+ * private maxs: list of max values for each attribute
+**/
 template <domain D>
 uint64 multiple_histograms(string datasource, string table, uint64 number_of_histograms, uint64 attributes_vmap, uint64 cells_vmap, D float64[[1]] mins, D float64[[1]] maxs) {
     uint64 histograms = tdbVmapNew();                                           // map of all histograms to compute; histograms[0] contains histogram 0, etc
@@ -138,6 +147,86 @@ uint64 multiple_histograms(string datasource, string table, uint64 number_of_his
         tdbVmapAddValue(histograms, arrayToString(h), histogram);
     }
     return histograms;
+}
+
+/**
+ * public datasource: name of the datasource
+ * public table: name of the table
+ * public number_of_histograms: the number of histograms to be computed
+ * public attributes_vmap: attributes of the table, for which we compute their histograms (column indexes)
+ * public cells_vmap: list of numbers of cells for each histogram
+ * private mins: list of min values for each attribute
+ * private maxs: list of max values for each attribute
+ * public bool_op: boolean operator appllied between all constraints
+ * public constraint_attributes: list of attributes
+ * public maxs: list of max values for each attribute
+ * public maxs: list of max values for each attribute
+**/
+template <domain D>
+uint64 multiple_histograms(string datasource, string table, uint64 number_of_histograms, uint64 attributes_vmap, uint64 cells_vmap, D float64[[1]] mins, D float64[[1]] maxs, string bool_op, uint64[[1]] constraint_attributes, uint64[[1]] constraint_operators, float64[[1]] constraint_values) {
+    uint64 histograms = tdbVmapNew();                                           // map of all histograms to compute; histograms[0] contains histogram 0, etc
+    uint64 N = tdbGetRowCount(datasource, table);                               // number of tuples
+    D uint64[[1]] constraint_map(N) = constraint_map(datasource, table, bool_op,  constraint_attributes, constraint_operators, constraint_values);
+    for (uint64 h = 0; h < number_of_histograms; h++) {                         // for each histogram
+        D uint64[[1]] positions(N);
+        uint64[[1]] cells = tdbVmapGetValue(cells_vmap, arrayToString(h), 0 :: uint64);
+        uint64 requested_attributes = size(cells);                                 // amount of attributes wanted for this histogram
+
+        for (uint64 a = 0; a < requested_attributes; a++) {                        // for each attribute
+            uint64 number_of_cells = tdbVmapGetValue(cells_vmap, arrayToString(h), 0 :: uint64)[a];
+            uint64 attribute = tdbVmapGetValue(attributes_vmap, arrayToString(h), 0 :: uint64)[a];
+            D float64 max = maxs[attribute];
+            D float64 min = mins[attribute];
+            D float64 width = (((float64) (max - min)) / (float64) number_of_cells);
+            D float64[[1]] column = tdbReadColumn(datasource, table, attribute);
+            D uint64[[1]] cellmap = (uint64) ((float64) (column - min) / width);
+
+            cellmap -= (uint64)(cellmap == cells[a]);
+            uint64 prod = product(cells[a+1:]);
+            positions += cellmap * prod;
+        }
+        uint64 length = product(cells);
+        D uint64[[1]] histogram(length);
+        for (uint64 j = 0; j < length ; j++) {                      // for each cell of histogram h
+            D bool[[1]] eq = (bool)((uint64)(positions == j) * constraint_map);
+            histogram[j] = sum(eq);
+        }
+        tdbVmapAddValue(histograms, arrayToString(h), histogram);
+    }
+    return histograms;
+}
+
+template<domain D>
+D uint64[[1]] constraint_map(string datasource, string table, string bool_op, uint64[[1]] constraint_attributes, uint64[[1]] constraint_operators, float64[[1]] constraint_values){
+    uint64 N = tdbGetRowCount(datasource, table);                               // number of tuples
+    D uint64[[1]] constraint_map(N);
+    if (bool_op == "AND"){
+        constraint_map = 1;
+    } else if(bool_op == "OR") {
+        constraint_map = 0;
+    } else if(bool_op == "XOR") {
+        constraint_map = 0;
+    }
+    for (uint c = 0; c < size(constraint_attributes); c++) {
+        pd_shared3p float64[[1]] constraint_attribute = tdbReadColumn(datasource, table, constraint_attributes[c]);
+        pd_shared3p float64 constraint_value = constraint_values[c];
+        pd_shared3p uint64[[1]] eq;
+        if (constraint_operators[c] == 0) {
+            eq = (uint64)(constraint_attribute > constraint_value);
+        } else if (constraint_operators[c] == 1) {
+            eq = (uint64)(constraint_attribute < constraint_value);
+        } else if (constraint_operators[c] == 2) {
+            eq = (uint64)(constraint_attribute == constraint_value);
+        }
+        if (bool_op == "AND"){
+            constraint_map *= eq;
+        } else if(bool_op == "OR") {
+            constraint_map += eq;
+        } else if(bool_op == "XOR") {
+            constraint_map = constraint_map * (1 - eq) + (1 - constraint_map) * eq;
+        }
+    }
+    return constraint_map;
 }
 
 
@@ -266,6 +355,29 @@ uint64 multiple_histograms(string datasource, string table, uint64 number_of_his
 //     uint64[[1]] cells_res2 = tdbVmapGetValue(cells_vmap3, "0", 0 :: uint64);
 //     print(arrayToString(cells_res2), " Histogram");
 //     printVector(declassify(res2));
+//     print("\n");
+//
+//     /* Test multiple_histograms with imported data along with constraints*/
+//
+//     uint64 attributes_vmap4 = tdbVmapNew();
+//     uint64[[1]] value4 = {13, 14};
+//     tdbVmapAddValue(attributes_vmap4, "0", value3);
+//
+//     uint64 cells_vmap4 = tdbVmapNew();
+//     value4 = {3,5};
+//     tdbVmapAddValue(cells_vmap4, "0", value3);
+//
+//     string bool_op = "AND"; // 0:"AND" 1:"OR" 2:"XOR"
+//
+//     uint64[[1]] constraint_attributes = {25, 25, 26, 26};
+//     uint64[[1]] constraint_operators = {0, 1, 0, 1}; //0:">" 1:"<" 2:"=="
+//     float64[[1]] constraint_values = {95.85, 105.35, 59.46, 61.55};
+//
+//     uint64 histograms4 = multiple_histograms(ds, tbl, 2::uint64, attributes_vmap4, cells_vmap4, mins4, maxs4, bool_op, constraint_attributes, constraint_operators, constraint_values);
+//     pd_shared3p uint64[[1]] res3 = tdbVmapGetValue(histograms4, "0", 0 :: uint64);
+//     uint64[[1]] cells_res3 = tdbVmapGetValue(cells_vmap4, "0", 0 :: uint64);
+//     print(arrayToString(cells_res3), " Histogram");
+//     printVector(declassify(res3));
 //     print("\n");
 //
 //     tdbCloseConnection(ds);
