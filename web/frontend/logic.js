@@ -6,11 +6,11 @@ $('#btnAdd').click(function (e) {
     	$('<li class="nav-item"><a class="nav-link" href="#tab'+nextTab+'" id="tab'+nextTab+'-tab" data-toggle="tab">Histogram '+nextTab+'</a></li>').appendTo('#tabs');
 
     	// create the tab content
-    	$('<div class="tab-pane fade" id="tab'+nextTab+'">' + 
+    	$('<div class="tab-pane fade" id="tab'+nextTab+'">' +
           `<div style="display: none;" id="loading-wrapper_hist_`+nextTab+`">
             <div id="loading-text">LOADING</div>
             <div id="loading-content"></div>
-          </div>` + 
+          </div>` +
           `<form action="/histogram" method="post" id="hist_`+nextTab+`">
             <p>
               <ul class="list-group">
@@ -189,6 +189,48 @@ function assignButtons(){
 }
 assignButtons();
 
+function addFilterToFormWithId(formId) {
+    var id = formId.substring(14);
+    var container = document.getElementById('filter_container_'+id);
+    console.log(container);
+    var input1 = document.createElement('select');
+    input1.name = "filter_" + id + "attr";
+    input1.form = "hist_" + id;
+    var attributes = ["Patient Age", "Heart rate", "Height (cm)", "Weight (kg)", "LVEDV (ml)", "LVESV (ml)", "LVSV (ml)", "LVEF (%)", "LV Mass (g)", "RVEDV (ml)", "RVESV (ml)", "RVSV (ml)", "RVEF (%)", "RV Mass (g)", "BMI (kg/msq)", "BSA", "BSA (msq)", "CO (L/min)", "Central PP(mmHg)", "DBP (mmHg)", "LVEF (ratio)", "MAP", "PAP (mmHg)", "PP (mmHg)", "RVEF (ratio)", "SBP (mmHg)", "SVR (mmHg/L/min)"];
+    var option = document.createElement('option');
+    option.text = "Attribute";
+    input1.appendChild(option);
+    for (var i = 0; i < attributes.length; i++){
+        var option = document.createElement('option');
+        option.value = attributes[i];
+        option.text = attributes[i];
+        input1.appendChild(option);
+    }
+    container.appendChild(input1);
+
+    var input2 = document.createElement('select');
+    input2.name = "filter_" + id + "op";
+    input2.form = "hist_" + id;
+    var operators = [">", "<", "="];
+    var option = document.createElement('option');
+    option.text = "Operator";
+    input2.appendChild(option);
+    for (var i = 0; i < operators.length; i++){
+        var option = document.createElement('option');
+        option.value = operators[i];
+        option.text = operators[i];
+        input2.appendChild(option);
+    }
+    container.appendChild(input2);
+
+    var input3 = document.createElement('input');
+    input3.name = "filter_" + id + "value";
+    input3.type = "text";
+    container.appendChild(input3);
+    var br = document.createElement('br');
+    container.appendChild(br);
+}
+
 function sendFormWithId(id) {
   var formId = id.substring(7); // get the hist id from the button id
   var tabId = "tab" + formId.substring(5); // get the tab id
@@ -197,10 +239,10 @@ function sendFormWithId(id) {
         document.getElementById(formId).style.display = "none"; // hide the attribute list
         document.getElementById('loading-wrapper_'+formId).style.display = "block"; // show the loading sign
       },
-      
+
       success : function (response) {
         document.getElementById('loading-wrapper_'+formId).style.display = "none"; // hide the loading sign
-        document.getElementById(tabId).innerHTML = '<iframe width="900" height="800" frameborder="0" scrolling="no" src="' + response + '"></iframe>';    
+        document.getElementById(tabId).innerHTML = '<iframe width="900" height="800" frameborder="0" scrolling="no" src="' + response + '"></iframe>';
       }
   });
 }
