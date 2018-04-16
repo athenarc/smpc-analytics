@@ -194,8 +194,10 @@ assignButtons();
 function addFilterToFormWithId(formId) {
     var id = formId.substring(14);
     var container = document.getElementById('filter_container_'+id);
+    var children = container.childElementCount;
     var input1 = document.createElement('select');
-    input1.name = "filter_" + "attributes_" + id  ;
+    // input1.name = "filter_" + "attributes_" + id  ;
+    input1.name = "filter_" + "attributes";
     input1.form = "hist_" + id;
     var attributes = ["Patient Age", "Heart rate", "Height (cm)", "Weight (kg)", "LVEDV (ml)", "LVESV (ml)", "LVSV (ml)", "LVEF (%)", "LV Mass (g)", "RVEDV (ml)", "RVESV (ml)", "RVSV (ml)", "RVEF (%)", "RV Mass (g)", "BMI (kg/msq)", "BSA", "BSA (msq)", "CO (L/min)", "Central PP(mmHg)", "DBP (mmHg)", "LVEF (ratio)", "MAP", "PAP (mmHg)", "PP (mmHg)", "RVEF (ratio)", "SBP (mmHg)", "SVR (mmHg/L/min)"];
     var option = document.createElement('option');
@@ -210,7 +212,8 @@ function addFilterToFormWithId(formId) {
     container.appendChild(input1);
 
     var input2 = document.createElement('select');
-    input2.name = "filter_" + "operators_" + id;
+    // input2.name = "filter_" + "operators_" + id;
+    input2.name = "filter_" + "operators";
     input2.form = "hist_" + id;
     var operators = [">", "<", "="];
     var option = document.createElement('option');
@@ -225,9 +228,26 @@ function addFilterToFormWithId(formId) {
     container.appendChild(input2);
 
     var input3 = document.createElement('input');
-    input3.name = "filter_" + "values_" + id;
+    // input3.name = "filter_" + "values_" + id;
+    input3.name = "filter_" + "values";
     input3.type = "text";
     container.appendChild(input3);
+
+    if (children == 0) {
+        var bool_operators = ["AND", "OR", "XOR"];
+        var input4 = document.createElement('select');
+        input4.text = "Boolean Operator";
+        // input4.name = "boolean_opreator" + id;
+        input4.name = "boolean_opreator";
+        for (var i = 0; i < bool_operators.length; i++){
+            option = document.createElement('option');
+            option.value = bool_operators[i];
+            option.text = bool_operators[i];
+            input4.appendChild(option);
+        }
+        container.appendChild(input4);
+    }
+
     var br = document.createElement('br');
     container.appendChild(br);
 }
