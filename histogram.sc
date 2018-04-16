@@ -110,6 +110,49 @@ uint64 multiple_histograms(D float64[[2]] arr, uint64 number_of_histograms, uint
 }
 
 /**
+ * private arr: 2D array of all data tuples. size N x M, where N: #tuples, M: #attributes
+ * public number_of_histograms: the number of histograms to be computed
+ * public attributes: attributes of arr, for which we compute their histograms (column indexes of arr)
+ * public cells_list: list of numbers of cells for each histogram
+ * private mins: list of min values for each attribute
+ * private maxs: list of max values for each attribute
+ * public bool_op: boolean operator appllied between all constraints
+ * public constraint_attributes: list of attributes to filter
+ * public constraint_operators: list of operators to be used in the filtering
+ * public constraint_values: list of values to be used in the filtering
+**/
+template <domain D>
+uint64 multiple_histograms(D float64[[2]] arr, uint64 number_of_histograms, uint64 attributes_vmap, uint64 cells_vmap, D float64[[1]] mins, D float64[[1]] maxs, string bool_op, uint64[[1]] constraint_attributes, uint64[[1]] constraint_operators, float64[[1]] constraint_values) {
+    uint64 histograms = tdbVmapNew();                                           // map of all histograms to compute; histograms[0] contains histogram 0, etc
+    uint64 N = shape(arr)[0];                                                  // number of tuples
+    D uint64[[1]] constraint_map(N) = constraint_map(arr, bool_op,  constraint_attributes, constraint_operators, constraint_values);
+    for (uint64 h = 0; h < number_of_histograms; h++) {                         // for each histogram
+        D uint64[[1]] positions(N);
+        uint64[[1]] cells = tdbVmapGetValue(cells_vmap, arrayToString(h), 0 :: uint64);
+        uint64 requested_attributes = size(cells);                                 // amount of attributes wanted for this histogram
+        for (uint64 a = 0; a < requested_attributes; a++) {                        // for each attribute
+            uint64 number_of_cells = tdbVmapGetValue(cells_vmap, arrayToString(h), 0 :: uint64)[a];
+            uint64 attribute = tdbVmapGetValue(attributes_vmap, arrayToString(h), 0 :: uint64)[a];
+            D float64 max = maxs[attribute];
+            D float64 min = mins[attribute];
+            D float64 width = (((float64) (max - min)) / (float64) number_of_cells);
+            D uint64[[1]] cellmap = (uint64) ((float64) (arr[:,attribute] - mins[attribute]) / width);
+            cellmap -= (uint64)(cellmap == cells[a]);
+            uint64 prod = product(cells[a+1:]);
+            positions += cellmap * prod;
+        }
+        uint64 length = product(cells);
+        D uint64[[1]] histogram(length);
+        for (uint64 j = 0; j < length ; j++) {                      // for each cell of histogram h
+            D bool[[1]] eq = (bool)((uint64)(positions == j) * constraint_map);
+            histogram[j] = sum(eq);
+        }
+        tdbVmapAddValue(histograms, arrayToString(h), histogram);
+    }
+    return histograms;
+}
+
+/**
  * public datasource: name of the datasource
  * public table: name of the table
  * public number_of_histograms: the number of histograms to be computed
@@ -158,9 +201,9 @@ uint64 multiple_histograms(string datasource, string table, uint64 number_of_his
  * private mins: list of min values for each attribute
  * private maxs: list of max values for each attribute
  * public bool_op: boolean operator appllied between all constraints
- * public constraint_attributes: list of attributes
- * public maxs: list of max values for each attribute
- * public maxs: list of max values for each attribute
+ * public constraint_attributes: list of attributes to filter
+ * public constraint_operators: list of operators to be used in the filtering
+ * public constraint_values: list of values to be used in the filtering
 **/
 template <domain D>
 uint64 multiple_histograms(string datasource, string table, uint64 number_of_histograms, uint64 attributes_vmap, uint64 cells_vmap, D float64[[1]] mins, D float64[[1]] maxs, string bool_op, uint64[[1]] constraint_attributes, uint64[[1]] constraint_operators, float64[[1]] constraint_values) {
@@ -209,6 +252,41 @@ D uint64[[1]] constraint_map(string datasource, string table, string bool_op, ui
     }
     for (uint c = 0; c < size(constraint_attributes); c++) {
         pd_shared3p float64[[1]] constraint_attribute = tdbReadColumn(datasource, table, constraint_attributes[c]);
+        pd_shared3p float64 constraint_value = constraint_values[c];
+        pd_shared3p uint64[[1]] eq;
+        if (constraint_operators[c] == 0) {
+            eq = (uint64)(constraint_attribute > constraint_value);
+        } else if (constraint_operators[c] == 1) {
+            eq = (uint64)(constraint_attribute < constraint_value);
+        } else if (constraint_operators[c] == 2) {
+            eq = (uint64)(constraint_attribute == constraint_value);
+        }
+        if (bool_op == "AND"){
+            constraint_map *= eq;
+        } else if(bool_op == "OR") {
+            constraint_map += eq;
+        } else if(bool_op == "XOR") {
+            constraint_map = constraint_map * (1 - eq) + (1 - constraint_map) * eq;
+        }
+    }
+    return constraint_map;
+}
+
+template<domain D>
+D uint64[[1]] constraint_map(D float64[[2]] arr, string bool_op, uint64[[1]] constraint_attributes, uint64[[1]] constraint_operators, float64[[1]] constraint_values){
+    uint64[[1]] array_shape = shape(arr);
+    uint64 N = array_shape[0];                              // number of tuples
+    D uint64[[1]] constraint_map(N);
+    if (bool_op == "AND"){
+        constraint_map = 1;
+    } else if(bool_op == "OR") {
+        constraint_map = 0;
+    } else if(bool_op == "XOR") {
+        constraint_map = 0;
+    }
+    for (uint c = 0; c < size(constraint_attributes); c++) {
+        uint64 constraint_attribute_index = constraint_attributes[c];
+        pd_shared3p float64[[1]] constraint_attribute = arr[:,constraint_attribute_index];
         pd_shared3p float64 constraint_value = constraint_values[c];
         pd_shared3p uint64[[1]] eq;
         if (constraint_operators[c] == 0) {
