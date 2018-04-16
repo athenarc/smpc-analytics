@@ -149,10 +149,12 @@ $('#btnAdd').click(function (e) {
                     <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                   </li>
 
+                  <div id="filter_container_` + nextTab + `"/>
               </ul>
             </p>
             <p>
               <input type="submit" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-info" value="Compute Histogram(s)">
+              <input type="button" id="filter_button_`+ nextTab +`" onclick="addFilterToFormWithId(this.id)" class="btn btn-info" value="+">
             </p>
           </form>`+
         '</div>').appendTo('.tab-content');
@@ -192,9 +194,8 @@ assignButtons();
 function addFilterToFormWithId(formId) {
     var id = formId.substring(14);
     var container = document.getElementById('filter_container_'+id);
-    console.log(container);
     var input1 = document.createElement('select');
-    input1.name = "filter_" + id + "attr";
+    input1.name = "filter_" + "attributes_" + id  ;
     input1.form = "hist_" + id;
     var attributes = ["Patient Age", "Heart rate", "Height (cm)", "Weight (kg)", "LVEDV (ml)", "LVESV (ml)", "LVSV (ml)", "LVEF (%)", "LV Mass (g)", "RVEDV (ml)", "RVESV (ml)", "RVSV (ml)", "RVEF (%)", "RV Mass (g)", "BMI (kg/msq)", "BSA", "BSA (msq)", "CO (L/min)", "Central PP(mmHg)", "DBP (mmHg)", "LVEF (ratio)", "MAP", "PAP (mmHg)", "PP (mmHg)", "RVEF (ratio)", "SBP (mmHg)", "SVR (mmHg/L/min)"];
     var option = document.createElement('option');
@@ -209,7 +210,7 @@ function addFilterToFormWithId(formId) {
     container.appendChild(input1);
 
     var input2 = document.createElement('select');
-    input2.name = "filter_" + id + "op";
+    input2.name = "filter_" + "operators_" + id;
     input2.form = "hist_" + id;
     var operators = [">", "<", "="];
     var option = document.createElement('option');
@@ -224,7 +225,7 @@ function addFilterToFormWithId(formId) {
     container.appendChild(input2);
 
     var input3 = document.createElement('input');
-    input3.name = "filter_" + id + "value";
+    input3.name = "filter_" + "values_" + id;
     input3.type = "text";
     container.appendChild(input3);
     var br = document.createElement('br');
