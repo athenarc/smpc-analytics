@@ -153,10 +153,12 @@ $('#btnAdd').click(function (e) {
               </ul>
             </p>
             <p>
-              <input type="submit" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-info" value="Compute Histogram(s)">
-              <input type="button" id="filter_button_`+ nextTab +`" onclick="addFilterToFormWithId(this.id)" class="btn btn-info" value="+">
+              <input type="button" id="filter_button_`+ nextTab +`" onclick="addFilterToFormWithId(this.id)" class="btn btn-info" value="Add Filter">
             </p>
-          </form>`+
+            <p>
+              <input type="submit" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-info" value="Compute Histogram(s)">
+            </p>
+            </form>`+
         '</div>').appendTo('.tab-content');
 
     	// make the new tab active
