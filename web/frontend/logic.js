@@ -153,7 +153,20 @@ $('#btnAdd').click(function (e) {
               </ul>
             </p>
             <p>
-              <input type="button" id="filter_button_`+ nextTab +`" onclick="addFilterToFormWithId(this.id)" class="btn btn-info" value="Add Filter">
+              <input type="button" id="filter_button_` + nextTab + `" onclick="addFilterToFormWithId(this.id)" class="btn btn-default" value="Add Filter">
+            </p>
+            <p>
+              <ul class="list-group">
+                  <li class="list-group-item">
+                    <input type="checkbox" name="datasets" value="DS1" checked="true"> Dataset 1 &ensp;
+                  </li>
+                  <li class="list-group-item">
+                    <input type="checkbox" name="datasets" value="DS2" checked="true"> Dataset 2 &ensp;
+                  </li>
+                  <li class="list-group-item">
+                    <input type="checkbox" name="datasets" value="DS3" checked="true"> Dataset 3 &ensp;
+                  </li>
+              </ul>
             </p>
             <p>
               <input type="submit" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-info" value="Compute Histogram(s)">
@@ -197,6 +210,10 @@ function addFilterToFormWithId(formId) {
     var id = formId.substring(14);
     var container = document.getElementById('filter_container_'+id);
     var children = container.childElementCount;
+    if (children == 0) {
+        var br = document.createElement('br');
+        container.appendChild(br);
+    }
     var input1 = document.createElement('select');
     // input1.name = "filter_" + "attributes_" + id  ;
     input1.name = "filter_" + "attributes";
