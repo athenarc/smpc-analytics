@@ -5,6 +5,8 @@ import pandas as pd
 
 import os.path
 
+indentation = '    '
+
 imports = '''
 import shared3p;
 import shared3p_random;
@@ -96,20 +98,34 @@ def main():
     main_f += '''
     uint64 attributes_vmap = tdbVmapNew();
     uint64[[1]] vector_value;
-    '''
+'''
     main_f +='''
     vector_value = '''+ attributes_vmap + ';'
     main_f += '''
     tdbVmapAddValue(attributes_vmap, "0", vector_value);
     uint64 cells_vmap = tdbVmapNew();
-    '''
+'''
     cells = [str(x) for x in configuration['cells'] if x != '']
     cells_vmap = '{'+ ', '.join(cells) +'}'
     main_f += '''
     vector_value = ''' + cells_vmap + ';'
     main_f += '''
     tdbVmapAddValue(cells_vmap, "0", vector_value);
-    print("Computing histograms");'''
+    '''
+    if 'datasets' in configuration:
+        if isinstance(configuration['datasets'], list):
+            numberOfDatasets = len(configuration['datasets'])
+            data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(configuration['datasets'][i]) + ";" for i in range(len(configuration['datasets']))])
+        else:
+            numberOfDatasets = 1
+            data_providers = indentation + "string table_1 = " + quote(configuration['datasets']) + ";"
+        main_f += '''
+    uint64 data_providers_num = ''' + str(numberOfDatasets) + ''';
+'''
+    main_f += data_providers
+    main_f += '''
+    print("Computing histograms");
+'''
     if numberOfFilters > 0:
         main_f += '''uint64 histograms = multiple_histograms(imported_array, '''+str(number_of_histograms)+'''::uint64, attributes_vmap, cells_vmap, imported_mins, imported_maxs, bool_op, constraint_attributes, constraint_operators, constraint_values);'''
     else:
@@ -125,7 +141,7 @@ def main():
     printVector(declassify(res));
     print("\\n");
 }
-    '''
+'''
     with open('histogram_main_' + main_counter + '.sc', 'w') as output:
         output.write(imports)
         output.write(main_f)
