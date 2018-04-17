@@ -169,7 +169,7 @@ $('#btnAdd').click(function (e) {
               </ul>
             </p>
             <p>
-              <input type="submit" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-info" value="Compute Histogram(s)">
+              <input type="submit" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-primary" value="Compute Histogram">
             </p>
             </form>`+
         '</div>').appendTo('.tab-content');
@@ -178,6 +178,8 @@ $('#btnAdd').click(function (e) {
     	$('#tabs a:last').tab('show');
         assignButtons();
   });
+  
+$('.selectpicker').selectpicker();  
 });
 
 function assignButtons(){
@@ -214,13 +216,19 @@ function addFilterToFormWithId(formId) {
         var br = document.createElement('br');
         container.appendChild(br);
     }
+    
+    var outer_div = document.createElement('div');
+    
     var input1 = document.createElement('select');
     // input1.name = "filter_" + "attributes_" + id  ;
     input1.name = "filter_" + "attributes";
     input1.form = "hist_" + id;
+    input1.className = "selectpicker";
     var attributes = ["Patient Age", "Heart rate", "Height (cm)", "Weight (kg)", "LVEDV (ml)", "LVESV (ml)", "LVSV (ml)", "LVEF (%)", "LV Mass (g)", "RVEDV (ml)", "RVESV (ml)", "RVSV (ml)", "RVEF (%)", "RV Mass (g)", "BMI (kg/msq)", "BSA", "BSA (msq)", "CO (L/min)", "Central PP(mmHg)", "DBP (mmHg)", "LVEF (ratio)", "MAP", "PAP (mmHg)", "PP (mmHg)", "RVEF (ratio)", "SBP (mmHg)", "SVR (mmHg/L/min)"];
     var option = document.createElement('option');
     option.text = "Attribute";
+    option.selected = true;
+    option.disabled = true;
     input1.appendChild(option);
     for (var i = 0; i < attributes.length; i++){
         var option = document.createElement('option');
@@ -228,15 +236,21 @@ function addFilterToFormWithId(formId) {
         option.text = attributes[i];
         input1.appendChild(option);
     }
-    container.appendChild(input1);
+    outer_div.appendChild(input1);
+    var dateSpan = document.createElement('span')
+    dateSpan.innerHTML = " ";
+    outer_div.appendChild(dateSpan);
 
     var input2 = document.createElement('select');
     // input2.name = "filter_" + "operators_" + id;
     input2.name = "filter_" + "operators";
     input2.form = "hist_" + id;
+    input2.className = "selectpicker";
     var operators = [">", "<", "="];
     var option = document.createElement('option');
     option.text = "Operator";
+    option.selected = true;
+    option.disabled = true;
     input2.appendChild(option);
     for (var i = 0; i < operators.length; i++){
         var option = document.createElement('option');
@@ -244,31 +258,42 @@ function addFilterToFormWithId(formId) {
         option.text = operators[i];
         input2.appendChild(option);
     }
-    container.appendChild(input2);
+    outer_div.appendChild(input2);
+    var dateSpan = document.createElement('span')
+    dateSpan.innerHTML = " ";
+    outer_div.appendChild(dateSpan);
 
+    var input_div = document.createElement('div');
+    input_div.className = "btn-group";
     var input3 = document.createElement('input');
-    // input3.name = "filter_" + "values_" + id;
     input3.name = "filter_" + "values";
     input3.type = "text";
-    container.appendChild(input3);
-
+    input3.className = "form-control";
+    input_div.appendChild(input3);
+    outer_div.appendChild(input_div);
+    var dateSpan = document.createElement('span')
+    dateSpan.innerHTML = " ";
+    outer_div.appendChild(dateSpan);
+    
     if (children == 0) {
         var bool_operators = ["AND", "OR", "XOR"];
         var input4 = document.createElement('select');
         input4.text = "Boolean Operator";
         // input4.name = "boolean_opreator" + id;
         input4.name = "boolean_opreator";
+        input4.className = "selectpicker";
         for (var i = 0; i < bool_operators.length; i++){
             option = document.createElement('option');
             option.value = bool_operators[i];
             option.text = bool_operators[i];
             input4.appendChild(option);
         }
-        container.appendChild(input4);
+        outer_div.appendChild(input4);
     }
-
-    var br = document.createElement('br');
-    container.appendChild(br);
+    container.appendChild(outer_div);
+    // var br = document.createElement('br');
+    // container.appendChild(br);
+    $('.selectpicker').selectpicker();
 }
 
 function sendFormWithId(id) {
