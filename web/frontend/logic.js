@@ -181,8 +181,8 @@ $('#btnAdd').click(function (e) {
 });
 
 function assignButtons(){
-    var checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    var cells = document.querySelectorAll('input[type="number"]');
+    var checkboxes = document.querySelectorAll('input[name="attributes"]');
+    var cells = document.querySelectorAll('input[name="cells"]');
 
     for (var i = 0; i < checkboxes.length; i++) {
         var closureMaker = function(i) {
