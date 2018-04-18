@@ -239,6 +239,75 @@ uint64 multiple_histograms(string datasource, string table, uint64 number_of_his
     return histograms;
 }
 
+/**
+ * public datasource: name of the datasource
+ * public uint64 providers_vmap: A tdb-Vmap with key 0 and value an array of the data-provider names
+ * public uint64 data_providers_num: the number of data-providers
+ * public number_of_histograms: the number of histograms to be computed
+ * public attributes_vmap: list(vmap) of attributes of the table, for which we compute their histograms (column indexes)
+ * public cells_vmap: list(vmap) of numbers of cells for each histogram
+ * private mins: list of min values for each attribute
+ * private maxs: list of max values for each attribute
+**/
+template <domain D>
+uint64 multiple_histograms(string datasource, uint64 providers_vmap, uint64 data_providers_num, uint64 number_of_histograms, uint64 attributes_vmap, uint64 cells_vmap, D float64[[1]] mins, D float64[[1]] maxs) {
+    uint64[[1]] results(data_providers_num);
+    for (uint64 j = 0 ; j < data_providers_num ; j++) {
+        string table = tdbVmapGetString(providers_vmap, "0", j);
+        print("Computing aggregates for data-provider " + table);
+        uint64 res = multiple_histograms(datasource, table, number_of_histograms, attributes_vmap, cells_vmap, mins, maxs);
+        results[j] = res;
+    }
+    uint64 histograms = tdbVmapNew();
+
+    for (uint64 h = 0; h < number_of_histograms; h++) {                         // for each histogram
+        pd_shared3p uint64[[1]] hist = tdbVmapGetValue( results[0], arrayToString(h), 0 :: uint64);
+        for (uint64 j = 1 ; j < data_providers_num ; j++) {
+            pd_shared3p uint64[[1]] res_hist = tdbVmapGetValue(results[j], arrayToString(h), 0 :: uint64);
+            hist += res_hist;
+        }
+        tdbVmapAddValue(histograms, arrayToString(h), hist);
+    }
+    return histograms;
+}
+
+
+/**
+ * public datasource: name of the datasource
+ * public uint64 providers_vmap: A tdb-Vmap with key 0 and value an array of the data-provider names
+ * public uint64 data_providers_num: the number of data-providers
+ * public number_of_histograms: the number of histograms to be computed
+ * public attributes_vmap: attributes of the table, for which we compute their histograms (column indexes)
+ * public cells_vmap: list of numbers of cells for each histogram
+ * private mins: list of min values for each attribute
+ * private maxs: list of max values for each attribute
+ * public bool_op: boolean operator appllied between all constraints
+ * public constraint_attributes: list of attributes to filter
+ * public constraint_operators: list of operators to be used in the filtering
+ * public constraint_values: list of values to be used in the filtering
+**/
+template <domain D>
+uint64 multiple_histograms(string datasource, uint64 providers_vmap, uint64 data_providers_num, uint64 number_of_histograms, uint64 attributes_vmap, uint64 cells_vmap, D float64[[1]] mins, D float64[[1]] maxs, string bool_op, uint64[[1]] constraint_attributes, uint64[[1]] constraint_operators, float64[[1]] constraint_values) {
+    uint64[[1]] results(data_providers_num);
+    for (uint64 j = 0 ; j < data_providers_num ; j++) {
+        string table = tdbVmapGetString(providers_vmap, "0", j);
+        print("Computing aggregates for data-provider " + table);
+        uint64 res = multiple_histograms(datasource, table, number_of_histograms, attributes_vmap, cells_vmap, mins, maxs, bool_op, constraint_attributes, constraint_operators, constraint_values);
+        results[j] = res;
+    }
+    uint64 histograms = tdbVmapNew();
+
+    for (uint64 h = 0; h < number_of_histograms; h++) {                         // for each histogram
+        pd_shared3p uint64[[1]] hist = tdbVmapGetValue( results[0], arrayToString(h), 0 :: uint64);
+        for (uint64 j = 1 ; j < data_providers_num ; j++) {
+            pd_shared3p uint64[[1]] res_hist = tdbVmapGetValue(results[j], arrayToString(h), 0 :: uint64);
+            hist += res_hist;
+        }
+        tdbVmapAddValue(histograms, arrayToString(h), hist);
+    }
+    return histograms;
+}
+
 template<domain D>
 D uint64[[1]] constraint_map(string datasource, string table, string bool_op, uint64[[1]] constraint_attributes, uint64[[1]] constraint_operators, float64[[1]] constraint_values){
     uint64 N = tdbGetRowCount(datasource, table);                               // number of tuples
@@ -308,8 +377,8 @@ D uint64[[1]] constraint_map(D float64[[2]] arr, string bool_op, uint64[[1]] con
 }
 
 
-//
-// /* Test Histogram */
+
+/* Test Histogram */
 // void main() {
 //     /* Test 1d histogram with floats */
 //     uint64 cells = 3;
@@ -403,7 +472,7 @@ D uint64[[1]] constraint_map(D float64[[2]] arr, string bool_op, uint64[[1]] con
 //     print("\n");
 //
 //
-//     string ds = "DS1"; // Data source name
+//     string datasource = "DS1"; // Data source name
 //     string tbl = "centricity_identified-100_edited"; // Table name
 //
 //     /* Test multiple_histograms with imported data */
@@ -416,19 +485,19 @@ D uint64[[1]] constraint_map(D float64[[2]] arr, string bool_op, uint64[[1]] con
 //     tdbVmapAddValue(cells_vmap3, "0", value3);
 //
 //     // Open database before running operations on it
-//     tdbOpenConnection(ds);
+//     tdbOpenConnection(datasource);
 //     print("Computing mins, maxs");
-//     uint64 column_count = tdbGetColumnCount(ds, tbl);
+//     uint64 column_count = tdbGetColumnCount(datasource, tbl);
 //     pd_shared3p float64[[1]] mins4(column_count);
 //     pd_shared3p float64[[1]] maxs4(column_count);
 //     for (uint64 j = 0; j < column_count; j++ ) {
-//       pd_shared3p float64[[1]] column = tdbReadColumn(ds, tbl, j);
+//       pd_shared3p float64[[1]] column = tdbReadColumn(datasource, tbl, j);
 //       mins4[j] = min(column);
 //       maxs4[j] = max(column);
 //     }
 //
 //     print("Computing histograms");
-//     uint64 histograms3 = multiple_histograms(ds, tbl, 1::uint64, attributes_vmap3, cells_vmap3, mins4, maxs4);
+//     uint64 histograms3 = multiple_histograms(datasource, tbl, 1::uint64, attributes_vmap3, cells_vmap3, mins4, maxs4);
 //     pd_shared3p uint64[[1]] res2 = tdbVmapGetValue(histograms3, "0", 0 :: uint64);
 //     uint64[[1]] cells_res2 = tdbVmapGetValue(cells_vmap3, "0", 0 :: uint64);
 //     print(arrayToString(cells_res2), " Histogram");
@@ -439,11 +508,11 @@ D uint64[[1]] constraint_map(D float64[[2]] arr, string bool_op, uint64[[1]] con
 //
 //     uint64 attributes_vmap4 = tdbVmapNew();
 //     uint64[[1]] value4 = {13, 14};
-//     tdbVmapAddValue(attributes_vmap4, "0", value3);
+//     tdbVmapAddValue(attributes_vmap4, "0", value4);
 //
 //     uint64 cells_vmap4 = tdbVmapNew();
 //     value4 = {3,5};
-//     tdbVmapAddValue(cells_vmap4, "0", value3);
+//     tdbVmapAddValue(cells_vmap4, "0", value4);
 //
 //     string bool_op = "AND"; // 0:"AND" 1:"OR" 2:"XOR"
 //
@@ -451,12 +520,67 @@ D uint64[[1]] constraint_map(D float64[[2]] arr, string bool_op, uint64[[1]] con
 //     uint64[[1]] constraint_operators = {0, 1, 0, 1}; //0:">" 1:"<" 2:"=="
 //     float64[[1]] constraint_values = {95.85, 105.35, 59.46, 61.55};
 //
-//     uint64 histograms4 = multiple_histograms(ds, tbl, 2::uint64, attributes_vmap4, cells_vmap4, mins4, maxs4, bool_op, constraint_attributes, constraint_operators, constraint_values);
+//     uint64 histograms4 = multiple_histograms(datasource, tbl, 2::uint64, attributes_vmap4, cells_vmap4, mins4, maxs4, bool_op, constraint_attributes, constraint_operators, constraint_values);
 //     pd_shared3p uint64[[1]] res3 = tdbVmapGetValue(histograms4, "0", 0 :: uint64);
 //     uint64[[1]] cells_res3 = tdbVmapGetValue(cells_vmap4, "0", 0 :: uint64);
 //     print(arrayToString(cells_res3), " Histogram");
 //     printVector(declassify(res3));
 //     print("\n");
 //
-//     tdbCloseConnection(ds);
+//     /* Test multiple_histograms with imported data along with constraints from multiple providers*/
+//     string datasource = "DS1";
+//     uint64 data_providers_num = 3;
+//     string table_1 = "data_provider_1";
+//     string table_2 = "data_provider_2";
+//     string table_3 = "data_provider_3";
+//
+//     // Create the data-providers list
+//     uint64 providers_vmap = tdbVmapNew();
+//     tdbVmapAddString(providers_vmap, "0", table_1);
+//     tdbVmapAddString(providers_vmap, "0", table_2);
+//     tdbVmapAddString(providers_vmap, "0", table_3);
+//
+//     ///////////////////////////////
+//     print("Opening connection to db: ", datasource);
+//     tdbOpenConnection(datasource);
+//     for (uint64 i = 0 ; i < data_providers_num ; i++) {
+//         string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
+//         print("Table: " + table);
+//
+//         // pd_shared3p uint64 data_type;
+//         // Check if a table exists
+//         if (tdbTableExists(datasource, table)) {
+//           // Delete existing table
+//           print("Deleting existing table: ", table);
+//           tdbTableDelete(datasource, table);
+//         }
+//
+//         print("Creating new table: ", table);
+//
+//         uint64 nrows = shape(imported_array)[0];
+//         uint64 ncols = shape(imported_array)[1];;
+//         pd_shared3p float64 vtype;
+//         tdbTableCreate(datasource, table, vtype, ncols);
+//
+//         print("Inserting data to table " + table + "...");
+//         pd_shared3p float64[[1]] row;
+//         for (uint i = 0; i < nrows; ++i) {
+//             row = imported_array[i,:];
+//             tdbInsertRow(datasource, table, row);
+//         }
+//         print("Done inserting in table " + table + "\n\n");
+//     }
+//     print("Done inserting!");
+//     ///////////////////////////////
+//
+//     uint64 histograms5 = multiple_histograms(datasource, providers_vmap, data_providers_num, 1::uint64, attributes_vmap4, cells_vmap4, imported_mins, imported_maxs, bool_op, constraint_attributes, constraint_operators, constraint_values);
+//     pd_shared3p uint64[[1]] res4 = tdbVmapGetValue(histograms5, "0", 0 :: uint64);
+//     uint64[[1]] cells_res4 = tdbVmapGetValue(cells_vmap4, "0", 0 :: uint64);
+//     print(arrayToString(cells_res4), " Histogram");
+//     printVector(declassify(res4));
+//     print("\n");
+//
+//
+//
+//     tdbCloseConnection(datasource);
 // }
