@@ -1,10 +1,11 @@
 function addTab() {
   var nextTab = $('#tabs li').length;
 
+  // remove the button from the end
   var add_btn = document.getElementById('btnAdd');
   add_btn.parentElement.remove();
   
-  // create the tab
+  // create the tab and add it to the end
   $('<li class="nav-item"><a class="nav-link" href="#tab'+nextTab+'" id="tab'+nextTab+'-tab" data-toggle="tab">Histogram '+nextTab+'</a></li>').appendTo('#tabs');
 
   // create the tab content
@@ -180,6 +181,7 @@ function addTab() {
   $('#tabs a:last').tab('show');
   assignButtons();
   
+  // add the button to the end
   $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addTab()" class="btn btn-info btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
   
   $('.selectpicker').selectpicker();
@@ -219,11 +221,9 @@ function addFilterToFormWithId(formId) {
         var br = document.createElement('br');
         container.appendChild(br);
     }
-    
     var outer_div = document.createElement('div');
     
     var input1 = document.createElement('select');
-    // input1.name = "filter_" + "attributes_" + id  ;
     input1.name = "filter_" + "attributes";
     input1.form = "hist_" + id;
     input1.className = "selectpicker";
@@ -240,9 +240,9 @@ function addFilterToFormWithId(formId) {
         input1.appendChild(option);
     }
     outer_div.appendChild(input1);
-    var dateSpan = document.createElement('span')
-    dateSpan.innerHTML = " ";
-    outer_div.appendChild(dateSpan);
+    var space_span = document.createElement('span')
+    space_span.innerHTML = " ";
+    outer_div.appendChild(space_span);
 
     var input2 = document.createElement('select');
     // input2.name = "filter_" + "operators_" + id;
@@ -262,27 +262,27 @@ function addFilterToFormWithId(formId) {
         input2.appendChild(option);
     }
     outer_div.appendChild(input2);
-    var dateSpan = document.createElement('span')
-    dateSpan.innerHTML = " ";
-    outer_div.appendChild(dateSpan);
+    var space_span = document.createElement('span')
+    space_span.innerHTML = " ";
+    outer_div.appendChild(space_span);
 
     var input_div = document.createElement('div');
     input_div.className = "btn-group";
     var input3 = document.createElement('input');
     input3.name = "filter_" + "values";
     input3.type = "text";
+    input3.required = true;
     input3.className = "form-control";
     input_div.appendChild(input3);
     outer_div.appendChild(input_div);
-    var dateSpan = document.createElement('span')
-    dateSpan.innerHTML = " ";
-    outer_div.appendChild(dateSpan);
+    var space_span = document.createElement('span')
+    space_span.innerHTML = " ";
+    outer_div.appendChild(space_span);
     
     if (children == 0) {
         var bool_operators = ["AND", "OR", "XOR"];
         var input4 = document.createElement('select');
         input4.text = "Boolean Operator";
-        // input4.name = "boolean_opreator" + id;
         input4.name = "boolean_opreator";
         input4.className = "selectpicker";
         for (var i = 0; i < bool_operators.length; i++){
@@ -294,8 +294,6 @@ function addFilterToFormWithId(formId) {
         outer_div.appendChild(input4);
     }
     container.appendChild(outer_div);
-    // var br = document.createElement('br');
-    // container.appendChild(br);
     $('.selectpicker').selectpicker();
 }
 
