@@ -21,11 +21,12 @@
     </div>
 
     <div class="card"><div class="card-body">
-      <a href="#" id="btnAdd"><input type="submit" class="btn btn-info" value="Add Histogram" id="tabButton"></input></a>
-      <br><br>
       <ul class="nav nav-tabs active" id="tabs">
           <li class="nav-item active">
             <a class="nav-link active" href="#tab1" id="tab1-tab" data-toggle="tab">Histogram 1</a>
+          </li>
+          <li class="nav-item">
+            <a href="#" id="btnAdd"><input type="submit" onclick="addTab()" class="btn btn-info btn-sm" value="+" id="tabButton"></input></a>
           </li>
       </ul>
       <div class="tab-content">
