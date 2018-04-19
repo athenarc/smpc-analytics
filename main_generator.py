@@ -118,18 +118,31 @@ def main():
             data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(configuration['datasets'][i]) + ";" for i in range(len(configuration['datasets']))])
         else:
             numberOfDatasets = 1
-            data_providers = indentation + "string table_1 = " + quote(configuration['datasets']) + ";"
+            data_providers = indentation + "string table_0 = " + quote(configuration['datasets']) + ";"
         main_f += '''
+    string datasource = "DS1";
     uint64 data_providers_num = ''' + str(numberOfDatasets) + ''';
 '''
     main_f += data_providers
     main_f += '''
+    // Create the data-providers list
+    uint64 providers_vmap = tdbVmapNew();
+'''
+    for i in range(numberOfDatasets):
+        main_f += '''
+    tdbVmapAddString(providers_vmap, "0", table_'''+ str(i) +''');'''
+    main_f += '''
+    // Open connection to DB and Insert data to different tables
+    print("Opening connection to db: ", datasource);
+    tdbOpenConnection(datasource);
     print("Computing histograms");
 '''
     if numberOfFilters > 0:
-        main_f += '''uint64 histograms = multiple_histograms(imported_array, '''+str(number_of_histograms)+'''::uint64, attributes_vmap, cells_vmap, imported_mins, imported_maxs, bool_op, constraint_attributes, constraint_operators, constraint_values);'''
+        main_f += '''
+    uint64 histograms = multiple_histograms(datasource, providers_vmap, data_providers_num, '''+str(number_of_histograms)+'''::uint64, attributes_vmap, cells_vmap, imported_mins, imported_maxs, bool_op, constraint_attributes, constraint_operators, constraint_values);'''
     else:
-        main_f += '''uint64 histograms = multiple_histograms(imported_array, '''+str(number_of_histograms)+'''::uint64, attributes_vmap, cells_vmap, imported_mins, imported_maxs);'''
+        main_f += '''
+    uint64 histograms = multiple_histograms(datasource, providers_vmap, data_providers_num, '''+str(number_of_histograms)+'''::uint64, attributes_vmap, cells_vmap, imported_mins, imported_maxs);'''
     main_f += '''
     pd_shared3p uint64[[1]] res;
     '''

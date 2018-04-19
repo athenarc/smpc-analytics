@@ -4,7 +4,7 @@ function addTab() {
   // remove the button from the end
   var add_btn = document.getElementById('btnAdd');
   add_btn.parentElement.remove();
-  
+
   // create the tab and add it to the end
   $('<li class="nav-item"><a class="nav-link" href="#tab'+nextTab+'" id="tab'+nextTab+'-tab" data-toggle="tab">Histogram '+nextTab+'</a></li>').appendTo('#tabs');
 
@@ -161,13 +161,13 @@ function addTab() {
         <p>
           <ul class="list-group">
               <li class="list-group-item">
-                <input type="checkbox" name="datasets" value="DS1" checked="true"> Dataset 1 &ensp;
+                <input type="checkbox" name="datasets" value="data_provider_0" checked="true"> Dataset 1 &ensp;
               </li>
               <li class="list-group-item">
-                <input type="checkbox" name="datasets" value="DS2" checked="true"> Dataset 2 &ensp;
+                <input type="checkbox" name="datasets" value="data_provider_1" checked="true"> Dataset 2 &ensp;
               </li>
               <li class="list-group-item">
-                <input type="checkbox" name="datasets" value="DS3" checked="true"> Dataset 3 &ensp;
+                <input type="checkbox" name="datasets" value="data_provider_2" checked="true"> Dataset 3 &ensp;
               </li>
           </ul>
         </p>
@@ -180,10 +180,10 @@ function addTab() {
   // make the new tab active
   $('#tabs a:last').tab('show');
   assignButtons();
-  
+
   // add the button to the end
   $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addTab()" class="btn btn-info btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
-  
+
   $('.selectpicker').selectpicker();
 }
 
@@ -222,7 +222,7 @@ function addFilterToFormWithId(formId) {
         container.appendChild(br);
     }
     var outer_div = document.createElement('div');
-    
+
     var input1 = document.createElement('select');
     input1.name = "filter_" + "attributes";
     input1.form = "hist_" + id;
@@ -278,7 +278,7 @@ function addFilterToFormWithId(formId) {
     var space_span = document.createElement('span')
     space_span.innerHTML = " ";
     outer_div.appendChild(space_span);
-    
+
     if (children == 0) {
         var bool_operators = ["AND", "OR", "XOR"];
         var input4 = document.createElement('select');
