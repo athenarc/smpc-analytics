@@ -1,10 +1,10 @@
 const express = require('express');
 const app = express();
-const { execSync } = require('child_process');
+const { exec } = require('child_process');
 const fs = require('fs');
 var path = require('path');
 var bodyParser = require('body-parser');
-var parse = require('csv-parse')
+var parse = require('csv-parse');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 var frontend = __dirname + "/frontend/";
@@ -12,7 +12,6 @@ var visuals = __dirname + "/visuals/";
 global.__basedir = __dirname;
 
 app.get('/', function (req, res) {
-     // buildHtml(req);
     res.sendFile(path.join(frontend + 'index.html'));
 });
 
@@ -21,67 +20,73 @@ app.use("/visuals", express.static(__dirname + '/visuals'));
 
 var req_counter = 0; // count the requests and give each new request a new ID
 
+// function to return a promise to write to file
+function _writeFile(filename, content, encoding = null) {
+    return new Promise((resolve, reject) => {
+      try {
+          fs.writeFile(filename, content, encoding, (err, buffer) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(buffer);
+            }
+          });
+      } catch (err) {
+          reject(err);
+      }
+    });
+}
+
+// function to return a promise to exec a process
+function _exec(script, args) {
+    return new Promise((resolve, reject) => {
+      try {
+          exec(script, args, (err, buffer) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(buffer);
+            }
+          });
+      } catch (err) {
+          reject(err);
+      }
+    });
+}
+
 app.post('/histogram', function(req, res) {
     var parent = path.dirname(__basedir);
     var content = JSON.stringify(req.body);
     console.log(content);
     req_counter++;
-    fs.writeFileSync(parent+'/configuration_' + req_counter + '.json', content, 'utf8', function (err) {
-        if (err) {
-            return console.log(err);
-        }
+    
+    _writeFile(parent+'/configuration_' + req_counter + '.json', content, 'utf8')
+        .then((buffer) => {
+            console.log('[NODE] Request(' + req_counter + ') Configuration file was saved.\n');
+            return _exec('python main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
+        })
+        .then((buffer) => {
+            console.log('[NODE] Request(' + req_counter + ') Main generated.\n');
+            return _exec('./compile.sh histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
+        })
+        .then((buffer) => {
+            console.log('[NODE] Request(' + req_counter + ') Program compiled.\n');
+            return _exec('./run.sh histogram_main_' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
+        })
+        .then((buffer) => {
+            console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
+            return _exec('python plot.py ' + req_counter, {cwd: parent});
+        })
+        .then((result) => {
+            console.log('[NODE] Request(' + req_counter + ') Plotting done.\n');
+            var graph_name = result.toString();
+            graph_name = graph_name.slice(0,-1);
+            res.send('visuals/' + graph_name);
+        })
+        .catch((err) => {
+            console.log(err);
+        });
 
-    });
-    console.log("[NODE] Configuration file was saved.\n");
-
-    execSync('python main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
-        if (err) {
-            console.error(`exec error: ${err}`);
-            return;
-        }
-    });
-    console.log("[NODE] Main generated.\n");
-
-    fs.existsSync(parent+'/.histogram_main_' + req_counter + '.sb.src', function(exists) {
-        if(exists){
-            fs.unlinkSync(parent+'/.histogram_main_' + req_counter + '.sb.src', function(err){
-                if(err){
-                    return console.log(err);
-                }
-                console.log('file deleted successfully');
-            });
-        }
-    });
-    console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
-
-    execSync('./compile.sh histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
-        if (err) {
-            console.error(`exec error: ${err}`);
-            return;
-        }
-    });
-    console.log("[NODE] Program compiled.\n");
-
-    execSync('./run.sh histogram_main_' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
-        if (err) {
-            console.error(`exec error: ${err}`);
-            return;
-        }
-    });
-    console.log("[NODE] Program executed.\n");
-
-    var result = execSync('python plot.py ' + req_counter, {cwd: parent}, (err, stdout, stderr) => {
-        if (err) {
-            console.error(`exec error: ${err}`);
-            return;
-        }
-    });
-    console.log("[NODE] Plotting done.\n");
-
-    var graph_name = result.toString();
-    graph_name = graph_name.slice(0,-1);
-    // res.sendFile(path.join(visuals + graph_name));
-    res.send('visuals/' + graph_name);
 });
 
 
@@ -94,7 +99,7 @@ function buildHtml(req) {
 `;
         parse(fileData, {columns: true, delimiter: ','}, function(err, rows) {
             for (var i = 0; i < rows.length; i++) {
-                var field_name = rows[i]['Field']
+                var field_name = rows[i].Field;
                 form = form + `
              <li class="list-group-item">
                 <input type="checkbox" name="attributes" value="`+ field_name +`"> ` + field_name + ` &ensp;
@@ -115,15 +120,13 @@ function buildHtml(req) {
                 if(err) {
                     return console.log(err);
                 }
-
                 console.log("[NODE] form.html saved.");
             });
 
-        })
-    })
-};
+        });
+    });
+}
 
 
 
-
-app.listen(3000, () => console.log('Example app listening on port 3000!'))
+app.listen(3000, () => console.log('Example app listening on port 3000!'));
