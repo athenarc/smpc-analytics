@@ -190,7 +190,6 @@ function addTab() {
 function assignButtons(){
     var checkboxes = document.querySelectorAll('input[name="attributes"]');
     var cells = document.querySelectorAll('input[name="cells"]');
-
     for (var i = 0; i < checkboxes.length; i++) {
         var closureMaker = function(i) {
             return function(event){
@@ -222,76 +221,74 @@ function addFilterToFormWithId(formId) {
         container.appendChild(br);
     }
     var outer_div = document.createElement('div');
-
-    var input1 = document.createElement('select');
-    input1.name = "filter_" + "attributes";
-    input1.form = "hist_" + id;
-    input1.className = "selectpicker";
+    var select_attributes = document.createElement('select');
+    select_attributes.name = "filter_" + "attributes";
+    select_attributes.form = "hist_" + id;
+    select_attributes.className = "selectpicker";
     var attributes = ["Patient Age", "Heart rate", "Height (cm)", "Weight (kg)", "LVEDV (ml)", "LVESV (ml)", "LVSV (ml)", "LVEF (%)", "LV Mass (g)", "RVEDV (ml)", "RVESV (ml)", "RVSV (ml)", "RVEF (%)", "RV Mass (g)", "BMI (kg/msq)", "BSA", "BSA (msq)", "CO (L/min)", "Central PP(mmHg)", "DBP (mmHg)", "LVEF (ratio)", "MAP", "PAP (mmHg)", "PP (mmHg)", "RVEF (ratio)", "SBP (mmHg)", "SVR (mmHg/L/min)"];
     var option = document.createElement('option');
     option.text = "Attribute";
     option.selected = true;
     option.disabled = true;
-    input1.appendChild(option);
+    select_attributes.appendChild(option);
     for (var i = 0; i < attributes.length; i++){
-        var option = document.createElement('option');
+        option = document.createElement('option');
         option.value = attributes[i];
         option.text = attributes[i];
-        input1.appendChild(option);
+        select_attributes.appendChild(option);
     }
-    outer_div.appendChild(input1);
-    var space_span = document.createElement('span')
+    outer_div.appendChild(select_attributes);
+    space_span = document.createElement('span');
     space_span.innerHTML = " ";
     outer_div.appendChild(space_span);
 
-    var input2 = document.createElement('select');
-    // input2.name = "filter_" + "operators_" + id;
-    input2.name = "filter_" + "operators";
-    input2.form = "hist_" + id;
-    input2.className = "selectpicker";
+    var select_op = document.createElement('select');
+    select_op.name = "filter_" + "operators";
+    select_op.form = "hist_" + id;
+    select_op.className = "selectpicker";
     var operators = [">", "<", "="];
-    var option = document.createElement('option');
+    option = document.createElement('option');
     option.text = "Operator";
     option.selected = true;
     option.disabled = true;
-    input2.appendChild(option);
-    for (var i = 0; i < operators.length; i++){
-        var option = document.createElement('option');
+    select_op.appendChild(option);
+    for (i = 0; i < operators.length; i++){
+        option = document.createElement('option');
         option.value = operators[i];
         option.text = operators[i];
-        input2.appendChild(option);
+        select_op.appendChild(option);
     }
-    outer_div.appendChild(input2);
-    var space_span = document.createElement('span')
+    outer_div.appendChild(select_op);
+    space_span = document.createElement('span');
     space_span.innerHTML = " ";
     outer_div.appendChild(space_span);
 
     var input_div = document.createElement('div');
     input_div.className = "btn-group";
-    var input3 = document.createElement('input');
-    input3.name = "filter_" + "values";
-    input3.type = "text";
-    input3.required = true;
-    input3.className = "form-control";
-    input_div.appendChild(input3);
+    var input = document.createElement('input');
+    input.name = "filter_" + "values";
+    input.type = "text";
+    input.required = true;
+    input.className = "form-control";
+    input_div.appendChild(input);
     outer_div.appendChild(input_div);
-    var space_span = document.createElement('span')
+    space_span = document.createElement('span');
     space_span.innerHTML = " ";
     outer_div.appendChild(space_span);
 
     if (children == 0) {
         var bool_operators = ["AND", "OR", "XOR"];
-        var input4 = document.createElement('select');
-        input4.text = "Boolean Operator";
-        input4.name = "boolean_opreator";
-        input4.className = "selectpicker";
-        for (var i = 0; i < bool_operators.length; i++){
+        select_op = document.createElement('select');
+        select_op.text = "Boolean Operator";
+        select_op.name = "boolean_opreator";
+        select_op.className = "selectpicker";
+        for (i = 0; i < bool_operators.length; i++){
             option = document.createElement('option');
             option.value = bool_operators[i];
             option.text = bool_operators[i];
-            input4.appendChild(option);
+            select_op.appendChild(option);
         }
-        outer_div.appendChild(input4);
+        outer_div.appendChild(select_op);
     }
     container.appendChild(outer_div);
     $('.selectpicker').selectpicker();
@@ -305,7 +302,6 @@ function sendFormWithId(id) {
         document.getElementById(formId).style.display = "none"; // hide the attribute list
         document.getElementById('loading-wrapper_'+formId).style.display = "block"; // show the loading sign
       },
-
       success : function (response) {
         document.getElementById('loading-wrapper_'+formId).style.display = "none"; // hide the loading sign
         document.getElementById(tabId).innerHTML = '<iframe width="900" height="800" frameborder="0" scrolling="no" src="' + response + '"></iframe>';
