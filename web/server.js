@@ -54,6 +54,23 @@ function _exec(script, args) {
     });
 }
 
+// function to return a promise to unlink a file if exists
+function _unlinkIfExists(filename) {
+    return new Promise((resolve, reject) => {
+        fs.stat(filename, (err, stat) => {
+            if (err === null) {
+                fs.unlink(filename, err => {
+                    if (err) { return reject(err); }
+                    resolve(`Removing document at ${path}`);
+                });
+            } else if (err.code === 'ENOENT') {
+                resolve('File does not exist');
+            }
+        });
+    });  
+}
+
+
 app.post('/histogram', function(req, res) {
     var parent = path.dirname(__basedir);
     var content = JSON.stringify(req.body);
@@ -67,6 +84,10 @@ app.post('/histogram', function(req, res) {
         })
         .then((buffer) => {
             console.log('[NODE] Request(' + req_counter + ') Main generated.\n');
+            return _unlinkIfExists(parent + '/.histogram_main_' + req_counter + '.sb.src');
+        })
+        .then((msg) => {
+            console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
             return _exec('./compile.sh histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
         })
         .then((buffer) => {
