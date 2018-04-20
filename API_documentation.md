@@ -1,4 +1,4 @@
-##SMPC API
+## SMPC API
 ### SMPC Server
 The SMPC Server interacts with the SMPC cluster. One can pose queries to the server and get answers resulting from the SMPC computation. For this purpose, the server provides the following RESTful API.
 
@@ -57,17 +57,17 @@ An example of the requests body can be found below.
 }
 ```
 The request is a JSON string consisting of the following parameters.
-* `attributes`<span style="color:red">_required_</span> A list with an element (list) for each desired histogram. The length of this list is equal to the number of histograms that will be computed. For each histogram, one should provide a list of JSON objects, corresponding to the attributes on which this histogram will be built.
+* `attributes` <span style="color:red">_required_</span> A list with an element (list) for each desired histogram. The length of this list is equal to the number of histograms that will be computed. For each histogram, one should provide a list of JSON objects, corresponding to the attributes on which this histogram will be built.
 These JSON objects have the following keys:
-    * `name`<span style="color:red">_required_</span> The name of the attribute (_string_).
-    * `cells`<span style="color:red">_required_</span> The number of histogram cells/buckets to be created for this attribute (_positive integer_).
-* `datasources`<span style="color:blue"> _optional_ </span> A list of the datasources (strings) from which the histogram(s) will be computed. If this key is left empty or not specified, all available datasources will be used.
-* `filters`<span style="color:blue"> _optional_ </span> A JSON object containing a boolean operator and a list of filters / conditions that that should be met for each data tuple considered int the secure histogram computation. If this field is left blank or not specified, all data tuples will be used for the computation. The object has the following keys:
-    * `operator`<span style="color:red">_required_</span> The boolean operator (_string_) that will be applied between all the specified conditions that follow. One of `[AND, OR, XOR]` In the case of multiple conditions, the operator is left-associative.
-    * `conditions`<span style="color:red">_required_</span> The list of conditions that should be met by each data tuple in the computation. Each condition is represented as a JSON object with the following keys.
-        * `attribute`<span style="color:red">_required_</span> The name of the attribute (_string_).
-        * `operator`<span style="color:red">_required_</span> The condition's operator (_string_). One of `[>, <, =]`
-        * `value`<span style="color:red">_required_</span> The attribute's value (_string_).
+    * `name` <span style="color:red">_required_</span> The name of the attribute (_string_).
+    * `cells` <span style="color:red">_required_</span> The number of histogram cells/buckets to be created for this attribute (_positive integer_).
+* `datasources` <span style="color:blue">_optional_</span> A list of the datasources (strings) from which the histogram(s) will be computed. If this key is left empty or not specified, all available datasources will be used.
+* `filters` <span style="color:blue">_optional_</span> A JSON object containing a boolean operator and a list of filters / conditions that that should be met for each data tuple considered int the secure histogram computation. If this field is left blank or not specified, all data tuples will be used for the computation. The object has the following keys:
+    * `operator` <span style="color:red">_required_</span> The boolean operator (_string_) that will be applied between all the specified conditions that follow. One of `[AND, OR, XOR]` In the case of multiple conditions, the operator is left-associative.
+    * `conditions` <span style="color:red">_required_</span> The list of conditions that should be met by each data tuple in the computation. Each condition is represented as a JSON object with the following keys.
+        * `attribute` <span style="color:red">_required_</span> The name of the attribute (_string_).
+        * `operator` <span style="color:red">_required_</span> The condition's operator (_string_). One of `[>, <, =]`
+        * `value` <span style="color:red">_required_</span> The attribute's value (_string_).
 
 ##### Server's response
 The server's response to such a request is a list with an element for each of the computed histograms. Each such element contains a serialized version of each histograms, along with how many cells were used for each attribute / dimension of the histogram. An example response can be found below.
