@@ -161,13 +161,13 @@ function addTab() {
         <p>
           <ul class="list-group">
               <li class="list-group-item">
-                <input type="checkbox" name="datasets" value="data_provider_0" checked="true"> Dataset 1 &ensp;
+                <input type="checkbox" name="datasources" value="data_provider_0" checked="true"> Dataset 1 &ensp;
               </li>
               <li class="list-group-item">
-                <input type="checkbox" name="datasets" value="data_provider_1" checked="true"> Dataset 2 &ensp;
+                <input type="checkbox" name="datasources" value="data_provider_1" checked="true"> Dataset 2 &ensp;
               </li>
               <li class="list-group-item">
-                <input type="checkbox" name="datasets" value="data_provider_2" checked="true"> Dataset 3 &ensp;
+                <input type="checkbox" name="datasources" value="data_provider_2" checked="true"> Dataset 3 &ensp;
               </li>
           </ul>
         </p>
@@ -294,9 +294,78 @@ function addFilterToFormWithId(formId) {
     $('.selectpicker').selectpicker();
 }
 
+function objectifyForm(formArray) {//serialize data function
+
+  var returnArray = {};
+  for (var i = 0; i < formArray.length; i++){
+      formJSON = {'attribute_names' : [], 'attribute_cells' : []};
+      finalJson = {'attributes' : [[]]};
+      var form  = formArray[i];
+      for (var j = 0; j < form.length; j++){
+          var element = form[j];
+          if (element.name == 'attributes' && element.checked == true) {
+              formJSON.attribute_names.push(element.value);
+          }
+          if (element.name == 'cells' && element.value != "") {
+              formJSON.attribute_cells.push(element.value);
+          }
+          if (element.name == 'datasources' && element.checked == true) {
+              if ('datasources' in finalJson) {
+                  finalJson.datasources.push(element.value);
+              } else {
+                  finalJson.datasources = [element.value];
+              }
+          }
+          if (element.name == 'filter_attributes') {
+              if ('filter_attributes' in formJSON) {
+                  formJSON.filter_attributes.push(element.value);
+              } else {
+                  formJSON.filter_attributes = [element.value];
+              }
+          }
+          if (element.name == 'filter_operators') {
+              if ('filter_operators' in formJSON) {
+                  formJSON.filter_operators.push(element.value);
+              } else {
+                  formJSON.filter_operators = [element.value];
+              }
+          }
+          if (element.name == 'filter_values') {
+              if ('filter_values' in formJSON) {
+                  formJSON.filter_values.push(element.value);
+              } else {
+                  formJSON.filter_values = [element.value];
+              }
+          }
+          if (element.name == 'filter_values') {
+              formJSON.boolean_opreator = element.value;
+          }
+      }
+      for (var a = 0; a < formJSON.attribute_names.length; a++){
+          var name = formJSON.attribute_names[a];
+          var cells = formJSON.attribute_cells[a];
+          finalJson.attributes[0].push({'name':name, 'cells':cells});
+      }
+       if ('filter_attributes' in formJSON) {
+           var boolean_opreator = formJSON.bool_operators;
+           finalJson.filters = {'operator' : boolean_opreator, 'conditions' : []};
+           for (var f = 0; f < formJSON.filter_attributes.length; f++){
+               var attribute_name = formJSON.filter_attributes[f];
+               var attribute_operator = formJSON.filter_operators[f];
+               var attribute_value = formJSON.filter_values[f];
+               finalJson.filters.conditions.push([{'attribute' : attribute_name, 'operator' : attribute_operator, 'value' : attribute_value}]);
+           }
+       }
+    returnArray[i] = finalJson;
+  }
+  console.log(returnArray[0]);
+  // return returnArray;
+}
+
 function sendFormWithId(id) {
   var formId = id.substring(7); // get the hist id from the button id
   var tabId = "tab" + formId.substring(5); // get the tab id
+  objectifyForm($('#'+formId));
   $('#'+formId).ajaxForm({
       beforeSend : function() {
         document.getElementById(formId).style.display = "none"; // hide the attribute list

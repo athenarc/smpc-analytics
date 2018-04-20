@@ -112,13 +112,13 @@ def main():
     main_f += '''
     tdbVmapAddValue(cells_vmap, "0", vector_value);
     '''
-    if 'datasets' in configuration:
-        if isinstance(configuration['datasets'], list):
-            numberOfDatasets = len(configuration['datasets'])
-            data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(configuration['datasets'][i]) + ";" for i in range(len(configuration['datasets']))])
+    if 'datasources' in configuration:
+        if isinstance(configuration['datasources'], list):
+            numberOfDatasets = len(configuration['datasources'])
+            data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(configuration['datasources'][i]) + ";" for i in range(len(configuration['datasources']))])
         else:
             numberOfDatasets = 1
-            data_providers = indentation + "string table_0 = " + quote(configuration['datasets']) + ";"
+            data_providers = indentation + "string table_0 = " + quote(configuration['datasources']) + ";"
         main_f += '''
     string datasource = "DS1";
     uint64 data_providers_num = ''' + str(numberOfDatasets) + ''';
