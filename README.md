@@ -1,1 +1,1 @@
-# sharemind-classifiers
+# smpc-analytics
