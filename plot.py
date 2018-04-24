@@ -14,9 +14,9 @@ maxs = []
 
 
 if len(sys.argv) > 2:
-    DATASET = sys.argv[2]
+    COLUMNS = sys.argv[2]
 else:
-    DATASET = 'datasets/analysis_test_data/cvi_identified.csv'
+    COLUMNS = 'datasets/analysis_test_data/columns.csv'
 
 def compute_axis_labels(min, max, width, cells):
     start = min
@@ -36,7 +36,7 @@ with open('data_input.sc', 'r') as data_input: # Temporary solution
     mins = map(float,line.split()[-1][1:-2].split(','))
     line = next(data_input)
     maxs = map(float,line.split()[-1][1:-2].split(','))
-    df = pd.read_csv(DATASET,sep=',')
+    df = pd.read_csv(COLUMNS,sep=',')
 
 
 with open('out_' + req_counter + '.txt', 'r') as results:
