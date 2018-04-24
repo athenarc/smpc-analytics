@@ -91,11 +91,10 @@ app.post('/histogram', function(req, res) {
             return _exec('./sm_compile_and_run.sh histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
         })
         .then((buffer) => {
-            console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
+            console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
             return _exec('tail -n +`cut -d " "  -f "9-" /etc/sharemind/server.log  | grep -n "Starting process" | tail -n 1 | cut -d ":" -f 1` /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
         })
         .then((buffer) => {
-            console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
             return _exec('python plot.py ' + req_counter, {cwd: parent});
         })
         .then((result) => {
