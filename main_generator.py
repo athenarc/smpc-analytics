@@ -16,7 +16,6 @@ import modules;
 
 import shared3p_table_database;
 import table_database;
-import data_input;
 
 import histogram;
 '''
@@ -43,9 +42,13 @@ def main():
     if len(sys.argv) > 1:
         configuration = sys.argv[1]
         if len(sys.argv) > 2:
-            DATASET = sys.argv[2]
+            COLUMNS = sys.argv[2]
         else:
-            DATASET = 'datasets/analysis_test_data/cvi_identified.csv'
+            COLUMNS = 'datasets/analysis_test_data/columns.csv'
+        if len(sys.argv) > 3:
+            SUMMARY = sys.argv[3]
+        else:
+            SUMMARY = 'datasets/analysis_test_data/cvi_summary.csv'
     else:
         print('No arguement provided')
         sys.exit(1)
@@ -60,12 +63,26 @@ def main():
             numberOfFilters = len(configuration['filter_attributes'])
         else:
             numberOfFilters = 1
-    df=pd.read_csv(DATASET,sep=',')
+    df=pd.read_csv(COLUMNS,sep=',')
     if isinstance(configuration['attributes'], list): # Multiple attributes
         attribute_indexes = [df.columns.get_loc(attribute) for attribute in configuration['attributes'] ]
     else: # Single attribute
         attribute_indexes = [df.columns.get_loc(configuration['attributes'])]
     attributes_vmap = '{'+ ', '.join([str(x) for x in attribute_indexes]) +'}'
+    mins = []
+    maxs = []
+    summary = pd.read_csv(SUMMARY, sep = ',')
+    for attribute in df.columns:
+        if attribute in summary['Field'].values:
+            mins.append(summary[summary['Field']==attribute][' Min'].item())
+            maxs.append(summary[summary['Field']==attribute][' Max'].item())
+        else:
+            mins.append(0.0)
+            maxs.append(0.0)
+    main_f += '''
+    pd_shared3p float64[[1]] imported_mins('''+ str(len(mins)) +''') =''' + '{'+ ', '.join([str(x) for x in mins]) +'}' + ''';
+    pd_shared3p float64[[1]] imported_maxs('''+ str(len(maxs)) +''') =''' + '{'+ ', '.join([str(x) for x in maxs]) +'}' + ''';
+    '''
     if numberOfFilters > 0:
         bool_op = quote(configuration['boolean_opreator'])
         main_f += '''
