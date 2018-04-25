@@ -172,7 +172,7 @@ function addTab() {
           </ul>
         </p>
         <p>
-          <input type="submit" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-primary" value="Compute Histogram">
+          <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-primary" value="Compute Histogram">
         </p>
         </form>`+
     '</div>').appendTo('.tab-content');
@@ -337,7 +337,7 @@ function objectifyForm(formArray) {//serialize data function
                   formJSON.filter_values = [element.value];
               }
           }
-          if (element.name == 'filter_values') {
+          if (element.name == 'boolean_opreator') {
               formJSON.boolean_opreator = element.value;
           }
       }
@@ -347,26 +347,29 @@ function objectifyForm(formArray) {//serialize data function
           finalJson.attributes[0].push({'name':name, 'cells':cells});
       }
        if ('filter_attributes' in formJSON) {
-           var boolean_opreator = formJSON.bool_operators;
+           var boolean_opreator = formJSON.boolean_opreator;
            finalJson.filters = {'operator' : boolean_opreator, 'conditions' : []};
            for (var f = 0; f < formJSON.filter_attributes.length; f++){
                var attribute_name = formJSON.filter_attributes[f];
                var attribute_operator = formJSON.filter_operators[f];
                var attribute_value = formJSON.filter_values[f];
-               finalJson.filters.conditions.push([{'attribute' : attribute_name, 'operator' : attribute_operator, 'value' : attribute_value}]);
+               finalJson.filters.conditions.push({'attribute' : attribute_name, 'operator' : attribute_operator, 'value' : attribute_value});
            }
        }
     returnArray[i] = finalJson;
   }
-  console.log(returnArray[0]);
-  // return returnArray;
+  // console.log(returnArray[0]);
+  return returnArray[0];
 }
 
 function sendFormWithId(id) {
   var formId = id.substring(7); // get the hist id from the button id
   var tabId = "tab" + formId.substring(5); // get the tab id
-  objectifyForm($('#'+formId));
-  $('#'+formId).ajaxForm({
+  var jsonReq = objectifyForm($('#'+formId));
+  $.ajax({
+      type: 'POST',
+      url: '/histogram',
+      data : jsonReq,
       beforeSend : function() {
         document.getElementById(formId).style.display = "none"; // hide the attribute list
         document.getElementById('loading-wrapper_'+formId).style.display = "block"; // show the loading sign
