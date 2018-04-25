@@ -1,0 +1,11 @@
+.btn-hover-info:hover {
+  background-image:none;
+  background-color:#5bc0de;
+  border-color:#46b8da;
+}
+
+.btn-hover-success:hover {
+  background-image:none;
+  background-color:#5cb85c;
+  border-color:#4cae4c;
+}
