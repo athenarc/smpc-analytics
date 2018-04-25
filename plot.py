@@ -17,6 +17,10 @@ if len(sys.argv) > 2:
     COLUMNS = sys.argv[2]
 else:
     COLUMNS = 'datasets/analysis_test_data/columns.csv'
+if len(sys.argv) > 3:
+    SUMMARY = sys.argv[3]
+else:
+    SUMMARY = 'datasets/analysis_test_data/cvi_summary.csv'
 
 def compute_axis_labels(min, max, width, cells):
     start = min
@@ -29,15 +33,18 @@ def compute_axis_labels(min, max, width, cells):
     ticks.append('['+"{0:.2f}".format(start)+', '+"{0:.2f}".format(end)+']')
     return ticks
 
-with open('data_input.sc', 'r') as data_input: # Temporary solution
-    line = next(data_input)
-    while not line.startswith('pd_shared3p float64[[1]] imported_mins'):
-        line = next(data_input)
-    mins = map(float,line.split()[-1][1:-2].split(','))
-    line = next(data_input)
-    maxs = map(float,line.split()[-1][1:-2].split(','))
-    df = pd.read_csv(COLUMNS,sep=',')
 
+df = pd.read_csv(COLUMNS,sep=',')
+mins = []
+maxs = []
+summary = pd.read_csv(SUMMARY, sep = ',')
+for attribute in df.columns:
+    if attribute in summary['Field'].values:
+        mins.append(summary[summary['Field']==attribute][' Min'].item())
+        maxs.append(summary[summary['Field']==attribute][' Max'].item())
+    else:
+        mins.append(0.0)
+        maxs.append(0.0)
 
 with open('out_' + req_counter + '.txt', 'r') as results:
     ai = 1
