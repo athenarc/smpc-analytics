@@ -55,8 +55,9 @@ with open('out_' + req_counter + '.txt', 'r') as results:
             x = dimensions[0]
             if len(dimensions) == 1 or (len(dimensions) == 2 and 1 in dimensions):
                 data = [go.Bar(y=histogram)]
-                if not isinstance(configuration['attributes'], list):
-                    attribute_index = df.columns.get_loc(configuration['attributes'])
+                if len(configuration['attributes'][0]) == 1:
+                    attribute_name = configuration['attributes'][0][0]['name']
+                    attribute_index = df.columns.get_loc(attribute_name)
                     attribute_min = mins[attribute_index]
                     attribute_max = maxs[attribute_index]
                     cells = x
@@ -67,7 +68,7 @@ with open('out_' + req_counter + '.txt', 'r') as results:
                             type = 'category',
                             tickvals = list(range(cells)),
                             ticktext = compute_axis_labels(attribute_min, attribute_max, cell_width, cells),
-                            title = configuration['attributes']
+                            title = attribute_name
                         ),
                     )
                     figure = go.Figure(data=data, layout=layout)
@@ -81,8 +82,9 @@ with open('out_' + req_counter + '.txt', 'r') as results:
                 sublists = [histogram[i:i+y] for i in xrange(0, len(histogram), y)]
                 trace = go.Heatmap(z=sublists)
                 data = [trace]
-                if isinstance(configuration['attributes'], list) and len(configuration['attributes']) == 2:
-                    attribute_indexes = [df.columns.get_loc(attribute) for attribute in configuration['attributes'] ]
+                if len(configuration['attributes'][0]) == 2:
+                    attribute_names = [x['name'] for x in configuration['attributes'][0]]
+                    attribute_indexes = [df.columns.get_loc(attribute) for attribute in attribute_names ]
                     attribute_mins = [mins[i] for i in attribute_indexes]
                     attribute_maxs = [maxs[i] for i in attribute_indexes]
                     cell_widths = [(attribute_maxs[i] - attribute_mins[i]) / dimensions[i] for i in range(len(dimensions))]
@@ -91,14 +93,14 @@ with open('out_' + req_counter + '.txt', 'r') as results:
                             type = 'category',
                             tickvals = list(range(dimensions[1])),
                             ticktext = compute_axis_labels(attribute_mins[1], attribute_maxs[1], cell_widths[1], dimensions[1]),
-                            title = configuration['attributes'][1]
+                            title = attribute_names[1]
                         ),
                         yaxis=dict(
                             type = 'category',
                             tickangle = -45,
                             tickvals = list(range(dimensions[0])),
                             ticktext = compute_axis_labels(attribute_mins[0], attribute_maxs[0], cell_widths[0], dimensions[0]),
-                            title = configuration['attributes'][0]
+                            title = attribute_names[0]
                         )
                     )
                     figure = go.Figure(data=data, layout=layout)
@@ -127,8 +129,9 @@ with open('out_' + req_counter + '.txt', 'r') as results:
                                                 x = 1+0.05*i
                                                 )
                                             ))
-                if isinstance(configuration['attributes'], list) and len(configuration['attributes']) == 3:
-                    attribute_indexes = [df.columns.get_loc(attribute) for attribute in configuration['attributes'] ]
+                if len(configuration['attributes'][0]) == 3:
+                    attribute_names = [x['name'] for x in configuration['attributes'][0]]
+                    attribute_indexes = [df.columns.get_loc(attribute) for attribute in attribute_names ]
                     attribute_mins = [mins[i] for i in attribute_indexes]
                     attribute_maxs = [maxs[i] for i in attribute_indexes]
                     cell_widths = [(attribute_maxs[i] - attribute_mins[i]) / dimensions[i] for i in range(len(dimensions))]
@@ -138,21 +141,21 @@ with open('out_' + req_counter + '.txt', 'r') as results:
                                 # type = 'category',
                                 tickvals = list(range(dimensions[2])),
                                 ticktext = compute_axis_labels(attribute_mins[2], attribute_maxs[2], cell_widths[2], dimensions[2]),
-                                title = configuration['attributes'][2]
+                                title = attribute_names[2]
                             ),
                             yaxis=dict(
                                 # type = 'category',
                                 tickangle = -45,
                                 tickvals = list(range(dimensions[1])),
                                 ticktext = compute_axis_labels(attribute_mins[1], attribute_maxs[1], cell_widths[1], dimensions[1]),
-                                title = configuration['attributes'][1]
+                                title = attribute_names[1]
                             ),
                             xaxis=dict(
                                 # type = 'category',
                                 tickangle = -45,
                                 tickvals = list(range(dimensions[0])),
                                 ticktext = compute_axis_labels(attribute_mins[0], attribute_maxs[0], cell_widths[0], dimensions[0]),
-                                title = configuration['attributes'][0]
+                                title = attribute_names[0]
                             )
                         )
                     )
