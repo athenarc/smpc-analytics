@@ -1,0 +1,40 @@
+.unlocker{
+  width: 28px;
+  height: 24px;
+  background: transparent;
+  border: 6px solid grey;
+  border-bottom: 0;
+  border-radius: 15px 15px 0 0;
+  position: absolute;
+  top: -24px;
+  left: 12px;
+  -webkit-transition: all .3s;
+}
+
+.lock{
+  content: "";
+  width: 50px;
+  height: 40px;
+  background: grey;
+  position: relative;
+  border-radius: 4px;
+  margin: 70px;
+  left: -18px;
+  top: 20px;
+    -webkit-transform: rotateY(0deg);
+}
+
+.lock:hover .unlocker{
+    -webkit-transform: rotateY(-180deg);
+  -webkit-transform-origin: 25px 0;
+}
+
+*, *:before, *:after {
+  -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+ }
+ 
+ .center-div {
+    margin: 0% 42.5%;
+    width: 100px; 
+  }
+  
