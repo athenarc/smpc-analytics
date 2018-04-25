@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Histogram Secure Computations</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js" integrity="sha384-FzT3vTVGXqf7wRfy8k4BiyzvbNfeYjK+frTVqZeNDFl8woCbF0CYG6g2fMEFFo/i" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="loading.css">
+</head>
+<body>
+  <div class="container">
+    <div class="jumbotron">
+      <h2>Secure Histogram Computations</h2>
+
+      <p>Select attributes for histogram creation</p>
+    </div>
+
+    <div class="card"><div class="card-body">
+      <ul class="nav nav-tabs active" id="tabs">
+          <li class="nav-item active">
+            <a class="nav-link active" href="#tab1" id="tab1-tab" data-toggle="tab">Histogram 1</a>
+          </li>
+          <li class="nav-item">
+            <a href="#" id="btnAdd"><input type="submit" onclick="addTab()" class="btn btn-info btn-sm" value="+" id="tabButton"></input></a>
+          </li>
+      </ul>
+      <div class="tab-content">
+          <div class="tab-pane fade active in" id="tab1">
+            <div style="display:none;" id="loading-wrapper_hist_1">
+              <div id="loading-text">LOADING</div>
+              <div id="loading-content"></div>
+            </div>
+
+            <form action="/histogram" method="post" id="hist_1">
+              <p>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="Patient Age"> Patient Age &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="Heart rate"> Heart rate &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="Height (cm)"> Height (cm) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="Weight (kg)"> Weight (kg) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="LVEDV (ml)"> LVEDV (ml) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="LVESV (ml)"> LVESV (ml) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="LVSV (ml)"> LVSV (ml) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="LVEF (%)"> LVEF (%) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="LV Mass (g)"> LV Mass (g) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="RVEDV (ml)"> RVEDV (ml) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="RVESV (ml)"> RVESV (ml) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="RVSV (ml)"> RVSV (ml) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="RVEF (%)"> RVEF (%) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="RV Mass (g)"> RV Mass (g) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="BMI (kg/msq)"> BMI (kg/msq) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="BSA"> BSA &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="BSA (msq)"> BSA (msq) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="CO (L/min)"> CO (L/min) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="Central PP(mmHg)"> Central PP(mmHg) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="DBP (mmHg)"> DBP (mmHg) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="LVEF (ratio)"> LVEF (ratio) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="MAP"> MAP &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="PAP (mmHg)"> PAP (mmHg) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="PP (mmHg)"> PP (mmHg) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="RVEF (ratio)"> RVEF (ratio) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="SBP (mmHg)"> SBP (mmHg) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" value="SVR (mmHg/L/min)"> SVR (mmHg/L/min) &ensp;
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+                    </li>
+
+                    <div id="filter_container_1"/>
+                </ul>
+              </p>
+              <p>
+                <input type="button" id="filter_button_1" onclick="addFilterToFormWithId(this.id)" class="btn btn-default" value="Add Filter">
+              </p>
+              <br>
+              <p>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                      <input type="checkbox" name="datasources" value="data_provider_0" checked="true"> Dataset 1 &ensp;
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="datasources" value="data_provider_1" checked="true"> Dataset 2 &ensp;
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="datasources" value="data_provider_2" checked="true"> Dataset 3 &ensp;
+                    </li>
+                </ul>
+              </p>
+              <p>
+                <input type="button" id="button_hist_1" onclick="sendFormWithId(this.id)" class="btn btn-primary" value="Compute Histogram">
+              </p>
+            </form>
+          </div>
+      </div>
+    </div></div>
+
+
+  </div>
+</body>
+
+<!--  scripts -->
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src='./logic.js'></script>
+
+</html>
+
