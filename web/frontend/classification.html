@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Decision Trees Secure Creation</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js" integrity="sha384-FzT3vTVGXqf7wRfy8k4BiyzvbNfeYjK+frTVqZeNDFl8woCbF0CYG6g2fMEFFo/i" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="loading.css">
+</head>
+<body>
+  <div class="container">
+    <div class="jumbotron">
+      <h2>Decision Trees Secure Creation</h2>
+
+      <p>Select attributes for decision tree creation</p>
+    </div>
+
+    <div class="card"><div class="card-body">
+      <ul class="nav nav-tabs active" id="tabs">
+          <li class="nav-item active">
+            <a class="nav-link active" href="#tab1" id="tab1-tab" data-toggle="tab">Decision Tree 1</a>
+          </li>
+          <li class="nav-item">
+            <a href="#" id="btnAdd"><input type="submit" onclick="addDecisionTreeTab()" class="btn btn-success btn-sm" value="+" id="tabButton"></input></a>
+          </li>
+      </ul>
+      <div class="tab-content">
+          <div class="tab-pane fade active in" id="tab1">
+            <div style="display:none;" id="loading-wrapper_tree_1">
+              <div id="loading-text">Not supported</div>
+              <div id="loading-content"></div>
+            </div>
+
+            <form action="/decisionTree" method="post" id="tree_1">
+              </br>
+              <p>
+                <select class="selectpicker">
+                  <option value="" selected disabled>Class Attribute</option>
+                  <option>Patient Age</option>
+                  <option>Heart rate</option>
+                  <option>Height (cm)</option>
+                  <option>Weight (kg)</option>
+                  <option>LVEDV (ml)</option>
+                  <option>LVESV (ml)</option>
+                  <option>LVSV (ml)</option>
+                  <option>LVEF (%)</option>
+                  <option>LV Mass (g)</option>
+                  <option>RVEDV (ml)</option>
+                  <option>RVESV (ml)</option>
+                  <option>RVSV (ml)</option>
+                  <option>RVEF (%)</option>
+                  <option>RV Mass (g)</option>
+                  <option>BMI (kg/msq)</option>
+                  <option>BSA</option>
+                  <option>BSA (msq)</option>
+                  <option>CO (L/min)</option>
+                  <option>Central PP(mmHg)</option>
+                  <option>DBP (mmHg)</option>
+                  <option>LVEF (ratio)</option>
+                  <option>MAP</option>
+                  <option>PAP (mmHg)</option>
+                  <option>PP (mmHg)</option>
+                  <option>RVEF (ratio)</option>
+                  <option>SBP (mmHg)</option>
+                  <option>SVR (mmHg/L/min)</option>
+                </select>
+              </p>
+                    
+              <p>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="Patient Age"> Patient Age
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="Heart rate"> Heart rate
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="Height (cm)"> Height (cm)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="Weight (kg)"> Weight (kg)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="LVEDV (ml)"> LVEDV (ml)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="LVESV (ml)"> LVESV (ml)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="LVSV (ml)"> LVSV (ml)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="LVEF (%)"> LVEF (%)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="LV Mass (g)"> LV Mass (g)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="RVEDV (ml)"> RVEDV (ml)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="RVESV (ml)"> RVESV (ml)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="RVSV (ml)"> RVSV (ml)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="RVEF (%)"> RVEF (%)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="RV Mass (g)"> RV Mass (g)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="BMI (kg/msq)"> BMI (kg/msq)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="BSA"> BSA
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="BSA (msq)"> BSA (msq)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="CO (L/min)"> CO (L/min)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="Central PP(mmHg)"> Central PP(mmHg)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="DBP (mmHg)"> DBP (mmHg)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="LVEF (ratio)"> LVEF (ratio)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="MAP"> MAP
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="PAP (mmHg)"> PAP (mmHg)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="PP (mmHg)"> PP (mmHg)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="RVEF (ratio)"> RVEF (ratio)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="SBP (mmHg)"> SBP (mmHg)
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="attributes" checked="true" value="SVR (mmHg/L/min)"> SVR (mmHg/L/min)
+                    </li>
+                </ul>
+              </p>
+
+              <p>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                      <input type="checkbox" name="datasources" value="data_provider_0" checked="true"> Dataset 1
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="datasources" value="data_provider_1" checked="true"> Dataset 2
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="datasources" value="data_provider_2" checked="true"> Dataset 3
+                    </li>
+                </ul>
+              </p>
+              <p>
+                <input type="button" id="button_tree_1" onclick="sendFormWithId(this.id)" class="btn btn-success" value="Compute Decision Tree">
+              </p>
+            </form>
+          </div>
+      </div>
+    </div></div>
+
+
+  </div>
+</body>
+
+<!--  scripts -->
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src='./logic.js'></script>
+
+</html>
+

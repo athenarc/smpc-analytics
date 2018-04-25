@@ -1,4 +1,4 @@
-function addTab() {
+function addHistogramTab() {
   var nextTab = $('#tabs li').length;
 
   // remove the button from the end
@@ -182,7 +182,170 @@ function addTab() {
   assignButtons();
 
   // add the button to the end
-  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addTab()" class="btn btn-info btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
+  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addHistogramTab()" class="btn btn-info btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
+
+  $('.selectpicker').selectpicker();
+}
+
+function addDecisionTreeTab() {
+  var nextTab = $('#tabs li').length;
+
+  // remove the button from the end
+  var add_btn = document.getElementById('btnAdd');
+  add_btn.parentElement.remove();
+
+  // create the tab and add it to the end
+  $('<li class="nav-item"><a class="nav-link" href="#tab'+nextTab+'" id="tab'+nextTab+'-tab" data-toggle="tab">Decision Tree '+nextTab+'</a></li>').appendTo('#tabs');
+
+  // create the tab content
+  $('<div class="tab-pane fade" id="tab'+nextTab+'">' +
+      `<div style="display: none;" id="loading-wrapper_tree_`+nextTab+`">
+        <div id="loading-text">LOADING</div>
+        <div id="loading-content"></div>
+      </div>` +
+      `<form action="/decisionTree" method="post" id="tree_`+nextTab+`">
+        </br>
+        <p>
+          <select class="selectpicker">
+            <option value="" selected disabled>Class Attribute</option>
+            <option>Patient Age</option>
+            <option>Heart rate</option>
+            <option>Height (cm)</option>
+            <option>Weight (kg)</option>
+            <option>LVEDV (ml)</option>
+            <option>LVESV (ml)</option>
+            <option>LVSV (ml)</option>
+            <option>LVEF (%)</option>
+            <option>LV Mass (g)</option>
+            <option>RVEDV (ml)</option>
+            <option>RVESV (ml)</option>
+            <option>RVSV (ml)</option>
+            <option>RVEF (%)</option>
+            <option>RV Mass (g)</option>
+            <option>BMI (kg/msq)</option>
+            <option>BSA</option>
+            <option>BSA (msq)</option>
+            <option>CO (L/min)</option>
+            <option>Central PP(mmHg)</option>
+            <option>DBP (mmHg)</option>
+            <option>LVEF (ratio)</option>
+            <option>MAP</option>
+            <option>PAP (mmHg)</option>
+            <option>PP (mmHg)</option>
+            <option>RVEF (ratio)</option>
+            <option>SBP (mmHg)</option>
+            <option>SVR (mmHg/L/min)</option>
+          </select>
+        </p>
+        <p>
+          <ul class="list-group">
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="Patient Age"> Patient Age
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="Heart rate"> Heart rate
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="Height (cm)"> Height (cm)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="Weight (kg)"> Weight (kg)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="LVEDV (ml)"> LVEDV (ml)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="LVESV (ml)"> LVESV (ml)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="LVSV (ml)"> LVSV (ml)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="LVEF (%)"> LVEF (%)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="LV Mass (g)"> LV Mass (g)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="RVEDV (ml)"> RVEDV (ml)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="RVESV (ml)"> RVESV (ml)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="RVSV (ml)"> RVSV (ml)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="RVEF (%)"> RVEF (%)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="RV Mass (g)"> RV Mass (g)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="BMI (kg/msq)"> BMI (kg/msq)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="BSA"> BSA
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="BSA (msq)"> BSA (msq)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="CO (L/min)"> CO (L/min)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="Central PP(mmHg)"> Central PP(mmHg)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="DBP (mmHg)"> DBP (mmHg)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="LVEF (ratio)"> LVEF (ratio)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="MAP"> MAP
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="PAP (mmHg)"> PAP (mmHg)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="PP (mmHg)"> PP (mmHg)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="RVEF (ratio)"> RVEF (ratio)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="SBP (mmHg)"> SBP (mmHg)
+            </li>
+            <li class="list-group-item">
+              <input type="checkbox" name="attributes" checked="true" value="SVR (mmHg/L/min)"> SVR (mmHg/L/min)
+            </li>
+          </ul>
+        </p>
+        <p>
+          <ul class="list-group">
+              <li class="list-group-item">
+                <input type="checkbox" name="datasources" value="data_provider_0" checked="true"> Dataset 1 &ensp;
+              </li>
+              <li class="list-group-item">
+                <input type="checkbox" name="datasources" value="data_provider_1" checked="true"> Dataset 2 &ensp;
+              </li>
+              <li class="list-group-item">
+                <input type="checkbox" name="datasources" value="data_provider_2" checked="true"> Dataset 3 &ensp;
+              </li>
+          </ul>
+        </p>
+        <p>
+          <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-success" value="Compute Histogram">
+        </p>
+        </form>`+
+    '</div>').appendTo('.tab-content');
+
+  // make the new tab active
+  $('#tabs a:last').tab('show');
+
+  // add the button to the end
+  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addDecisionTreeTab()" class="btn btn-success btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
 
   $('.selectpicker').selectpicker();
 }
