@@ -217,8 +217,7 @@ pd_shared3p int64 most_common_label(pd_shared3p int64[[2]] examples) {
             label_counts[c] += (uint64)neq*(uint64)(eq);
         }
     }
-    pd_shared3p uint64 max_count = max(label_counts); //needs optimization
-    return (int64)index_of(label_counts, max_count);
+    return (int64)index_of_max(label_counts);
 }
 
 
