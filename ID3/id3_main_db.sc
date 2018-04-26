@@ -20,7 +20,7 @@ string table = "id3_data";
  * ID3 Summary
  * 1. Calculate the entropy of every attribute using the data set
  * 2. Split the set into subsets using the attribute for which the resulting entropy
- * 	  (after splitting) is minimum (or, equivalently, information gain is maximum)
+ *     (after splitting) is minimum (or, equivalently, information gain is maximum)
  * 3. Make a decision tree node containing that attribute
  * 4. Recurse on subsets using remaining attributes.
 **/
@@ -119,12 +119,9 @@ pd_shared3p bool all_examples_same(pd_shared3p int64[[1]] example_indexes) {
     pd_shared3p int64[[1]] label_column = tdbReadColumn(datasource, table, class_index);
     pd_shared3p uint64[[1]] class_counts(max_attribute_values);
     for (uint64 i = 0; i < max_attribute_values; i++) {
-      	pd_shared3p int64 label = possible_values[class_index, i];
-      	pd_shared3p bool neq = (label != -1);
-        for (uint64 index = 0; index < rows; index++) {
-            pd_shared3p uint64 eq = (uint64)(label_column[index] == label) * (uint64)(example_indexes[index] != 0) ;
-            class_counts[i] += (uint64)neq* eq; // counter for class i
-        }
+        pd_shared3p int64 label = possible_values[class_index, i];
+        pd_shared3p uint64[[1]] eq = (uint64)(label_column == label) * (uint64)(example_indexes != 0) * (uint64)(label != -1);
+        class_counts[i] = sum(eq);
         res += (uint64)(class_counts[i] == (uint64) sum(example_indexes));
     }
     return (bool)res;
@@ -136,12 +133,9 @@ pd_shared3p float64 entropy(pd_shared3p int64[[1]] example_indexes) {
     pd_shared3p int64[[1]] label_column = tdbReadColumn(datasource, table, class_index);
     pd_shared3p float64 entropy = 0.0;
     for (uint64 c = 0; c < max_attribute_values; c++) {
-        pd_shared3p uint64 count = 0;
         pd_shared3p int64 label = possible_values[class_index, c];
-        pd_shared3p bool neq = (label != -1);
-        for (uint64 index = 0 ; index < rows ; index++) {
-            count += (uint64)neq * (uint64)(label_column[index] == label) * (uint64)(example_indexes[index] != 0);
-        }
+        pd_shared3p uint64[[1]] eq = (uint64)(label_column == label) * (uint64)(example_indexes != 0) * (uint64)(label != -1);
+        pd_shared3p uint64 count = sum(eq);
         pd_shared3p float64 percentage = (float64)count / (float64)sum(example_indexes);
         entropy -= (percentage * log2(percentage));
     }
@@ -161,10 +155,7 @@ pd_shared3p float64 information_gain(pd_shared3p int64[[1]] example_indexes, pd_
     }
     for (uint64 v = 0; v < max_attribute_values; v++) {
         pd_shared3p int64 value = attribute_values[v];
-        pd_shared3p int64[[1]] subset(rows);
-        for (uint64 index = 0; index < rows; index++){
-            subset[index] = (int64)(attribute_column[index] == value) * (int64)(example_indexes[index] != 0); // maybe simd
-        }
+        pd_shared3p int64[[1]] subset(rows) = (int64)(attribute_column == value) * (int64)(example_indexes != 0);
         pd_shared3p float64 percentage = (float64)sum(subset) / (float64)sum(example_indexes);
         pd_shared3p bool neq = (percentage != 0);
         gain -= (float64)neq * percentage * entropy(subset);
@@ -193,12 +184,9 @@ pd_shared3p int64 most_common_label(pd_shared3p int64[[1]] example_indexes) {
     pd_shared3p uint64[[1]] label_counts(max_attribute_values);
     for (uint64 index = 0; index < rows; index++) {
         pd_shared3p int64 label = label_column[index] * (int64)(example_indexes[index] != 0) + (int64)(-1) * (int64)(example_indexes[index] == 0);
-        pd_shared3p bool neq = (label != -1);
         pd_shared3p uint64 label_index = index_of(possible_classes, label); //needs optimization
-        for (uint64 c = 0; c < max_attribute_values; c++) { //maybe simd
-            pd_shared3p bool eq = (label_index == c);
-            label_counts[c] += (uint64)neq*(uint64)(eq);
-        }
+        uint64[[1]] classes = iota(max_attribute_values); //[0, 1, 2, ... , max_attribute_values-1]
+        label_counts += (uint64)(label != -1) * (uint64) (classes == label_index);
     }
     pd_shared3p uint64 max_count = max(label_counts); //needs optimization
     return (int64)index_of(label_counts, max_count);
@@ -209,10 +197,8 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[1]] example_indexes, pd_shared
     if (declassify(all_examples_same(example_indexes))) {
         pd_shared3p int64[[1]] label_column = tdbReadColumn(datasource, table, class_index);
         pd_shared3p int64 label = -1;
-        for (uint64 index = 0; index < rows; index++) {
-            pd_shared3p bool neq = example_indexes[index] != 0;
-            label = (int64)neq * label_column[index] + (1-(int64)neq)*(label);
-        }
+        pd_shared3p int64[[1]] true_labels = example_indexes * label_column;
+        label = (int64) ((uint64)sum(true_labels) / (uint64)sum(example_indexes));
         return itoa(label);
     }
     if (size(attributes) == 0) {
@@ -222,40 +208,34 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[1]] example_indexes, pd_shared
     pd_shared3p uint64 best_attribute_original_index = index_of(original_attributes, best_attribute); // maybe 1 for loop
     pd_shared3p uint64 best_attribute_index = index_of(attributes, best_attribute);
     pd_shared3p xor_uint8[[1]] branches;
-  	pd_shared3p int64[[1]] best_attribute_values(max_attribute_values);
+    pd_shared3p int64[[1]] best_attribute_values(max_attribute_values);
     pd_shared3p int64[[1]] best_attribute_column(rows);
     for (uint64 i = 0; i < columns; i++) {
         pd_shared3p bool eq = (i == best_attribute_original_index);
-      	best_attribute_values += (int64)eq * possible_values[i,:]; // simd
+        best_attribute_values += (int64)eq * possible_values[i,:]; // simd
         best_attribute_column += (int64)eq * tdbReadColumn(datasource, table, i);
     }
 
-  	for (uint64 v = 0 ; v < max_attribute_values ; v++) {
+    for (uint64 v = 0 ; v < max_attribute_values ; v++) {
         pd_shared3p int64 value = best_attribute_values[v];
         if (declassify(value == -1)) {
             continue;
         }
-        pd_shared3p int64[[1]] subset(rows);
-        for(uint64 index = 0; index < rows; index++){
-            subset[index] = (int64)(best_attribute_column[index] == value) * (int64)(example_indexes[index] != 0); // maybe simd
-        }
+        pd_shared3p int64[[1]] subset(rows) = (int64)(best_attribute_column == value) * (int64)(example_indexes != 0);
         pd_shared3p xor_uint8[[1]] branch = bl_strCat(left_br_str, itoa(best_attribute));
         branch = bl_strCat(branch, eq_str);
         branch = bl_strCat(branch, itoa(value));
         branch = bl_strCat(branch, right_br_str);
         branch = bl_strCat(branch, arrow_str);
 
-      	if (declassify(sum(subset) == 0)) {
+        if (declassify(sum(subset) == 0)) {
             branch = bl_strCat(branch, itoa(most_common_label(example_indexes)));
         } else {
-            pd_shared3p int64[[1]] first_half(size(attributes));
-            pd_shared3p int64[[1]] second_half(size(attributes));
-            for (uint64 i = 0; i < size(attributes); i++) { // Fill first & second
-                pd_shared3p bool lt = (i < best_attribute_index);
-                pd_shared3p bool gt = (i > best_attribute_index);
-                first_half[i] += (int64)lt * (int64)attributes[i] + (1-(int64)lt) * (-1);
-                second_half[i] += (int64)gt * (int64)attributes[i] + (1-(int64)gt) * (-1);
-            }
+            uint64[[1]] attribute_indexes = iota(size(attributes));
+            pd_shared3p int64[[1]] lt = (int64)(attribute_indexes < best_attribute_index);
+            pd_shared3p int64[[1]] gt = (int64)(attribute_indexes > best_attribute_index);
+            pd_shared3p int64[[1]] first_half(size(attributes)) = lt * (int64)attributes + (1-lt) * (-1);
+            pd_shared3p int64[[1]] second_half(size(attributes)) = gt * (int64)attributes + (1-gt) * (-1);
             pd_shared3p int64[[1]] new_attribs(size(attributes)-1) = first_half[:size(attributes)-1];
             for (uint64 i = size(attributes)-1; i > 0; i--) {
                 pd_shared3p bool neq = (second_half[i] != -1);
