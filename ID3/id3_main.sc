@@ -13,7 +13,7 @@ import data_input;
  * ID3 Summary
  * 1. Calculate the entropy of every attribute using the data set
  * 2. Split the set into subsets using the attribute for which the resulting entropy
- * 	  (after splitting) is minimum (or, equivalently, information gain is maximum)
+ *     (after splitting) is minimum (or, equivalently, information gain is maximum)
  * 3. Make a decision tree node containing that attribute
  * 4. Recurse on subsets using remaining attributes.
 **/
@@ -131,8 +131,8 @@ pd_shared3p bool all_examples_same(pd_shared3p int64[[2]] examples) {
     pd_shared3p uint64 res = 0;
     pd_shared3p uint64[[1]] class_counts(max_attribute_values);
     for (uint64 c = 0; c < max_attribute_values; c++) {
-      	pd_shared3p int64 label = possible_values[class_index, c];
-      	pd_shared3p bool neq = (label != -1);
+        pd_shared3p int64 label = possible_values[class_index, c];
+        pd_shared3p bool neq = (label != -1);
         for (uint64 i = 0; i < rows; i++) {
             pd_shared3p bool eq = (examples[i,columns-1] == label);
             class_counts[c] += (uint64)neq*(uint64)(eq); // counter for class i
@@ -239,14 +239,14 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
     pd_shared3p uint64 best_attribute_original_index = index_of(original_attributes, best_attribute); // maybe 1 for loop
     pd_shared3p uint64 best_attribute_index = index_of(attributes, best_attribute);
     pd_shared3p xor_uint8[[1]] branches;
-  	pd_shared3p int64[[1]] best_attribute_values(max_attribute_values);
+    pd_shared3p int64[[1]] best_attribute_values(max_attribute_values);
     for (uint64 i = 0; i < columns; i++) {
         pd_shared3p bool eq = (i == best_attribute_original_index);
-      	best_attribute_values += (int64)eq * possible_values[i,:]; // simd
+        best_attribute_values += (int64)eq * possible_values[i,:]; // simd
     }
 
-  	for (uint64 v = 0 ; v < max_attribute_values ; v++) {
-		    pd_shared3p int64 value = best_attribute_values[v];
+    for (uint64 v = 0 ; v < max_attribute_values ; v++) {
+        pd_shared3p int64 value = best_attribute_values[v];
         if (declassify(value == -1)) {
             continue;
         }
@@ -266,7 +266,7 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
         branch = bl_strCat(branch, right_br_str);
         branch = bl_strCat(branch, arrow_str);
 
-      	if (declassify(count_positives(subset) == 0)) {
+        if (declassify(count_positives(subset) == 0)) {
             branch = bl_strCat(branch, itoa(most_common_label(examples)));
         } else {
             pd_shared3p int64[[1]] first_half(size(attributes));
