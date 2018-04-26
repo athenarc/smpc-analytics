@@ -21,14 +21,22 @@
   margin: 70px;
   left: -18px;
   top: 20px;
-    -webkit-transform: rotateY(0deg);
+  -webkit-transform: rotateY(0deg);
 }
 
 .lock:hover .unlocker{
-    -webkit-transform: rotateY(-180deg);
+  border: 6px solid #525252;
+  border-bottom: 0;
+  border-radius: 15px 15px 0 0;
+  -webkit-transform: rotateY(-180deg);
   -webkit-transform-origin: 25px 0;
 }
 
+
+.lock:hover {
+  background: #525252;
+}
+  
 *, *:before, *:after {
   -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
  }
