@@ -62,6 +62,7 @@ dkms.conf
 
 # Visuals
 visuals/
+web/graphs/*.html
 
 # Auto generated files
 *data_input.sc
