@@ -50,13 +50,15 @@ def main():
         output.write(var + ' = ' + command + '\n')
         var = 'pd_shared3p int64[[2]] possible_values(columns, max_attribute_values)'
         array = '{'
-
         for a in df.columns:
             attribute_values = json_data[a].values()
             attribute_values.sort()
             length = len(attribute_values)
-            padding = ',-1' * (max_values - length)
-            array += ','.join([str(v) for v in attribute_values]) + padding + ',' + '\n'
+            if length == 0:
+                array += ','.join(['-1' for v in range(max_values)]) + ',' + '\n'
+            else:
+                padding = ',-1' * (max_values - length)
+                array += ','.join([str(v) for v in attribute_values]) + padding + ',' + '\n'
         array = array[:-2]
         array += '}'
         command = 'reshape('+ array +', '+ 'columns' +', '+ 'max_attribute_values' +');'
