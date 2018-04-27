@@ -1,0 +1,78 @@
+<!DOCTYPE>
+<html>
+  <head>
+    <title>Labels demo</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <link href="style.css" rel="stylesheet" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.2.11/cytoscape.js"></script>
+    <script src="https://cdn.rawgit.com/cpettitt/dagre/v0.7.4/dist/dagre.min.js"></script>
+    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
+
+  </head>
+  <body>
+    <h1>Labels demo</h1>
+    <div id="cy"></div>
+    <script>
+      var cy = window.cy = cytoscape({
+        container: document.getElementById('cy'),
+        boxSelectionEnabled: false,
+        autounselectify: true,
+
+        layout: {
+          name: 'dagre'
+        },
+
+        style: [
+          {
+            selector: 'node',
+            style: {
+              'content': 'data(id)',
+              'text-opacity': 0.7,
+              'text-valign': 'center',
+              'text-halign': 'center',
+              'background-color': '#5cb85c'
+            }
+          },
+          {
+            selector: 'edge',
+            style: {
+              'curve-style': 'bezier',
+              'width': 4,
+              'target-arrow-shape': 'triangle',
+              'line-color': '#d7efd7',
+              'target-arrow-color': '#d7efd7'
+            }
+          },
+          {
+            selector: 'edge',
+            style: {
+              'label': 'data(label)',
+              'text-opacity': 0.5
+            }
+          }
+        ],
+
+        elements: {
+          nodes: [
+            { data: { id: 'root' } },
+            { data: { id: 'n5' } },
+            { data: { id: 'n6' } },
+            { data: { id: 'n7' } },
+            { data: { id: 'n8' } },
+            { data: { id: 'n9' } },
+            { data: { id: 'n10' } }
+          ],
+          edges: [
+            { data: { source: 'root', target: 'n5', label: 'foo' } },
+            { data: { source: 'root', target: 'n6', label: 'foo' } },
+            { data: { source: 'n6', target: 'n7', label: 'foo' } },
+            { data: { source: 'n6', target: 'n8', label: 'foo' } },
+            { data: { source: 'n8', target: 'n9', label: 'foo' } },
+            { data: { source: 'n8', target: 'n10', label: 'foo' } }
+          ]
+        },
+      });
+    </script>
+  </body>
+</html>
