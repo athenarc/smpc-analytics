@@ -13,7 +13,7 @@ import data_input;
 
 
 string datasource = "DS1";
-string table = "id3_data";
+string table = "id3_data_provider_0";
 
 
 /**
@@ -194,11 +194,9 @@ pd_shared3p int64 most_common_label(pd_shared3p int64[[1]] example_indexes) {
     pd_shared3p int64[[1]] label_column = tdbReadColumn(datasource, table, class_index);
     pd_shared3p int64[[1]] possible_classes = possible_values[class_index,:];
     pd_shared3p uint64[[1]] label_counts(max_attribute_values);
-    for (uint64 index = 0; index < rows; index++) {
-        pd_shared3p int64 label = label_column[index] * (int64)(example_indexes[index] != 0) + (int64)(-1) * (int64)(example_indexes[index] == 0);
-        pd_shared3p uint64 label_index = index_of(possible_classes, label); //needs optimization
-        uint64[[1]] classes = iota(max_attribute_values); //[0, 1, 2, ... , max_attribute_values-1]
-        label_counts += (uint64)(label != -1) * (uint64) (classes == label_index);
+    for (uint64 a = 0; a < max_attribute_values; a++) {
+        pd_shared3p uint64[[1]] eq = (uint64)(label_column == (int64) a)* (uint64)(example_indexes!= 0);
+        label_counts[a] = sum(eq);
     }
     return (int64)index_of_max(label_counts);
 }
@@ -227,6 +225,7 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[1]] example_indexes, pd_shared
         best_attribute_column += (int64)eq * tdbReadColumn(datasource, table, i);
     }
 
+
     for (uint64 v = 0 ; v < max_attribute_values ; v++) {
         pd_shared3p int64 value = best_attribute_values[v];
         if (declassify(value == -1)) {
@@ -252,7 +251,6 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[1]] example_indexes, pd_shared
                 pd_shared3p bool neq = (second_half[i] != -1);
                 new_attribs[i-1] += (int64)neq * (1+second_half[i]);
             }
-
             branch = bl_strCat(branch, id3(subset, (uint64)new_attribs));
         }
         branches = bl_strCat(branches, branch);
