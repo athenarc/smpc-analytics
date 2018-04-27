@@ -82,6 +82,18 @@ pd_shared3p xor_uint8[[1]] itoa(pd_shared3p T x){
 }
 
 template <domain D, type T>
+D uint64 index_of_max(D T[[1]] arr) {
+    D uint64 idx = 0;
+    D T max = arr[0];
+    for (uint64 i = 1; i < size(arr); i++) {
+        D uint64 gt = (uint64)(arr[i] > max);
+        max = gt * arr[i] + (1 - gt) * max;
+        idx = gt * i + (1-gt) * idx;
+    }
+    return idx;
+}
+
+template <domain D, type T>
 D uint64 index_of(D T[[1]] arr, D T element) {
     D uint64 idx = 0;
     D uint64 cnt = 0;

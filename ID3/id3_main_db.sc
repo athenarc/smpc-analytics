@@ -89,6 +89,18 @@ pd_shared3p xor_uint8[[1]] itoa(pd_shared3p T x){
 }
 
 template <domain D, type T>
+D uint64 index_of_max(D T[[1]] arr) {
+    D uint64 idx = 0;
+    D T max = arr[0];
+    for (uint64 i = 1; i < size(arr); i++) {
+        D uint64 gt = (uint64)(arr[i] > max);
+        max = gt * arr[i] + (1 - gt) * max;
+        idx = gt * i + (1-gt) * idx;
+    }
+    return idx;
+}
+
+template <domain D, type T>
 D uint64 index_of(D T[[1]] arr, D T element) {
     D uint64 idx = 0;
     D uint64 cnt = 0;
@@ -188,8 +200,7 @@ pd_shared3p int64 most_common_label(pd_shared3p int64[[1]] example_indexes) {
         uint64[[1]] classes = iota(max_attribute_values); //[0, 1, 2, ... , max_attribute_values-1]
         label_counts += (uint64)(label != -1) * (uint64) (classes == label_index);
     }
-    pd_shared3p uint64 max_count = max(label_counts); //needs optimization
-    return (int64)index_of(label_counts, max_count);
+    return (int64)index_of_max(label_counts);
 }
 
 
