@@ -44,11 +44,11 @@ def main():
         if len(sys.argv) > 2:
             COLUMNS = sys.argv[2]
         else:
-            COLUMNS = 'datasets/analysis_test_data/columns.csv'
+            COLUMNS = '../datasets/analysis_test_data/columns.csv'
         if len(sys.argv) > 3:
             SUMMARY = sys.argv[3]
         else:
-            SUMMARY = 'datasets/analysis_test_data/cvi_summary.csv'
+            SUMMARY = '../datasets/analysis_test_data/cvi_summary.csv'
     else:
         print('No arguement provided')
         sys.exit(1)
@@ -159,7 +159,7 @@ def main():
 '''
     main_f += '}'
 
-    with open('histogram_main_' + main_counter + '.sc', 'w') as output:
+    with open('../histogram/histogram_main_' + main_counter + '.sc', 'w') as output:
         output.write(imports)
         output.write(main_f)
 

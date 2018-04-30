@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 
 req_counter = sys.argv[1]
-configuration = json.load(open('configuration_' + req_counter + '.json'))
+configuration = json.load(open('../configuration_' + req_counter + '.json'))
 
 mins = []
 maxs = []
@@ -16,11 +16,11 @@ maxs = []
 if len(sys.argv) > 2:
     COLUMNS = sys.argv[2]
 else:
-    COLUMNS = 'datasets/analysis_test_data/columns.csv'
+    COLUMNS = '../datasets/analysis_test_data/columns.csv'
 if len(sys.argv) > 3:
     SUMMARY = sys.argv[3]
 else:
-    SUMMARY = 'datasets/analysis_test_data/cvi_summary.csv'
+    SUMMARY = '../datasets/analysis_test_data/cvi_summary.csv'
 
 def compute_axis_labels(min, max, width, cells):
     start = min

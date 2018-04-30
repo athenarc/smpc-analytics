@@ -7,9 +7,9 @@ import math
 if len(sys.argv) > 1:
     DATASET = sys.argv[1]
 else:
-    DATASET = 'datasets/analysis_test_data/cvi_identified_edited.csv'
+    DATASET = '../datasets/analysis_test_data/cvi_identified_edited.csv'
 
-OUTPUT = 'data_input.sc'
+OUTPUT = '../histogram/data_input.sc'
 ROW_LIMIT = 1000
 
 def main():

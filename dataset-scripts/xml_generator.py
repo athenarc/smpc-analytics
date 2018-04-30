@@ -8,7 +8,7 @@ import math
 if len(sys.argv) > 1:
     DATASET = sys.argv[1]
 else:
-    DATASET = 'datasets/analysis_test_data/cvi_identified.csv'
+    DATASET = '../datasets/analysis_test_data/cvi_identified.csv'
 
 DIRECTORY, BASENAME = os.path.split(DATASET)
 BASENAME = os.path.splitext(BASENAME)[0]

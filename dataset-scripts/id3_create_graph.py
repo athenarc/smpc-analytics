@@ -5,9 +5,9 @@ import json
 import os.path
 
 
-json_file = 'id3_out.json'
+json_file = '../ID3/id3_out.json'
 
-INITIAL_DATASET = 'datasets/analysis_test_data/cvi_identified_100_filtered_edited.csv'
+INITIAL_DATASET = '../datasets/analysis_test_data/cvi_identified_100_filtered_edited.csv'
 DIRECTORY, INITIAL_BASENAME = os.path.split(INITIAL_DATASET)
 INITIAL_BASENAME = os.path.splitext(INITIAL_BASENAME)[0]
 SERIALIZED = DIRECTORY + '/' + INITIAL_BASENAME + '_mapped_values.json'

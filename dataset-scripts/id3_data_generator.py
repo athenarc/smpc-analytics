@@ -11,9 +11,9 @@ from pprint import pprint
 if len(sys.argv) > 1:
     DATASET = sys.argv[1]
 else:
-    DATASET = 'datasets/analysis_test_data/cvi_identified_filtered_edited.csv'
+    DATASET = '../datasets/analysis_test_data/cvi_identified_filtered_edited.csv'
 
-OUTPUT = 'ID3/data_input.sc'
+OUTPUT = '../ID3/data_input.sc'
 DIRECTORY, BASENAME = os.path.split(DATASET)
 BASENAME = os.path.splitext(BASENAME)[0]
 MAPPED_VALUES = DIRECTORY + '/' + BASENAME + '_mapped_values.json'

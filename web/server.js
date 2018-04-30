@@ -119,7 +119,7 @@ app.post('/smpc/histogram', function(req, res) {
         })
         .then((buffer) => {
             console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
-            return _exec('python response.py out_' + req_counter + '.txt', {cwd: parent});
+            return _exec('python web/response.py out_' + req_counter + '.txt', {cwd: parent});
         })
         .then((result) => {
             console.log('[NODE] Request(' + req_counter + ') Response ready.\n');
@@ -165,7 +165,7 @@ app.post('/histogram', function(req, res) {
         })
         .then((buffer) => {
             console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
-            return _exec('python plot.py ' + req_counter, {cwd: parent});
+            return _exec('python web/plot.py ' + req_counter, {cwd: parent});
         })
         .then((result) => {
             console.log('[NODE] Request(' + req_counter + ') Plotting done.\n');
