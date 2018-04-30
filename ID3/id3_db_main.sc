@@ -23,12 +23,13 @@ void main() {
     rows = 100;
     columns = 4;
     max_attribute_values = 4;
-    class_index = columns-1;
+    class_index = 3;
     original_attributes = {0,1,2,3};
     possible_values = reshape({0,1,-1,-1,
         0,1,2,3,
         0,1,2,3,
         0,1,2,3}, columns, max_attribute_values);
+    pd_shared3p uint64[[1]] original_attributes_without_class = {0,1,2};
 
     left_br_str = bl_str("[ ");
     right_br_str = bl_str(" ]");
@@ -78,12 +79,16 @@ void main() {
     //     print("Done inserting in table " + table + "\n\n");
     // }
 
-    pd_shared3p int64[[2]] original_example_indexes(data_providers_num, rows);
+    uint64 original_example_indexes_vmap = tdbVmapNew();
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
-        original_example_indexes[i,:] += 1; //simd
+        string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
+        uint64 rows = tdbGetRowCount(datasource, table);
+        pd_shared3p int64[[1]] original_example_indexes(rows);
+        original_example_indexes = 1;
+        tdbVmapAddValue(original_example_indexes_vmap, "0", original_example_indexes);
     }
 
     print("Running ID3 ...");
-    pd_shared3p xor_uint8[[1]] root = id3(original_example_indexes, original_attributes[:columns-1]);
+    pd_shared3p xor_uint8[[1]] root = id3(original_example_indexes_vmap, original_attributes_without_class);
     print(bl_strDeclassify(root));
 }
