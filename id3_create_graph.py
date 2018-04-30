@@ -1,76 +1,32 @@
-#!/usr/bin/python
 from __future__ import print_function
 import pandas as pd
 import numpy as np
-import os.path
-import sys
 import json
+import os.path
 
-req_id = '0'
 
-if len(sys.argv) > 1:
-    ID3_RESULTS = sys.argv[1]
-    INITIAL_DATASET = sys.argv[2]
-    req_id = sys.argv[3]
-else:
-    ID3_RESULTS = 'syndata_upload_and_scaling_tests/id3.out'
-    INITIAL_DATASET = 'syndata_upload_and_scaling_tests/centricity_identified_filtered_edited.csv'
+json_file = 'id3_out.json'
 
-# Directory and name of json file
+INITIAL_DATASET = 'datasets/analysis_test_data/cvi_identified_100_filtered_edited.csv'
 DIRECTORY, INITIAL_BASENAME = os.path.split(INITIAL_DATASET)
 INITIAL_BASENAME = os.path.splitext(INITIAL_BASENAME)[0]
 SERIALIZED = DIRECTORY + '/' + INITIAL_BASENAME + '_mapped_values.json'
+REQ_ID = 0
 
-# Directory and name of id3 results file
-DIRECTORY, ID3_BASENAME = os.path.split(ID3_RESULTS)
-ID3_BASENAME = os.path.splitext(ID3_BASENAME)[0]
-
+# global vars, used in recursion
+cnt = 0
+nodes_set = set()
+out = ""
+leaves = {} 
 
 def main():
+    global leaves
+    json_obj = json.load(open(json_file))
     map_file = open(SERIALIZED)
     attribute_map = json.load(map_file)
     df = pd.read_csv(INITIAL_DATASET, sep=',')
-    data_file = open(ID3_RESULTS)
-
-    prev_word = ""
-    prev_attribute = ""
-    tabs = 0
-    out = ""
-    nodes_set = set()
-    incr_lst = [0 for i in range(100000)]
-    flag = False
-    for line in data_file:
-        for word in line.split():
-            if "{" == word :
-                tabs +=1
-                incr_lst[tabs] += 1
-                flag = True
-            elif "}" == word :
-                tabs -=1
-            elif "[" in prev_word:
-                prev_attribute = df.columns[int(word)]
-                if flag:
-                    out += ", target: '" + prev_attribute + '_' + str(incr_lst[tabs]) + "' } },\n{ data: { source: '" + prev_attribute + '_' + str(incr_lst[tabs]) + "'";
-                else:
-                    out += "\n{ data: { source: '" + prev_attribute + '_' + str(incr_lst[tabs]) + "'";
-                flag = False
-                if prev_attribute + '_' + str(incr_lst[tabs]) not in nodes_set:
-                    nodes_set.add(prev_attribute + '_' + str(incr_lst[tabs]))
-            elif "==" == prev_word:
-                mapped_values = attribute_map[prev_attribute]
-                val = getValue(mapped_values, int(word))[0]
-                out += ", label: '" + val + "'"
-            elif "-->" == prev_word and '[' not in word and '}' not in word and '{' not in word:
-                mapped_values = attribute_map[df.columns[-1]]
-                val = getValue(mapped_values, int(word))[0]
-                out += ", target: '" + val + "' } },"
-                if val not in nodes_set:
-                    nodes_set.add(val)
-            prev_word = word
-
-    map_file.close()
-    data_file.close()
-
+    id_from_node(df, attribute_map, json_obj, 0)
+    
     html = '''<!DOCTYPE>
     <html>
       <head>
@@ -123,30 +79,86 @@ def main():
                   'label': 'data(label)',
                   'text-opacity': 0.5
                 }
-              }
+              },
+              {
+                  selector: '.leafClass',
+                  style: {
+                    'content': 'data(label)',
+                    'text-opacity': 0.7,
+                    'text-valign': 'center',
+                    'text-halign': 'center',
+                    'background-color': '#EDB76B'
+                  }
+                }
             ],
 
             elements: {
               nodes: [\n'''
-
     for n in nodes_set:
         html += "{ data: { id: '" + n + "', label: '" + n.split('_')[0] + "' } },\n"
     html += '''],
                     edges: [\n'''
-    html += out.split('\n', 1)[-1]
+    html += out
+    # .split('\n', 1)[-1]
     html += ''']
                 },
-            });
-        </script>
+            });\n'''
+    for key, val in leaves.items():
+        html += val
+    html += '''</script>
       </body>
     </html>
     '''
-    with open('web/graphs/id3_' + str(req_id) + '.html','w') as output:
+    with open('web/graphs/id3_' + str(REQ_ID) + '.html','w') as output:
         output.write(html)
-    print('Created file: web/graphs/id3_' + str(req_id) + '.html')
+    print('Created file: web/graphs/id3_' + str(REQ_ID) + '.html')
 
+    
+
+def id_from_node(df, attribute_map, json_obj, tabs):
+    global cnt
+    global nodes_set
+    global out
+    global leaves
+    cnt += 1
+    id = cnt
+    src = ""
+    label = ""
+    for key in json_obj:
+        value = json_obj[key]
+        parts = key.split(" == ")
+        src = parts[0]
+        label = parts[1]
+        # Update nodes-set
+        n = df.columns[int(src)]+"_"+str(id)
+        if n not in nodes_set:
+            nodes_set.add(n)
+        if not isinstance(value, int):
+            target = id_from_node(df, attribute_map, value, tabs+1)
+            # for i in range(tabs):
+            #     print(end='\t')
+            # print("source: '" + df.columns[int(src)]+"_"+str(id) + "', target: '" + df.columns[int(target[0])] + target[1], end="', ")
+            out += "{ data: { source: '" + df.columns[int(src)]+"_"+str(id) + "', target: '" + df.columns[int(target[0])] + target[1] + "', "
+        else:
+            mapped_values = attribute_map[df.columns[-1]]
+            val = getValue(mapped_values, value)[0]
+            # Update nodes-set
+            if val not in nodes_set:
+                nodes_set.add(val)
+            # for i in range(tabs):
+            #     print(end='\t')
+            # print("source: " + df.columns[int(src)]+"_"+str(id) + " target: " + val, end=" ")
+            out += "{ data: { source: '" + df.columns[int(src)]+"_"+str(id) + "', target: '" + val + "', "
+            leaves[val] = "cy.$(\"[id='" + val + "']\").classes('leafClass');\n"
+            
+        mapped_values = attribute_map[df.columns[int(src)]]
+        label = getValue(mapped_values, int(label))[0]
+        # print("label: '" + label + "'")
+        out += "label: '" + label + "' } },\n"
+    return [src, "_"+str(id)]
+        
 def getValue(dict, value):
      return [key for key in dict.keys() if (dict[key] == value)]
-
+     
 if __name__ == '__main__':
     main()
