@@ -9,7 +9,6 @@ import shared3p_oblivious;
 
 import shared3p_table_database;
 import table_database;
-import data_input;
 
 
 string datasource = "DS1";
@@ -24,32 +23,6 @@ string datasource = "DS1";
  * 3. Make a decision tree node containing that attribute
  * 4. Recurse on subsets using remaining attributes.
 **/
-
-// uint64 rows = 14;
-// uint64 columns = 5;
-// uint64 max_attribute_values = 3;
-// uint64 class_index = columns-1;
-// pd_shared3p uint64[[1]] original_attributes(columns) = {0,1,2,3,4}; //private? //iota
-// pd_shared3p int64[[2]] original_examples(rows,columns) = reshape({0,0,1,0,1,
-//                                                                     0,0,1,1,1,
-//                                                                     1,0,1,0,0,
-//                                                                     2,1,1,0,0,
-//                                                                     2,2,0,0,0,
-//                                                                     2,2,0,1,1,
-//                                                                     1,2,0,1,0,
-//                                                                     0,1,1,0,1,
-//                                                                     0,2,0,0,0,
-//                                                                     2,1,0,0,0,
-//                                                                     0,1,0,1,0,
-//                                                                     1,1,1,1,0,
-//                                                                     1,0,0,0,0,
-//                                                                     2,1,1,1,1}, rows, columns);
-//
-// pd_shared3p int64[[2]] possible_values(columns,max_attribute_values) = reshape({0,1,2,
-//                                                                                 0,1,2,
-//                                                                                 0,1,-1,
-//                                                                                 0,1,-1,
-//                                                                                 0,1,-1}, columns, max_attribute_values);
 
 
 template <type T>
@@ -317,67 +290,6 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] example_indexes, pd_shared
     return bl_strCat(root, right_curly_br_str);
 }
 
-void main() {
-    left_br_str = bl_str("[ ");
-    right_br_str = bl_str(" ]");
-    eq_str = bl_str(" == ");
-    space_str = bl_str(" ");
-    arrow_str = bl_str(" --> ");
-    left_curly_br_str = bl_str("{ ");
-    right_curly_br_str = bl_str("}");
-
-    // Create the data-providers list
-    providers_vmap = tdbVmapNew();
-
-    data_providers_num = 3;
-    string table_0 = "id3_data_provider_0";
-    string table_1 = "id3_data_provider_1";
-    string table_2 = "id3_data_provider_2";
-    tdbVmapAddString(providers_vmap, "0", table_0);
-    tdbVmapAddString(providers_vmap, "0", table_1);
-    tdbVmapAddString(providers_vmap, "0", table_2);
-
-    print("Opening connection to db: ", datasource);
-    tdbOpenConnection(datasource);
-
-if (false) { // for Creating the db from original_examples (local use)
-    for (uint64 i = 0 ; i < data_providers_num ; i++) {
-        string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
-        print("Table: " + table);
-
-        // Check if a table exists
-        if (tdbTableExists(datasource, table)) {
-          // Delete existing table
-          print("Deleting existing table: ", table);
-          tdbTableDelete(datasource, table);
-        }
-
-        print("Creating new table: ", table);
-        pd_shared3p int64 vtype;
-        tdbTableCreate(datasource, table, vtype, columns);
-
-        print("Inserting data to table " + table + "...");
-        pd_shared3p int64[[1]] row;
-        for (uint i = 0; i < rows; ++i) {
-            row = original_examples[i,:];
-            tdbInsertRow(datasource, table, row);
-        }
-        print("Done inserting in table " + table + "\n\n");
-    }
-}
-
-    // Open database before running operations on it
-    // uint64 rows = tdbGetRowCount(datasource, table);
-
-    pd_shared3p int64[[2]] original_example_indexes(data_providers_num, rows);
-    for (uint64 i = 0 ; i < data_providers_num ; i++) {
-        original_example_indexes[i,:] += 1; //simd
-    }
-
-    print("Running ID3 ...");
-    pd_shared3p xor_uint8[[1]] root = id3(original_example_indexes, original_attributes[:columns-1]);
-    print(bl_strDeclassify(root));
-}
 uint64 providers_vmap;
 uint64 data_providers_num;
 pd_shared3p xor_uint8[[1]] left_br_str;
