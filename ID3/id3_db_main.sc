@@ -9,11 +9,27 @@ import shared3p_oblivious;
 
 import shared3p_table_database;
 import table_database;
-import data_input;
 import id3_db;
+
+/**
+ * Gender (0) : int64,
+ * Height (cm) (1) : int64,
+ * Weight (kg) (2) : int64,
+ * Patient Age (3) : int64,
+**/
 
 
 void main() {
+    rows = 100;
+    columns = 4;
+    max_attribute_values = 4;
+    class_index = columns-1;
+    original_attributes = {0,1,2,3};
+    possible_values = reshape({0,1,-1,-1,
+        0,1,2,3,
+        0,1,2,3,
+        0,1,2,3}, columns, max_attribute_values);
+
     left_br_str = bl_str("[ ");
     right_br_str = bl_str(" ]");
     eq_str = bl_str(" == ");
@@ -33,6 +49,7 @@ void main() {
     tdbVmapAddString(providers_vmap, "0", table_1);
     tdbVmapAddString(providers_vmap, "0", table_2);
 
+    // Open database before running operations on it
     print("Opening connection to db: ", datasource);
     tdbOpenConnection(datasource);
 
@@ -60,9 +77,6 @@ void main() {
     //     }
     //     print("Done inserting in table " + table + "\n\n");
     // }
-
-    // Open database before running operations on it
-    // uint64 rows = tdbGetRowCount(datasource, table);
 
     pd_shared3p int64[[2]] original_example_indexes(data_providers_num, rows);
     for (uint64 i = 0 ; i < data_providers_num ; i++) {

@@ -11,6 +11,10 @@ import shared3p_table_database;
 import table_database;
 
 
+domain pd_shared3p shared3p;
+
+
+
 string datasource = "DS1";
 // string table = "id3_data";
 
@@ -292,6 +296,15 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] example_indexes, pd_shared
 
 uint64 providers_vmap;
 uint64 data_providers_num;
+uint64 max_attribute_values;
+uint64 class_index;
+
+pd_shared3p uint64[[1]] original_attributes;
+pd_shared3p int64[[2]] possible_values;
+
+uint64 rows;
+uint64 columns;
+
 pd_shared3p xor_uint8[[1]] left_br_str;
 pd_shared3p xor_uint8[[1]] right_br_str;
 pd_shared3p xor_uint8[[1]] eq_str;
