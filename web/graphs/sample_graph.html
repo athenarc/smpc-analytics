@@ -1,119 +1,136 @@
 <!DOCTYPE>
-<html>
-  <head>
-    <title>Labels demo</title>
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
-    <link href="style.css" rel="stylesheet" />
+    <html>
+      <head>
+        <title>Labels demo</title>
+        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+        <link href="style.css" rel="stylesheet" />
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.2.11/cytoscape.js"></script>
-    <script src="https://cdn.rawgit.com/cpettitt/dagre/v0.7.4/dist/dagre.min.js"></script>
-    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.2.11/cytoscape.js"></script>
+        <script src="https://cdn.rawgit.com/cpettitt/dagre/v0.7.4/dist/dagre.min.js"></script>
+        <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
 
-  </head>
-  <body>
-    <h1>Labels demo</h1>
-    <div id="cy"></div>
-    <script>
-      var cy = window.cy = cytoscape({
-        container: document.getElementById('cy'),
-        boxSelectionEnabled: false,
-        autounselectify: true,
+      </head>
+      <body>
+        <h1>Labels demo</h1>
+        <div id="cy"></div>
+        <script>
+          var cy = window.cy = cytoscape({
+            container: document.getElementById('cy'),
+            boxSelectionEnabled: false,
+            autounselectify: true,
 
-        layout: {
-          name: 'dagre'
-        },
+            layout: {
+              name: 'dagre'
+            },
 
-        style: [
-          {
-            selector: 'node',
-            style: {
-              'content': 'data(label)',
-              'text-opacity': 0.7,
-              'text-valign': 'center',
-              'text-halign': 'center',
-              'background-color': '#5cb85c'
-            }
-          },
-          {
-            selector: 'edge',
-            style: {
-              'curve-style': 'bezier',
-              'width': 2,
-              'target-arrow-shape': 'triangle',
-              'line-color': '#d7efd7',
-              'target-arrow-color': '#d7efd7'
-            }
-          },
-          {
-            selector: 'edge',
-            style: {
-              'label': 'data(label)',
-              'text-opacity': 0.5
-            }
-          }
-        ],
+            style: [
+              {
+                selector: 'node',
+                style: {
+                  'content': 'data(label)',
+                  'text-opacity': 0.7,
+                  'text-valign': 'center',
+                  'text-halign': 'center',
+                  'background-color': '#5cb85c'
+                }
+              },
+              {
+                selector: 'edge',
+                style: {
+                  'curve-style': 'bezier',
+                  'width': 2,
+                  'target-arrow-shape': 'triangle',
+                  'line-color': '#d7efd7',
+                  'target-arrow-color': '#d7efd7'
+                }
+              },
+              {
+                selector: 'edge',
+                style: {
+                  'label': 'data(label)',
+                  'text-opacity': 0.5
+                }
+              },
+              {
+                  selector: '.leafClass',
+                  style: {
+                    'content': 'data(label)',
+                    'text-opacity': 0.7,
+                    'text-valign': 'center',
+                    'text-halign': 'center',
+                    'background-color': '#EDB76B'
+                  }
+                }
+            ],
 
-        elements: {
-          nodes: [
-            { data: { id: 'Sex_4', label: 'Sex' } },
-            { data: { id: 'Sex_5', label: 'Sex' } },
-            { data: { id: 'Sex_6', label: 'Sex' } },
-            { data: { id: 'Sex_7', label: 'Sex' } },
-            { data: { id: 'Weight_1', label: 'Weight' } },
-            { data: { id: 'Sex_1', label: 'Sex' } },
-            { data: { id: 'Sex_2', label: 'Sex' } },
-            { data: { id: 'Weight_2', label: 'Weight' } },
-            { data: { id: 'Weight_4', label: 'Weight' } },
-            { data: { id: 'Sex_3', label: 'Sex' } },
-            { data: { id: 'Sex_8', label: 'Sex' } },
-            { data: { id: 'Sex_9', label: 'Sex' } },
-            { data: { id: '[53, 70)', label: '[53, 70)' } },
-            { data: { id: '[19, 36)', label: '[19, 36)' } },
-            { data: { id: 'Weight_3', label: 'Weight' } },
-            { data: { id: 'Height_1', label: 'Height' } },
-          ],
-          edges: [
-            { data: { source: 'Height_1', label: '[100.0, 120.0)', target: 'Weight_1' } },
-            { data: { source: 'Weight_1', label: '[107.755, 136.6325)', target: '[19, 36)' } },
-            { data: { source: 'Weight_1', label: '[136.6325, 165.51)', target: '[19, 36)' } },
-            { data: { source: 'Weight_1', label: '[50.0, 78.8775)', target: 'Sex_1' } },
-            { data: { source: 'Sex_1', label: 'male', target: '[19, 36)' } },
-            { data: { source: 'Sex_1', label: 'female', target: '[19, 36)' } },
-            { data: { source: 'Weight_1', label: '[78.8775, 107.755)', target: 'Sex_2' } },
-            { data: { source: 'Sex_2', label: 'male', target: '[19, 36)' } },
-            { data: { source: 'Sex_2', label: 'female', target: '[53, 70)' } },
-            { data: { source: 'Height_1', label: '[120.0, 140.0)', target: 'Weight_2' } },
-            { data: { source: 'Weight_2', label: '[107.755, 136.6325)', target: '[53, 70)' } },
-            { data: { source: 'Weight_2', label: '[136.6325, 165.51)', target: '[19, 36)' } },
-            { data: { source: 'Weight_2', label: '[50.0, 78.8775)', target: 'Sex_3' } },
-            { data: { source: 'Sex_3', label: 'male', target: '[19, 36)' } },
-            { data: { source: 'Sex_3', label: 'female', target: '[19, 36)' } },
-            { data: { source: 'Weight_2', label: '[78.8775, 107.755)', target: 'Sex_4' } },
-            { data: { source: 'Sex_4', label: 'male', target: '[19, 36)' } },
-            { data: { source: 'Sex_4', label: 'female', target: '[19, 36)' } },
-            { data: { source: 'Height_1', label: '[140.0, 160.0)', target: 'Weight_3' } },
-            { data: { source: 'Weight_3', label: '[107.755, 136.6325)', target: '[19, 36)' } },
-            { data: { source: 'Weight_3', label: '[136.6325, 165.51)', target: '[19, 36)' } },
-            { data: { source: 'Weight_3', label: '[50.0, 78.8775)', target: 'Sex_5' } },
-            { data: { source: 'Sex_5', label: 'male', target: '[19, 36)' } },
-            { data: { source: 'Sex_5', label: 'female', target: '[19, 36)' } },
-            { data: { source: 'Weight_3', label: '[78.8775, 107.755)', target: 'Sex_6' } },
-            { data: { source: 'Sex_6', label: 'male', target: '[19, 36)' } },
-            { data: { source: 'Sex_6', label: 'female', target: '[19, 36)' } },
-            { data: { source: 'Height_1', label: '[160.0, 180.0)', target: 'Weight_4' } },
-            { data: { source: 'Weight_4', label: '[107.755, 136.6325)', target: 'Sex_7' } },
-            { data: { source: 'Sex_7', label: 'male', target: '[19, 36)' } },
-            { data: { source: 'Sex_7', label: 'female', target: '[19, 36)' } },
-            { data: { source: 'Weight_4', label: '[136.6325, 165.51)', target: '[19, 36)' } },
-            { data: { source: 'Weight_4', label: '[50.0, 78.8775)', target: 'Sex_8' } },
-            { data: { source: 'Sex_8', label: 'male', target: '[19, 36)' } },
-            { data: { source: 'Sex_8', label: 'female', target: '[19, 36)' } },
-            { data: { source: 'Weight_4', label: '[78.8775, 107.755)', target: 'Sex_9' } },
-            { data: { source: 'Sex_9', label: 'male', target: '[19, 36)' } },
-            { data: { source: 'Sex_9', label: 'female', target: '[19, 36)' } }
-          ]
-        },
-      });
-    </script>
-  </body>
-</html>
+            elements: {
+              nodes: [
+{ data: { id: 'Gender_10', label: 'Gender' } },
+{ data: { id: 'Height (cm)_8', label: 'Height (cm)' } },
+{ data: { id: '[66, 82)', label: '[66, 82)' } },
+{ data: { id: '[34, 50)', label: '[34, 50)' } },
+{ data: { id: 'Gender_9', label: 'Gender' } },
+{ data: { id: 'Gender_6', label: 'Gender' } },
+{ data: { id: 'Height (cm)_3', label: 'Height (cm)' } },
+{ data: { id: 'Gender_5', label: 'Gender' } },
+{ data: { id: 'Gender_2', label: 'Gender' } },
+{ data: { id: 'Height (cm)_11', label: 'Height (cm)' } },
+{ data: { id: 'Weight (kg)_1', label: 'Weight (kg)' } },
+{ data: { id: 'Gender_13', label: 'Gender' } },
+{ data: { id: 'Gender_14', label: 'Gender' } },
+{ data: { id: '[18, 34)', label: '[18, 34)' } },
+{ data: { id: 'Height (cm)_4', label: 'Height (cm)' } },
+{ data: { id: 'Gender_7', label: 'Gender' } },
+{ data: { id: 'Gender_12', label: 'Gender' } },
+{ data: { id: '[50, 66)', label: '[50, 66)' } },
+],
+                    edges: [
+{ data: { source: 'Gender_2', target: '[18, 34)', label: 'female' } },
+{ data: { source: 'Height (cm)_3', target: '[34, 50)', label: '[182.500822127, 199.99914951)' } },
+{ data: { source: 'Height (cm)_3', target: '[66, 82)', label: '[165.002494744, 182.500822127)' } },
+{ data: { source: 'Height (cm)_3', target: '[34, 50)', label: '[147.504167361, 165.002494744)' } },
+{ data: { source: 'Height (cm)_3', target: '[34, 50)', label: '[130.005839978, 147.504167361)' } },
+{ data: { source: 'Gender_2', target: 'Height (cm)_3', label: 'male' } },
+{ data: { source: 'Weight (kg)_1', target: 'Gender_2', label: '[70.0000268571, 84.9999162979)' } },
+{ data: { source: 'Gender_5', target: '[66, 82)', label: 'female' } },
+{ data: { source: 'Gender_5', target: '[66, 82)', label: 'male' } },
+{ data: { source: 'Height (cm)_4', target: 'Gender_5', label: '[182.500822127, 199.99914951)' } },
+{ data: { source: 'Gender_6', target: '[34, 50)', label: 'female' } },
+{ data: { source: 'Gender_6', target: '[34, 50)', label: 'male' } },
+{ data: { source: 'Height (cm)_4', target: 'Gender_6', label: '[165.002494744, 182.500822127)' } },
+{ data: { source: 'Gender_7', target: '[18, 34)', label: 'female' } },
+{ data: { source: 'Gender_7', target: '[18, 34)', label: 'male' } },
+{ data: { source: 'Height (cm)_4', target: 'Gender_7', label: '[147.504167361, 165.002494744)' } },
+{ data: { source: 'Height (cm)_4', target: '[18, 34)', label: '[130.005839978, 147.504167361)' } },
+{ data: { source: 'Weight (kg)_1', target: 'Height (cm)_4', label: '[84.9999162979, 99.9998057388)' } },
+{ data: { source: 'Height (cm)_8', target: '[34, 50)', label: '[182.500822127, 199.99914951)' } },
+{ data: { source: 'Height (cm)_8', target: '[34, 50)', label: '[165.002494744, 182.500822127)' } },
+{ data: { source: 'Gender_9', target: '[50, 66)', label: 'female' } },
+{ data: { source: 'Gender_9', target: '[50, 66)', label: 'male' } },
+{ data: { source: 'Height (cm)_8', target: 'Gender_9', label: '[147.504167361, 165.002494744)' } },
+{ data: { source: 'Gender_10', target: '[34, 50)', label: 'female' } },
+{ data: { source: 'Gender_10', target: '[34, 50)', label: 'male' } },
+{ data: { source: 'Height (cm)_8', target: 'Gender_10', label: '[130.005839978, 147.504167361)' } },
+{ data: { source: 'Weight (kg)_1', target: 'Height (cm)_8', label: '[40.0002479754, 55.0001374162)' } },
+{ data: { source: 'Height (cm)_11', target: '[18, 34)', label: '[182.500822127, 199.99914951)' } },
+{ data: { source: 'Gender_12', target: '[50, 66)', label: 'female' } },
+{ data: { source: 'Gender_12', target: '[50, 66)', label: 'male' } },
+{ data: { source: 'Height (cm)_11', target: 'Gender_12', label: '[165.002494744, 182.500822127)' } },
+{ data: { source: 'Gender_13', target: '[18, 34)', label: 'female' } },
+{ data: { source: 'Gender_13', target: '[18, 34)', label: 'male' } },
+{ data: { source: 'Height (cm)_11', target: 'Gender_13', label: '[147.504167361, 165.002494744)' } },
+{ data: { source: 'Gender_14', target: '[66, 82)', label: 'female' } },
+{ data: { source: 'Gender_14', target: '[66, 82)', label: 'male' } },
+{ data: { source: 'Height (cm)_11', target: 'Gender_14', label: '[130.005839978, 147.504167361)' } },
+{ data: { source: 'Weight (kg)_1', target: 'Height (cm)_11', label: '[55.0001374162, 70.0000268571)' } },
+]
+                },
+            });
+cy.$("[id='[18, 34)']").classes('leafClass');
+cy.$("[id='[66, 82)']").classes('leafClass');
+cy.$("[id='[34, 50)']").classes('leafClass');
+cy.$("[id='[50, 66)']").classes('leafClass');
+</script>
+      </body>
+    </html>
+    
