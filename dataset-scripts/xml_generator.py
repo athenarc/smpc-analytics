@@ -4,11 +4,18 @@ import numpy as np
 import os.path
 import sys
 import math
+import argparse
 
-if len(sys.argv) > 1:
-    DATASET = sys.argv[1]
+parser = argparse.ArgumentParser()
+parser.add_argument('--path', help= 'Path to csv file (_filtered_edited.csv)')
+args = parser.parse_args()
+
+if args.path is not None:
+    DATASET = args.path
 else:
     DATASET = '../datasets/analysis_test_data/cvi_identified.csv'
+
+print('Generating XML data from csv dataset: "' + DATASET + '"\n')
 
 DIRECTORY, BASENAME = os.path.split(DATASET)
 BASENAME = os.path.splitext(BASENAME)[0]
@@ -25,6 +32,7 @@ def main():
             output.write('\t\t<target name="' + attribute + '" type="' + infered_type + '"/>\n')
             output.write('\t</column>\n')
         output.write('</table>\n')
+    print('\nCreated file: "' + OUTPUT + '"')
 
 if __name__ == '__main__':
     main()

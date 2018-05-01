@@ -5,14 +5,25 @@ import numpy as np
 import os.path
 import sys
 import json
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--id3out', help= 'Path to ID3 output')
+parser.add_argument('--path', help= 'Path to csv file (filtered & edited)')
+args = parser.parse_args()
 
-if len(sys.argv) > 1:
-    ID3_RESULTS = sys.argv[1]
-    INITIAL_DATASET = sys.argv[2]
+if args.path is not None:
+    INITIAL_DATASET = args.path
+else:
+    INITIAL_DATASET = '../datasets/analysis_test_data/cvi_identified_filtered_edited.csv'
+
+if args.id3out is not None:
+    ID3_RESULTS = args.id3out
 else:
     ID3_RESULTS = '../ID3/id3.out'
-    INITIAL_DATASET = '../datasets/analysis_test_data/cvi_identified_filtered_edited.csv'
+
+print('Post-processing csv dataset: "' + INITIAL_DATASET + '", with "' + ID3_RESULTS + '" output\n')
+
 
 # Directory and name of json file
 DIRECTORY, INITIAL_BASENAME = os.path.split(INITIAL_DATASET)

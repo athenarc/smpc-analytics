@@ -6,18 +6,29 @@ import math
 import json
 import os.path
 from pprint import pprint
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--path', help= 'Path to csv file (_filtered_edited.csv)')
+parser.add_argument('--limit', help= 'Row limit (e.g. 1000)')
+args = parser.parse_args()
 
-if len(sys.argv) > 1:
-    DATASET = sys.argv[1]
+if args.path is not None:
+    DATASET = args.path
 else:
     DATASET = '../datasets/analysis_test_data/cvi_identified_filtered_edited.csv'
+
+if args.limit is not None:
+    ROW_LIMIT = args.limit
+else:
+    ROW_LIMIT = 1000
+
+print('Generating ID3 data from csv dataset: "' + DATASET + '", with row limit ' + ROW_LIMIT + '\n')
 
 OUTPUT = '../ID3/data_input.sc'
 DIRECTORY, BASENAME = os.path.split(DATASET)
 BASENAME = os.path.splitext(BASENAME)[0]
 MAPPED_VALUES = DIRECTORY + '/' + BASENAME + '_mapped_values.json'
-ROW_LIMIT = 1000
 
 def main():
     df=pd.read_csv(DATASET,sep=',')
@@ -63,6 +74,7 @@ def main():
         array += '}'
         command = 'reshape('+ array +', '+ 'columns' +', '+ 'max_attribute_values' +');'
         output.write(var + ' = ' + command + '\n')
+    print('\nCreated file: "' + OUTPUT + '"')
 
 if __name__ == '__main__':
     main()

@@ -6,11 +6,23 @@ import sys
 import math
 import json
 import csv
+import argparse
 
-if len(sys.argv) > 1:
-    DATASET = sys.argv[1]
+parser = argparse.ArgumentParser()
+parser.add_argument('--path', help= 'Path to csv filtered file (_filtered.csv)')
+parser.add_argument('--id3', help= 'for id3', action='store_true')
+args = parser.parse_args()
+
+if args.path is not None:
+    DATASET = args.path
 else:
     DATASET = '../datasets/analysis_test_data/cvi_identified_filtered.csv'
+
+print('Pre-processing csv dataset: "' + DATASET + '"')
+if args.id3 is not None:
+    print('With ID3 argument\n')
+else:
+    print('Without ID3 argument\n')
 
 DIRECTORY, BASENAME = os.path.split(DATASET)
 BASENAME = os.path.splitext(BASENAME)[0]
@@ -54,7 +66,7 @@ def main():
                         attribute_counter[attribute] += 1
                         mapped_values[value] = new_value
                     else:
-                        if len(sys.argv) > 2 and sys.argv[2] == '--id3':
+                        if args.id3 is not None:
                             minimum =  attribute_min[attribute]
                             width = (attribute_max[attribute] - minimum) / CELLS
                             new_value = int((value - minimum) / width)
@@ -73,6 +85,8 @@ def main():
     with open(SERIALIZED, 'w') as data_file:
         j = json.dumps(attribute_map)
         data_file.write(j)
+    print('\nEdited csv file: "' + OUTPUT + '"')
+    print('Serialized maps file: "' + SERIALIZED + '"\n')
 
 if __name__ == '__main__':
     main()

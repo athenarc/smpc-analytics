@@ -3,30 +3,51 @@ import pandas as pd
 import numpy as np
 import json
 import os.path
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--path', help= 'Path to csv file (_filtered_edited.csv)')
+parser.add_argument('--id3json', help= 'Path to ID3 json output file (id3_out.json)')
+parser.add_argument('--reqid', help= 'Request ID, in order to create different output files')
+args = parser.parse_args()
+
+if args.path is not None:
+    INITIAL_DATASET = args.path
+else:
+    INITIAL_DATASET = '../datasets/analysis_test_data/cvi_identified_filtered_edited.csv'
+    # INITIAL_DATASET = '../datasets/analysis_test_data/cvi_identified_100_filtered_edited.csv'
+
+if args.id3json is not None:
+    JSON_FILE = args.id3json
+else:
+    JSON_FILE = '../ID3/id3_out.json'
+
+if args.reqid is not None:
+    REQ_ID = args.reqid
+else:
+    REQ_ID = 0
+
+print('Generating tree from csv dataset: "' + INITIAL_DATASET + '" with "' + JSON_FILE + '" and requestID ' + str(REQ_ID) + '\n')
 
 
-json_file = '../ID3/id3_out.json'
-
-INITIAL_DATASET = '../datasets/analysis_test_data/cvi_identified_100_filtered_edited.csv'
 DIRECTORY, INITIAL_BASENAME = os.path.split(INITIAL_DATASET)
 INITIAL_BASENAME = os.path.splitext(INITIAL_BASENAME)[0]
 SERIALIZED = DIRECTORY + '/' + INITIAL_BASENAME + '_mapped_values.json'
-REQ_ID = 0
 
 # global vars, used in recursion
 cnt = 0
 nodes_set = set()
 out = ""
-leaves = {} 
+leaves = {}
 
 def main():
     global leaves
-    json_obj = json.load(open(json_file))
+    json_obj = json.load(open(JSON_FILE))
     map_file = open(SERIALIZED)
     attribute_map = json.load(map_file)
     df = pd.read_csv(INITIAL_DATASET, sep=',')
     id_from_node(df, attribute_map, json_obj, 0)
-    
+
     html = '''<!DOCTYPE>
     <html>
       <head>
@@ -109,11 +130,11 @@ def main():
       </body>
     </html>
     '''
-    with open('web/graphs/id3_' + str(REQ_ID) + '.html','w') as output:
+    with open('../web/graphs/id3_' + str(REQ_ID) + '.html','w') as output:
         output.write(html)
-    print('Created file: web/graphs/id3_' + str(REQ_ID) + '.html')
+    print('Created file: ../web/graphs/id3_' + str(REQ_ID) + '.html')
 
-    
+
 
 def id_from_node(df, attribute_map, json_obj, tabs):
     global cnt
@@ -150,15 +171,15 @@ def id_from_node(df, attribute_map, json_obj, tabs):
             # print("source: " + df.columns[int(src)]+"_"+str(id) + " target: " + val, end=" ")
             out += "{ data: { source: '" + df.columns[int(src)]+"_"+str(id) + "', target: '" + val + "', "
             leaves[val] = "cy.$(\"[id='" + val + "']\").classes('leafClass');\n"
-            
+
         mapped_values = attribute_map[df.columns[int(src)]]
         label = getValue(mapped_values, int(label))[0]
         # print("label: '" + label + "'")
         out += "label: '" + label + "' } },\n"
     return [src, "_"+str(id)]
-        
+
 def getValue(dict, value):
-     return [key for key in dict.keys() if (dict[key] == value)]
-     
+    return [key for key in dict.keys() if (dict[key] == value)]
+
 if __name__ == '__main__':
     main()

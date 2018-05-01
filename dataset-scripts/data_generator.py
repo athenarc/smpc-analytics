@@ -3,11 +3,18 @@ import pandas as pd
 import numpy as np
 import sys
 import math
+import argparse
 
-if len(sys.argv) > 1:
-    DATASET = sys.argv[1]
+parser = argparse.ArgumentParser()
+parser.add_argument('--path', help= 'Path to csv file (_edited.csv)')
+args = parser.parse_args()
+
+if args.path is not None:
+    DATASET = args.path
 else:
     DATASET = '../datasets/analysis_test_data/cvi_identified_edited.csv'
+
+print('Generating data from csv dataset: "' + DATASET + '"\n')
 
 OUTPUT = '../histogram/data_input.sc'
 ROW_LIMIT = 1000
@@ -41,6 +48,7 @@ def main():
         maxs = '{' + ','.join(maxs) + '}'
         output.write('pd_shared3p ' + str(df[col].dtype) + '[[1]] imported_mins(' + str(M) + ') = ' + mins + ';\n')
         output.write('pd_shared3p ' + str(df[col].dtype) + '[[1]] imported_maxs(' + str(M) + ') = ' + maxs + ';\n')
+    print('\nOutput SecreC file: "' + OUTPUT + '"')
 
 
 if __name__ == '__main__':
