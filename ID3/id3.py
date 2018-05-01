@@ -85,6 +85,7 @@ def id3(examples, attributes):
     best_attribute_original_index = original_attributes.index(best_attribute)
     best_attribute_index = attributes.index(best_attribute)
     branches = []
+    for value in possible_values[best_attribute]:
         branch = '"' + str(best_attribute)+' == '+str(value) + '"'
         subset = [example for example in examples if example[best_attribute_original_index] == value]
         if len(subset) == 0:
