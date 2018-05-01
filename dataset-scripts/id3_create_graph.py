@@ -34,6 +34,7 @@ DIRECTORY, INITIAL_BASENAME = os.path.split(INITIAL_DATASET)
 INITIAL_BASENAME = os.path.splitext(INITIAL_BASENAME)[0]
 SERIALIZED = DIRECTORY + '/' + INITIAL_BASENAME + '_mapped_values.json'
 
+
 # global vars, used in recursion
 cnt = 0
 nodes_set = set()
@@ -130,9 +131,16 @@ def main():
       </body>
     </html>
     '''
-    with open('../web/graphs/id3_' + str(REQ_ID) + '.html','w') as output:
+
+    if os.path.isdir("./web/graphs/"):
+        OUTPUT_DIR = './web/graphs/'
+    elif os.path.isdir("../web/graphs/"):
+        OUTPUT_DIR = '../web/graphs/'
+    else:
+        OUTPUT_DIR = './'
+    with open(OUTPUT_DIR + 'id3_' + str(REQ_ID) + '.html','w') as output:
         output.write(html)
-    print('Created file: ../web/graphs/id3_' + str(REQ_ID) + '.html')
+    print('Created file: "' + OUTPUT_DIR + 'id3_' + str(REQ_ID) + '.html"')
 
 
 

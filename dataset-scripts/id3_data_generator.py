@@ -25,7 +25,15 @@ else:
 
 print('Generating ID3 data from csv dataset: "' + DATASET + '", with row limit ' + ROW_LIMIT + '\n')
 
-OUTPUT = '../ID3/data_input.sc'
+
+if os.path.isdir("./ID3/"):
+    OUTPUT_DIR = './ID3/'
+elif os.path.isdir("../ID3/"):
+    OUTPUT_DIR = '../ID3/'
+else:
+    OUTPUT_DIR = './'
+OUTPUT = OUTPUT_DIR + 'data_input.sc'
+
 DIRECTORY, BASENAME = os.path.split(DATASET)
 BASENAME = os.path.splitext(BASENAME)[0]
 MAPPED_VALUES = DIRECTORY + '/' + BASENAME + '_mapped_values.json'

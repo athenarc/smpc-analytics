@@ -4,6 +4,7 @@ import numpy as np
 import sys
 import math
 import argparse
+import os.path
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--path', help= 'Path to csv file (_edited.csv)')
@@ -16,7 +17,13 @@ else:
 
 print('Generating data from csv dataset: "' + DATASET + '"\n')
 
-OUTPUT = '../histogram/data_input.sc'
+if os.path.isdir("./histogram/"):
+    OUTPUT_DIR = './histogram/'
+elif os.path.isdir("../histogram/"):
+    OUTPUT_DIR = '../histogram/'
+else:
+    OUTPUT_DIR = './'
+OUTPUT = OUTPUT_DIR + 'data_input.sc'
 ROW_LIMIT = 1000
 
 def main():
