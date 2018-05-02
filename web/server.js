@@ -157,21 +157,22 @@ app.post('/histogram', function(req, res) {
         .then((buffer) => {
             if (SIMULATION_MODE) {
                 console.log('[NODE] Request(' + req_counter + ') Program compiled.\n');
-                return _exec('sharemind-scripts/run.sh histogram/histogram_main_' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
+                return _exec('sharemind-scripts/run.sh histogram/histogram_main_' + req_counter + '.sb 2> web/out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
             } else {
                 console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
-                return _exec('tail -n +`cut -d " "  -f "9-" /etc/sharemind/server.log  | grep -n "Starting process" | tail -n 1 | cut -d ":" -f 1` /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
+                return _exec('tail -n +`cut -d " "  -f "9-" /etc/sharemind/server.log  | grep -n "Starting process" | tail -n 1 | cut -d ":" -f 1` /etc/sharemind/server.log | cut -d " "  -f "9-" >  web/out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
             }
         })
         .then((buffer) => {
             console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
-            return _exec('python web/plot.py ' + req_counter, {cwd: parent});
+            return _exec('python plot.py ' + req_counter);
         })
         .then((result) => {
             console.log('[NODE] Request(' + req_counter + ') Plotting done.\n');
             var graph_name = result.toString();
             graph_name = graph_name.slice(0,-1);
-            res.send('visuals/' + graph_name);
+            console.log('[NODE]' + graph_name);
+            res.send(graph_name);
         })
         .catch((err) => {
             console.log(err);

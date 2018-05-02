@@ -74,9 +74,9 @@ with open('out_' + req_counter + '.txt', 'r') as results:
                     figure = go.Figure(data=data, layout=layout)
                 else:
                     figure = go.Figure(data=data)
-                filename =  'web/visuals/1D_Histogram'+'_'+str(os.getpid())+'_'+str(ai)+'.html'
+                filename =  'visuals/1D_Histogram'+'_'+str(os.getpid())+'_'+str(ai)+'.html'
                 plotly.offline.plot(figure, filename=filename, auto_open = False)
-                print('/'.join(filename.split('/')[2:]))
+                print(filename)
             elif (len(dimensions) == 2 and 1 not in dimensions) or len(dimensions) == 3 and 1 in dimensions:
                 y = dimensions[1]
                 sublists = [histogram[i:i+y] for i in xrange(0, len(histogram), y)]
@@ -106,9 +106,9 @@ with open('out_' + req_counter + '.txt', 'r') as results:
                     figure = go.Figure(data=data, layout=layout)
                 else:
                     figure = go.Figure(data=data)
-                filename = 'web/visuals/2D_Histogram'+'_'+str(os.getpid())+'_'+str(ai)+'.html'
+                filename = 'visuals/2D_Histogram'+'_'+str(os.getpid())+'_'+str(ai)+'.html'
                 plotly.offline.plot(figure, filename=filename, auto_open = False)
-                print('/'.join(filename.split('/')[2:]))
+                print(filename)
             elif len(dimensions) == 3 and 1 not in dimensions:
                 y = dimensions[1]
                 z = dimensions[2]
@@ -162,8 +162,8 @@ with open('out_' + req_counter + '.txt', 'r') as results:
                     figure = go.Figure(data=data, layout=layout)
                 else:
                     figure = go.Figure(data=data)
-                filename = 'web/visuals/3D_Histogram'+'_'+str(os.getpid())+'_'+str(ai)+'.html'
+                filename = 'visuals/3D_Histogram'+'_'+str(os.getpid())+'_'+str(ai)+'.html'
                 plotly.offline.plot(figure, filename=filename, auto_open = False)
-                print('/'.join(filename.split('/')[2:]))
+                print(filename)
             ai += 1
 
