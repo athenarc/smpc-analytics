@@ -125,22 +125,21 @@ def id3(example_indexes, attributes):
     best_attribute = best(example_indexes, attributes) #find best attribute
     best_attribute_original_index = original_attributes.index(best_attribute)
     best_attribute_index = attributes.index(best_attribute)
-    branches = []
+    branches = ""
     best_attribute_column = [row[best_attribute_original_index] for row in original_examples]
     for value in possible_values[best_attribute]:
         if value == -1:
             continue
-        branch = '[ ' + str(best_attribute) + ' == ' + str(value) +' ]'
+        branch = '"' + str(best_attribute) + ' == ' + str(value) +'"'
         subset = [0] * len(original_examples)
         for index in range(len(example_indexes)):
             subset[index] += (best_attribute_column[index] == value) * (example_indexes[index] != 0)
         if sum(subset) == 0:
-            branch += ' --> ' + str(most_common_label(example_indexes))
+            branch += ' : ' + str(most_common_label(example_indexes))
         else:
-            branch += ' --> ' + str(id3(subset, attributes[:best_attribute_index]+attributes[best_attribute_index+1:]))
-        branches.append(branch)
-    root = '{ '+ ' '.join(branches) +' }'
-    return root
+            branch += ' : ' + str(id3(subset, attributes[:best_attribute_index]+attributes[best_attribute_index+1:]))
+        branches += branch + ", "
+    return "{ "+ branches + "}"
 
 original_subset = [1]*len(original_examples)
 print(id3(original_subset,original_attributes[:-1]))

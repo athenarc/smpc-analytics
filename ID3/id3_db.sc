@@ -284,11 +284,11 @@ pd_shared3p xor_uint8[[1]] id3(uint64 example_indexes_vmap, pd_shared3p uint64[[
             pd_shared3p int64[[1]] partial_subset(rows) = (int64)(best_attribute_column == value) * (int64)(example_indexes != 0);
             tdbVmapAddValue(subset, "0", partial_subset);
         }
-        pd_shared3p xor_uint8[[1]] branch = bl_strCat(left_br_str, itoa(best_attribute));
+        pd_shared3p xor_uint8[[1]] branch = bl_strCat(quote, itoa(best_attribute));
         branch = bl_strCat(branch, eq_str);
         branch = bl_strCat(branch, itoa(value));
-        branch = bl_strCat(branch, right_br_str);
-        branch = bl_strCat(branch, arrow_str);
+        branch = bl_strCat(branch, quote);
+        branch = bl_strCat(branch, colon);
 
         if (declassify(sum(subset, data_providers_num) == 0)) {
             branch = bl_strCat(branch, itoa(most_common_label(example_indexes_vmap)));
@@ -306,11 +306,14 @@ pd_shared3p xor_uint8[[1]] id3(uint64 example_indexes_vmap, pd_shared3p uint64[[
             branch = bl_strCat(branch, id3(subset, (uint64)new_attribs));
         }
         branches = bl_strCat(branches, branch);
-        branches = bl_strCat(branches, space_str);
+        if (v < max_attribute_values) {
+            branches = bl_strCat(branches, comma);
+        }
+        branches = bl_strCat(branches, space);
     }
 
-    pd_shared3p xor_uint8[[1]] root = bl_strCat(left_curly_br_str, branches);
-    return bl_strCat(root, right_curly_br_str);
+    pd_shared3p xor_uint8[[1]] root = bl_strCat(left_curly_br, branches);
+    return bl_strCat(root, right_curly_br);
 }
 
 uint64 providers_vmap;
@@ -324,10 +327,12 @@ pd_shared3p int64[[2]] possible_values;
 uint64 rows;
 uint64 columns;
 
-pd_shared3p xor_uint8[[1]] left_br_str;
-pd_shared3p xor_uint8[[1]] right_br_str;
+pd_shared3p xor_uint8[[1]] quote;
+pd_shared3p xor_uint8[[1]] comma;
 pd_shared3p xor_uint8[[1]] eq_str;
-pd_shared3p xor_uint8[[1]] space_str;
-pd_shared3p xor_uint8[[1]] arrow_str;
-pd_shared3p xor_uint8[[1]] left_curly_br_str;
-pd_shared3p xor_uint8[[1]] right_curly_br_str;
+pd_shared3p xor_uint8[[1]] space;
+pd_shared3p xor_uint8[[1]] colon;
+pd_shared3p xor_uint8[[1]] left_curly_br;
+pd_shared3p xor_uint8[[1]] right_curly_br;
+
+// sed 's/, }/ }/g' id3.out to remove some extra commas

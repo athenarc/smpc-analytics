@@ -31,13 +31,13 @@ void main() {
         0,1,2,3}, columns, max_attribute_values);
     pd_shared3p uint64[[1]] original_attributes_without_class = {0,1,2};
 
-    left_br_str = bl_str("[ ");
-    right_br_str = bl_str(" ]");
+    quote = bl_str("\"");
+    comma = bl_str(", ");
     eq_str = bl_str(" == ");
-    space_str = bl_str(" ");
-    arrow_str = bl_str(" --> ");
-    left_curly_br_str = bl_str("{ ");
-    right_curly_br_str = bl_str("}");
+    space = bl_str(" ");
+    colon = bl_str(": ");
+    left_curly_br = bl_str("{ ");
+    right_curly_br = bl_str("}");
 
     // Create the data-providers list
     providers_vmap = tdbVmapNew();

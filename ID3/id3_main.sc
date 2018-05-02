@@ -271,11 +271,11 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
             }
             subset[i,:] = (int64)eq * example + (int64)(1-eq) * minus_ones; // simd
         }
-        pd_shared3p xor_uint8[[1]] branch = bl_strCat(left_br_str, itoa(best_attribute));
+        pd_shared3p xor_uint8[[1]] branch = bl_strCat(quote, itoa(best_attribute));
         branch = bl_strCat(branch, eq_str);
         branch = bl_strCat(branch, itoa(value));
-        branch = bl_strCat(branch, right_br_str);
-        branch = bl_strCat(branch, arrow_str);
+        branch = bl_strCat(branch, quote);
+        branch = bl_strCat(branch, colon);
 
         if (declassify(count_positives(subset) == 0)) {
             branch = bl_strCat(branch, itoa(most_common_label(examples)));
@@ -297,30 +297,31 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
             branch = bl_strCat(branch, id3(subset, (uint64)new_attribs));
         }
         branches = bl_strCat(branches, branch);
-        branches = bl_strCat(branches, space_str);
+        branches = bl_strCat(branches, comma);
+        branches = bl_strCat(branches, space);
     }
 
-    pd_shared3p xor_uint8[[1]] root = bl_strCat(left_curly_br_str, branches);
-    return bl_strCat(root, right_curly_br_str);
+    pd_shared3p xor_uint8[[1]] root = bl_strCat(left_curly_br, branches);
+    return bl_strCat(root, right_curly_br);
 }
 
 void main() {
-    left_br_str = bl_str("[ ");
-    right_br_str = bl_str(" ]");
+    quote = bl_str('"');
+    comma = bl_str(", ");
     eq_str = bl_str(" == ");
-    space_str = bl_str(" ");
-    arrow_str = bl_str(" --> ");
-    left_curly_br_str = bl_str("{ ");
-    right_curly_br_str = bl_str("}");
+    space = bl_str(" ");
+    colon = bl_str(": ");
+    left_curly_br = bl_str("{ ");
+    right_curly_br = bl_str("}");
 
     pd_shared3p xor_uint8[[1]] root = id3(original_examples, original_attributes[:columns-1]);
     print(bl_strDeclassify(root));
 }
 
-pd_shared3p xor_uint8[[1]] left_br_str;
-pd_shared3p xor_uint8[[1]] right_br_str;
+pd_shared3p xor_uint8[[1]] quote;
+pd_shared3p xor_uint8[[1]] quote;
 pd_shared3p xor_uint8[[1]] eq_str;
-pd_shared3p xor_uint8[[1]] space_str;
-pd_shared3p xor_uint8[[1]] arrow_str;
-pd_shared3p xor_uint8[[1]] left_curly_br_str;
-pd_shared3p xor_uint8[[1]] right_curly_br_str;
+pd_shared3p xor_uint8[[1]] space;
+pd_shared3p xor_uint8[[1]] colon;
+pd_shared3p xor_uint8[[1]] left_curly_br;
+pd_shared3p xor_uint8[[1]] right_curly_br;
