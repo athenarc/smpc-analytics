@@ -46,7 +46,7 @@ for SC in "$@"; do
 
     for SERVER in ${MPC_SERVERS}; do
         echo "Installing: '${SB}' to '${SERVER}:${SCRIPT_PATH}/${SB_BN}'"
-        scp "${SB}" "${USER}@${SERVER}:${SCRIPT_PATH}/${SB_BN}"
+        sshpass -f /home/`whoami`/.p scp "${SB}" "${USER}@${SERVER}:${SCRIPT_PATH}/${SB_BN}"
     done
 
     rm -f "${SB}"
