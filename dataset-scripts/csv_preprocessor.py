@@ -10,7 +10,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--path', help= 'Path to csv filtered file (_filtered.csv)')
-parser.add_argument('--id3', help= 'for id3', action='store_true')
+parser.add_argument('--id3', help= 'for id3', nargs='?', default=False)
 args = parser.parse_args()
 
 if args.path is not None:
@@ -19,7 +19,7 @@ else:
     DATASET = '../datasets/analysis_test_data/cvi_identified_filtered.csv'
 
 print('Pre-processing csv dataset: "' + DATASET + '"')
-if args.id3 is not None:
+if args.id3 != False:
     print('With ID3 argument\n')
 else:
     print('Without ID3 argument\n')
@@ -66,7 +66,7 @@ def main():
                         attribute_counter[attribute] += 1
                         mapped_values[value] = new_value
                     else:
-                        if args.id3 is not None:
+                        if args.id3 != False:
                             minimum =  attribute_min[attribute]
                             width = (attribute_max[attribute] - minimum) / CELLS
                             new_value = int((value - minimum) / width)
