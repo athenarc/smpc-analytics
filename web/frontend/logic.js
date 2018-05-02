@@ -161,13 +161,13 @@ function addHistogramTab() {
         <p>
           <ul class="list-group">
               <li class="list-group-item">
-                <input type="checkbox" name="datasources" value="data_provider_0" checked="true"> Dataset 1 &ensp;
+                <input type="checkbox" name="datasources" value="t1" checked="true"> Dataset 1 &ensp;
               </li>
               <li class="list-group-item">
-                <input type="checkbox" name="datasources" value="data_provider_1" checked="true"> Dataset 2 &ensp;
+                <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2 &ensp;
               </li>
               <li class="list-group-item">
-                <input type="checkbox" name="datasources" value="data_provider_2" checked="true"> Dataset 3 &ensp;
+                <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3 &ensp;
               </li>
           </ul>
         </p>
