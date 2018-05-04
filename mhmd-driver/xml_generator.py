@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import pandas as pd
-import numpy as np
 import os.path
 import sys
 import math
@@ -19,10 +18,11 @@ else:
         DATASET = '../datasets/analysis_test_data/cvi_identified.csv'
     elif os.path.exists('../../datasets/analysis_test_data/cvi_identified.csv'):
         DATASET = '../../datasets/analysis_test_data/cvi_identified.csv'
-    else:
-        print('Unable to find default dataset, please specify one.')
-        sys.exit(-1)
-        
+
+if not os.path.exists(DATASET):
+    print('\nUnable to find default dataset, please specify one.\n')
+    sys.exit(-1)
+
 print('Generating XML data from csv dataset: "' + DATASET + '"\n')
 
 DIRECTORY, BASENAME = os.path.split(DATASET)
