@@ -24,9 +24,9 @@ var frontend = __dirname + "/frontend/";
 var visuals = __dirname + "/visuals/";
 global.__basedir = __dirname;
 
-var level = require('level')
+var level = require('level');
 
-var db = level('./mydb')
+var db = level('./mydb');
 
 
 app.get('/', function (req, res) {
@@ -160,7 +160,7 @@ function pipeline(req_counter, content, parent) {
             return;
         })
         .catch((err) => {
-            db.put(req_counter, JSON.stringify({'status':'failed', 'step':''}))
+            db.put(req_counter, JSON.stringify({'status':'failed'}))
             .catch((err) => {
                 console.log(err);
             });
@@ -174,7 +174,7 @@ app.post('/smpc/histogram', function(req, res) {
     console.log(content);
     req_counter++;
     res.status(202).json({"location" : "/smpc/queue/"+req_counter});
-    db.put(req_counter, JSON.stringify({'status':'running', 'step':''}))
+    db.put(req_counter, JSON.stringify({'status':'running'}))
     .then((buffer) => {
         pipeline(req_counter, content, parent);
     }).catch((err) => {
