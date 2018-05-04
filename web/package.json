@@ -16,6 +16,7 @@
     "cytoscape": "^3.2.11",
     "express": "^4.16.3",
     "fs": "0.0.1-security",
+    "level": "^3.0.0",
     "path": "^0.12.7"
   }
 }
