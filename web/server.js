@@ -152,7 +152,7 @@ function pipeline(req_counter, content, parent) {
         })
         .then((result) => {
             console.log('[NODE] Request(' + req_counter + ') Response ready.\n');
-            var result_obj = {'status':'succeded','result': ''};
+            var result_obj = {'status':'succeeded','result': ''};
             result_obj.result = JSON.parse(result);
             db.put(req_counter, JSON.stringify(result_obj))
             .catch((err) => {

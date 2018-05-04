@@ -5,7 +5,7 @@ The SMPC Server interacts with the SMPC cluster. One can pose queries to the ser
 #### /smpc/histogram **[POST]**
 >Initiate a secure histogram computation with desired parameters.
 
-The basic functionality that the SMPC cluster provides is secure histogram computation. This is possible through the */smpc/histogram* POST request.
+The basic functionality that the SMPC cluster provides is secure histogram computation. This is possible through the `/smpc/histogram` POST request.
 
 Through the request's body, one can specify all the desired properties of the histograms to be computed. These include the number of histograms, the attributes on which the histogram(s) will be built, the datasources from which data will be used, and a set of filters / conditions that should hold for each data tuple taken into consideration when building the histogram(s).
 
@@ -66,77 +66,105 @@ These JSON objects have the following keys:
     * `operator` <span style="color:red">_required_</span> The boolean operator (_string_) that will be applied between all the specified conditions that follow. One of `[AND, OR, XOR]` In the case of multiple conditions, the operator is left-associative.
     * `conditions` <span style="color:red">_required_</span> The list of conditions that should be met by each data tuple in the computation. Each condition is represented as a JSON object with the following keys.
         * `attribute` <span style="color:red">_required_</span> The name of the attribute (_string_).
-        * `operator` <span style="color:red">_required_</span> The condition's operator (_string_). One of `[>, <, =]`
+        * `operator` <span style="color:red">_required_</span> The condition's operator (_string_). One of `[>, <, =]`.
         * `value` <span style="color:red">_required_</span> The attribute's value (_string_).
 
 ##### Server's response
-The secure histogram computation
-The server's response to such a request is a list with an element for each of the computed histograms. Each such element contains a serialized version of each histograms, along with how many cells were used for each attribute / dimension of the histogram. An example response can be found below.
+The secure histogram computation is a potentially long running operation. For that reason the server's response to such a request is always `HTTP/1.1 202 Accepted`, along with a location in which one should periodicaly poll for the computation's status and/or result. An example response can be found below.
 ```json
-[
-  {
-    "cellsPerDimension": [
-      5
-    ],
-    "histogram": [
-      237,
-      211,
-      239,
-      161,
-      152
-    ]
-  },
-  {
-    "cellsPerDimension": [
-      3,
-      4,
-      3
-    ],
-    "histogram": [
-      17,
-      2,
-      0,
-      17,
-      22,
-      3,
-      2,
-      55,
-      50,
-      0,
-      34,
-      24,
-      48,
-      14,
-      0,
-      66,
-      51,
-      11,
-      5,
-      142,
-      97,
-      0,
-      102,
-      98,
-      9,
-      3,
-      0,
-      16,
-      14,
-      2,
-      1,
-      30,
-      32,
-      0,
-      11,
-      22
-    ]
-  }
-]
+{
+  "location": "/smpc/queue?request=1"
+}
 ```
-The response is a list containing a JSON object for each computed histogram.
+In order to check for the secure histogram computation's status, and/or retrieve the result you should periodically poll the above location using the `/smpc/queue` GET request, which is described below.
+
+#### /smpc/queue **[GET]**
+>Check the status and/or result of a specified computation request.
+
+The status of an ongoing computation request can be accessed through the `/smpc/queue` GET request by specifying its id.
+
+The only parameter this GET request accepts is the id of the desired computation request, as shown below.
+* `request` <span style="color:red">_required_</span> An integer identifying the computation request as it was provided by the response of `/smpc/histogram` POST request.
+
+##### Server's response
+
+The server responds with the specified computation's status, and possibly with its current computation step, or the final computation result, in the event that the computation ended successfully. The result for a histogram computation is a list with an element for each of the computed histograms. Each such element contains a serialized version of each histograms, along with how many cells were used for each attribute / dimension of the histogram. An example response can be found below.
+
+
+```json
+{
+    "status": "succeded",
+    "step": "SecreC code compiled. Now running.",
+    "result":
+    [
+      {
+        "cellsPerDimension": [
+          5
+        ],
+        "histogram": [
+          237,
+          211,
+          239,
+          161,
+          152
+        ]
+      },
+      {
+        "cellsPerDimension": [
+          3,
+          4,
+          3
+        ],
+        "histogram": [
+          17,
+          2,
+          0,
+          17,
+          22,
+          3,
+          2,
+          55,
+          50,
+          0,
+          34,
+          24,
+          48,
+          14,
+          0,
+          66,
+          51,
+          11,
+          5,
+          142,
+          97,
+          0,
+          102,
+          98,
+          9,
+          3,
+          0,
+          16,
+          14,
+          2,
+          1,
+          30,
+          32,
+          0,
+          11,
+          22
+        ]
+      }
+    ]
+}
+```
+The response is a JSON object containing the specified computation's status, and possibly its current step or result which is too a JSON object. The server's response has the following structure.
+
+* `status` <span style="color:red">_required_</span> A string indicating the computation's status. One of `[running, succeeded, failed, notstarted]`.
+* `step` <span style="color:blue">_optional_</span> A string indicating the current step of the computation. This is present in case that the computation is in the `running` state.
+* `result` <span style="color:blue">_optional_</span> A JSON object with the computation's result in case its status is `succeeded`. The JSON object is a list containing a JSON object for each computed histogram.
 Each such object contains the following keys.
-* `cellsPerDimension` A list with an element (_positive integer_) for each attribute of this histogram. These integers represent the amount of cells / buckets that were created for each attribute of this histogram.
-* `histogram` A list of integers representing a serialized version of the computed histogram. Given the serialized histogram and the number of cells for each dimension / attribute, one can reconstruct the original multidimensional histogram.
+    * `cellsPerDimension` A list with an element (_positive integer_) for each attribute of this histogram. These integers represent the amount of cells / buckets that were created for each attribute of this histogram.
+    * `histogram` A list of integers representing a serialized version of the computed histogram. Given the serialized histogram and the number of cells for each dimension / attribute, one can reconstruct the original multidimensional histogram.
 
 
 ___
@@ -145,7 +173,7 @@ The MHMD Driver located on each hospital’s premises should support a RESTful A
 #### /smpc/import **[POST]**
 >Securely import data into the SMPC Platform.
 
-The secure importing of a dataset into the SMPC cluster is initiated with the _/smpc/import_ POST request.
+The secure importing of a dataset into the SMPC cluster is initiated with the `/smpc/import` POST request.
 
 The request's body contains the path of the file with the desired dataset on the server responsible for this request. This should be a path to a .csv file compatible with the global data schema. An example request body can be found below.
 ```json

@@ -390,7 +390,7 @@ components:
         status:
           type: string
           enum:
-            - "succeded"
+            - "succeeded"
             - "running"
             - "failed"
             - "notstarted"
@@ -420,5 +420,5 @@ components:
       properties:
         location:
           type: string
-      example: {"location" : "/smpc/queue/1"}
+      example: {"location" : "/smpc/queue?request=1"}
 
