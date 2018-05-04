@@ -174,7 +174,7 @@ app.post('/smpc/histogram', function(req, res) {
     var content = JSON.stringify(req.body);
     console.log(content);
     req_counter++;
-    res.status(202).json({"location" : "/smpc/queue/"+req_counter});
+    res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
     db.put(req_counter, JSON.stringify({'status':'running'}))
     .then((buffer) => {
         pipeline(req_counter, content, parent);
