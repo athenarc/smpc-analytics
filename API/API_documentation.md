@@ -70,6 +70,7 @@ These JSON objects have the following keys:
         * `value` <span style="color:red">_required_</span> The attribute's value (_string_).
 
 ##### Server's response
+The secure histogram computation
 The server's response to such a request is a list with an element for each of the computed histograms. Each such element contains a serialized version of each histograms, along with how many cells were used for each attribute / dimension of the histogram. An example response can be found below.
 ```json
 [

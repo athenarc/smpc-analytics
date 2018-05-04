@@ -1,0 +1,424 @@
+openapi: 3.0.0
+info:
+  title: Athena MHMD API
+  description: >-
+    An API for multi-level privacy preservation techniques.
+  version: 0.0.1
+tags:
+  - name: Amnesia
+    description: >-
+      Amnesia is a data anonymization tool, that allows to remove identifying
+      information from data. mnesia not only removes direct identifiers like
+      names, SSNs etc but also transforms secondary identifiers like birth date
+      and zip code so that individuals cannot be identified in the data. Amnesia
+      supports k-anonymity and k^m-anonymity
+  - name: SMPC
+    description: 'Secure multi party computation platform'
+paths:
+  /smpc/import:
+    post:
+      tags:
+      - SMPC
+      summary: Securely import data into the SMPC Platform.
+      description: ""
+      requestBody:
+        description: The csv file that contains the data to be imported
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/File'
+      responses:
+        '200':
+          description: File uploaded successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: An error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /smpc/histogram/:
+    post:
+      tags:
+        - SMPC
+      summary: Initiate a secure histogram computation with desired parameters.
+      description: "Compute histogram(s) on the specified attributes, based on specified datasources. A filter is applied before the histogram(s) computation. Returns the requested histogram(s) in JSON format."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Histogram"
+      responses:
+        '202':
+          description: Histogram computation accepted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComputationAccepted"
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: An error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /smpc/queue:
+    get:
+      tags:
+        - SMPC
+      summary: Poll for an ongoing computation status.
+      parameters:
+        - in: query
+          name: request
+          schema:
+            type: integer
+          description: The request id.
+      responses:
+        '200':
+          description: ΟΚ.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComputationResponse"
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: An error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        
+  /amnesia/session:
+    get:
+      tags:
+        - Amnesia
+      summary: Get a session id.
+      security: []
+      responses:
+        '200':
+          description: >
+            The session ID is returned in a cookie named `JSESSIONID`. You need
+            to include this cookie in subsequent requests.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: JSESSIONID=abcde12345; Path=/; HttpOnly
+  /amnesia/dataset:
+    post:
+      tags:
+        - Amnesia
+      summary: Upload a dataset.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        description: The metadata and the file of the dataset
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Dataset'
+      responses:
+        '200':
+          description: File uploaded successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authorization information is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: An error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /amnesia/hierarchy:
+    post:
+      tags:
+        - Amnesia
+      summary: Upload a hierarchy.
+      security:
+        - cookieAuth: []
+      requestBody:
+        description: The hierarchy file
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Hierarchy'
+      responses:
+        '200':
+          description: File uploaded successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authorization information is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: An error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /amnesia/anonymize:
+    post:
+      tags:
+        - Amnesia
+      summary: Executes k or km anonimity.
+      security:
+        - cookieAuth: []
+      requestBody:
+        description: The parameters of the algorithm
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Algorithm'
+      responses:
+        '200':
+          description: A file containing the best anonymized solution based on information loss
+          content:
+            application/csv:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authorization information is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: An error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
+  schemas:
+    Dataset:
+      required:
+        - file
+        - del
+        - datatype
+        - vartypes
+        - checkColumns
+      properties:
+        file:
+          type: string
+          format: binary
+          description: The file
+        del:
+          type: string
+          description: The split delimiter
+        datatype:
+          type: string
+          description: 'The data type of the dataset: ''tabular'' or ''set'''
+        vartypes:
+          type: array
+          description: >-
+            An array with the variable types of the columns: ['int', 'double',
+            'string', 'date']
+          items:
+            type: string
+        checkColumns:
+          type: array
+          description: >-
+            A boolean array indicating which column should participate in the
+            anonymization: ['true', 'false']
+          items:
+            type: boolean
+    Hierarchy:
+      required:
+        - file
+      properties:
+        file:
+          type: string
+          format: binary
+          description: The file
+    Algorithm:
+      required:
+        - k
+        - m
+        - algo
+        - relations
+      properties:
+        k:
+          type: integer
+          description: the k variable for k-anonymity
+        m:
+          type: integer
+          description: the m variable for km-anonymity
+        algo:
+          type: string
+          description: 'the specific algorithm, ''k-anonymity'' or ''km-anonymity'''
+        relations:
+          type: array
+          description: An array with the name of each hierarchy. (Only the quasi-identifiers. The others identifiers are empty)
+          items:
+            type: string
+    Error:
+      properties:
+        code:
+          type: integer
+          description: Error code
+        message:
+          type: string
+          description: Error message
+    File:
+      required:
+      - file
+      properties:
+        file:
+          type: string
+          format: binary
+          example: "/datasets/cvi_identified.csv"
+    Histogram:
+      required:
+        - attributes
+      properties:
+        attributes:
+          description: "Attributes for the histogram(s) to be computed"
+          type: "array"
+          items:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                name:
+                  type: "string"
+                  description: "Attribute's name."
+                cells:
+                  type: "integer"
+                  description: "Number of equi-width cells for that attribute."
+          example: [ [ {"name":"Age", "cells":5} ],[ {"name": "Height", cells: 3}, {"name": "Weight", cells: 4}, {"name": "Heart Rate", cells: 3}] ]
+        datasources:
+          description: "Datasources from which the histogram(s) will be computated. Optional. All datasources will be considered if left blank."
+          type: "array"
+          items:
+            type: "string"
+          example: ["HospitalA", "HospitalB"]
+        filters:
+          description: "List of conditions that should be met in order to take a record into consideration in a secure histogram computation. All conditions are joined with the same specified operator. Optional."
+          type: "object"
+          properties:
+            operator:
+              type: "string"
+              description: "Boolean Binary operator performed on the conditions"
+              enum:
+              - "AND"
+              - "OR"
+              - "XOR"
+            conditions:
+              type: "array"
+              items:
+                type: "object"
+                properties:
+                  attribute:
+                    type: "string"
+                  operator:
+                    type: "string"
+                    enum:
+                    - ">"
+                    - "<"
+                    - "="
+                  value:
+                    type: "string"
+              example: [{"attribute":"Sex", "operator":"=", "value":"Female" }, {"attribute":"Age", "operator":">", "value":"18" }]
+    ComputationResponse:
+      required:
+        - status
+      description: "List of serialized versions for each histogram."
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - "succeded"
+            - "running"
+            - "failed"
+            - "notstarted"
+        step:
+          description: "Current step of the computation"
+          type: string
+        result:
+          type: array
+          items:
+            type: object
+            description: "Serialized versions for the computed histogram."
+            properties:
+              cellsPerDimension:
+                type: array
+                items:
+                  type: integer
+              histogram:
+                type: array
+                items:
+                  type: integer
+          example: [{ "cellsPerDimension": [5], "histogram": [237, 211, 239, 161, 152] }, {"cellsPerDimension": [3, 4, 3], "histogram": [17, 2, 0, 17, 22, 3, 2, 55, 50, 0, 34, 24, 48, 14, 0, 66, 51, 11, 5, 142, 97, 0, 102, 98, 9, 3, 0, 16, 14, 2, 1, 30, 32, 0, 11, 22] } ]
+    ComputationAccepted:
+      required:
+        - location
+      description: "Indication that the secure histogram computation has been accepted. The location provided should be used for status polling, and for results retrieval."
+      type: object
+      properties:
+        location:
+          type: string
+      example: {"location" : "/smpc/queue/1"}
+
