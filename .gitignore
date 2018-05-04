@@ -134,3 +134,7 @@ typings/
 
 # .txt
 *.txt
+
+# Ignore configuration files
+mhmd-driver/client/*
+
