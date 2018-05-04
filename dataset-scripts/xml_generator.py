@@ -13,8 +13,16 @@ args = parser.parse_args()
 if args.path is not None:
     DATASET = args.path
 else:
-    DATASET = '../datasets/analysis_test_data/cvi_identified.csv'
-
+    if os.path.exists('./datasets/analysis_test_data/cvi_identified.csv'):
+        DATASET = './datasets/analysis_test_data/cvi_identified.csv'
+    elif os.path.exists('../datasets/analysis_test_data/cvi_identified.csv'):
+        DATASET = '../datasets/analysis_test_data/cvi_identified.csv'
+    elif os.path.exists('../../datasets/analysis_test_data/cvi_identified.csv'):
+        DATASET = '../../datasets/analysis_test_data/cvi_identified.csv'
+    else:
+        print('Unable to find default dataset, please specify one.')
+        sys.exit(-1)
+        
 print('Generating XML data from csv dataset: "' + DATASET + '"\n')
 
 DIRECTORY, BASENAME = os.path.split(DATASET)
@@ -27,12 +35,15 @@ def main():
         output.write('<table name="' + BASENAME + '" dataSource="DS1" handler="import-script.sb">\n')
         for attribute in df.columns:
             infered_type = str(df[attribute].dtype)
+            if infered_type == 'object':
+                continue
+            infered_type = 'float64'
             output.write('\t<column key="true" type="primitive">\n')
             output.write('\t\t<source name="' + attribute + '" type="' + infered_type + '"/>\n')
             output.write('\t\t<target name="' + attribute + '" type="' + infered_type + '"/>\n')
             output.write('\t</column>\n')
         output.write('</table>\n')
-    print('\nCreated file: "' + OUTPUT + '"')
+    print('Created file: "' + OUTPUT + '"')
 
 if __name__ == '__main__':
     main()
