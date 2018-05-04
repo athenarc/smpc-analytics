@@ -1,0 +1,13 @@
+{
+  "name": "mhmd-driver",
+  "version": "1.0.0",
+  "description": "MHMD Driver for importing data using secret sharing",
+  "main": "mhmd-driver.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dimitris Mouris",
+  "license": "ISC"
+}
