@@ -52,11 +52,11 @@ app.post('/smpc/import', function(req, res) {
     console.log('[NODE] Importing dataset: ' + file + '\n');
     file_name = file.substring(0, file.lastIndexOf('.')); // remove extension of file
     
-    _exec('python dataset-scripts/xml_generator.py --path ' + file, {stdio:[0,1,2],cwd: parent})
+    _exec('python /mhmd-driver/xml_generator.py --path ' + file, {stdio:[0,1,2],cwd: parent})
       .then((buffer) => {
           console.log('[NODE] XML file created from ' + file + '\n');
           console.log('[NODE] Running CSV-Importer\n');
-          return _exec('yes | sharemind-csv-importer --conf client/client.conf --mode overwrite --csv ' + file + ' --model ' + file_name + '.xml --separator c --log ' + file_name + '.log', {stdio:[0,1,2],cwd: parent});
+          return _exec('yes | sharemind-csv-importer --conf /mhmd-driver/client/client.conf --mode overwrite --csv ' + file + ' --model ' + file_name + '.xml --separator c --log ' + file_name + '.log', {stdio:[0,1,2],cwd: parent});
       })
       .then((result) => {
           console.log('[NODE] Response ready.\n');
