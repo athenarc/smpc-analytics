@@ -94,7 +94,6 @@ The server responds with the specified computation's status, and possibly with i
 ```json
 {
     "status": "succeded",
-    "step": "SecreC code compiled. Now running.",
     "result":
     [
       {
