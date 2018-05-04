@@ -96,6 +96,7 @@ app.get('/smpc/queue', function(req, res) {
     })
     .catch((err) => {
         console.log(err);
+        res.send(JSON.stringify({'status':'notstarted'}));
     });
 });
 
