@@ -1,8 +1,19 @@
-## Build & Run commands ##
-# sudo docker build -t MHMD/Driver --build-arg REPOSITORY_URL=my_secret_url . < mhmd-driver-dockerfile 
-# sudo docker run -p 3000:3000 MHMD/Driver
+####################
+#  USAGE COMMANDS  #
+####################
 
-### Download base image ubuntu 17.10 
+## Build
+# sudo docker build -t mhmd/driver --build-arg REPOSITORY_URL=my_secret_url . < mhmd-driver-dockerfile 
+
+## Run docker as a deamon
+# sudo docker run -p 3000:3000 -d mhmd/driver
+
+## Copy the dataset inside the container
+# sudo docker cp mydataset.csv mhmd/driver:/mydataset.csv
+
+####################
+
+# Download base image ubuntu 17.10 
 FROM ubuntu:17.10
 
 ARG REPOSITORY_URL
@@ -28,9 +39,8 @@ RUN echo "deb https://repo.cyber.ee/sharemind/academic-server/imis.athena-innova
 
 RUN wget -O /var/lib/apt/lists/repo.cyber.ee_sharemind_academic-server_imis.athena-innovation.gr%5f${REPOSITORY_URL}_debian_stretch_._Packages https://repo.cyber.ee/sharemind/academic-server/imis.athena-innovation.gr_${REPOSITORY_URL}/debian/stretch/Packages
 
-RUN cat /etc/apt/sources.list.d/sharemind.list
-RUN ls /var/lib/apt/lists/repo.cyber.ee_sharemind_academic-server_imis.athena-innovation.gr%5f${REPOSITORY_URL}_debian_stretch_._Packages
-
+# RUN cat /etc/apt/sources.list.d/sharemind.list
+# RUN ls /var/lib/apt/lists/repo.cyber.ee_sharemind_academic-server_imis.athena-innovation.gr%5f${REPOSITORY_URL}_debian_stretch_._Packages
 
 # Update Software repository
 RUN apt-get update; exit 0
@@ -42,11 +52,18 @@ RUN apt-get install -y --allow-unauthenticated libsharemind-mod-shared3pdev-ctrl
 RUN echo "\n\033[32m--------------------------------------\033[0;39m" && echo "\033[32m-- SHAREMIND CSV IMPORTER INSTALLED --\033[0;39m" && echo "\033[32m--------------------------------------\033[0;39m\n"
 
 ########################## CSV IMPORTER INSTALLED ##########################
-### Download base image node v8.10.0
-FROM node:8.10.0
+
+# Download base image node v8.10.0
+# FROM node:8.10.0
+
+RUN wget https://nodejs.org/dist/v8.11.1/node-v8.11.1-linux-x64.tar.xz
+RUN tar xf node-v8.11.1-linux-x64.tar.xz
+RUN ln -s node-v8.11.1-linux-x64/node /usr/bin/node
+RUN ln -s node-v8.11.1-linux-x64/npm /usr/bin/npm
+RUN ln -s node-v8.11.1-linux-x64/npx /usr/bin/npx
 
 RUN apt-get update; exit 0
-RUN apt-get install -y python-pip python-pandas
+RUN apt-get install -y python-pip python-pandas npm
 
 # Change working directory
 RUN mkdir /mhmd-driver

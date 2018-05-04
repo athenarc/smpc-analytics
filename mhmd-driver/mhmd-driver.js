@@ -56,6 +56,7 @@ app.post('/smpc/import', function(req, res) {
       .then((buffer) => {
           console.log('[NODE] XML file created from ' + file + '\n');
           console.log('[NODE] Running CSV-Importer\n');
+          // probably remove the yes|
           return _exec('yes | sharemind-csv-importer --conf /mhmd-driver/client/client.conf --mode overwrite --csv ' + file + ' --model ' + file_name + '.xml --separator c --log ' + file_name + '.log', {stdio:[0,1,2],cwd: parent});
       })
       .then((result) => {
