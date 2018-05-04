@@ -24,6 +24,11 @@ var frontend = __dirname + "/frontend/";
 var visuals = __dirname + "/visuals/";
 global.__basedir = __dirname;
 
+var level = require('level')
+
+var db = level('./mydb')
+
+
 app.get('/', function (req, res) {
     res.sendFile(path.join(frontend + 'index.html'));
 });
@@ -83,13 +88,18 @@ function _unlinkIfExists(filename) {
     });
 }
 
+app.get('/smpc/queue', function(req, res) {
+    request = req.query.request;
+    db.get(request)
+    .then((value) => {
+        res.send(value);
+    })
+    .catch((err) => {
+        console.log(err);
+    });
+});
 
-app.post('/smpc/histogram', function(req, res) {
-    var parent = path.dirname(__basedir);
-    var content = JSON.stringify(req.body);
-    console.log(content);
-    req_counter++;
-
+function pipeline(req_counter, content, parent) {
     _writeFile(parent+'/configuration_' + req_counter + '.json', content, 'utf8')
         .then((buffer) => {
             console.log('[NODE] Request(' + req_counter + ') Configuration file was saved.\n');
@@ -97,6 +107,10 @@ app.post('/smpc/histogram', function(req, res) {
         })
         .then((buffer) => {
             console.log('[NODE] Request(' + req_counter + ') Main generated.\n');
+            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code generated. Now compiling.'}))
+            .catch((err) => {
+                console.log(err);
+            });
             return _unlinkIfExists(parent + '/histogram/.histogram_main_' + req_counter + '.sb.src');
         })
         .then((msg) => {
@@ -110,26 +124,64 @@ app.post('/smpc/histogram', function(req, res) {
         })
         .then((buffer) => {
             if (SIMULATION_MODE) {
+                db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'}))
+                .catch((err) => {
+                    console.log(err);
+                });
                 console.log('[NODE] Request(' + req_counter + ') Program compiled.\n');
                 return _exec('sharemind-scripts/run.sh histogram/histogram_main_' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
             } else {
+                db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'}))
+                .catch((err) => {
+                    console.log(err);
+                });
                 console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
                 return _exec('tail -n +`cut -d " "  -f "9-" /etc/sharemind/server.log  | grep -n "Starting process" | tail -n 1 | cut -d ":" -f 1` /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
             }
         })
         .then((buffer) => {
+            if (SIMULATION_MODE) {
+                db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'}))
+                .catch((err) => {
+                    console.log(err);
+                });
+            }
             console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
             return _exec('python web/response.py out_' + req_counter + '.txt', {cwd: parent});
         })
         .then((result) => {
             console.log('[NODE] Request(' + req_counter + ') Response ready.\n');
-            res.send(result.toString());
+            var result_obj = {'status':'succeded','result': ''};
+            result_obj.result = JSON.parse(result);
+            db.put(req_counter, JSON.stringify(result_obj))
+            .catch((err) => {
+                console.log(err);
+            });
+            return;
         })
-
         .catch((err) => {
+            db.put(req_counter, JSON.stringify({'status':'failed', 'step':''}))
+            .catch((err) => {
+                console.log(err);
+            });
             console.log(err);
         });
+}
+
+app.post('/smpc/histogram', function(req, res) {
+    var parent = path.dirname(__basedir);
+    var content = JSON.stringify(req.body);
+    console.log(content);
+    req_counter++;
+    res.status(202).json({"location" : "/smpc/queue/"+req_counter});
+    db.put(req_counter, JSON.stringify({'status':'running', 'step':''}))
+    .then((buffer) => {
+        pipeline(req_counter, content, parent);
+    }).catch((err) => {
+        console.log(err);
+    });
 });
+
 app.post('/histogram', function(req, res) {
     var parent = path.dirname(__basedir);
     var content = JSON.stringify(req.body);
