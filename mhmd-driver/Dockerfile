@@ -61,9 +61,7 @@ RUN echo "\n\033[32m--------------------------------------\033[0;39m" && echo "\
 
 ########################## CSV IMPORTER INSTALLED ##########################
 
-# Download base image node v8.10.0
-# FROM node:8.10.0
-
+# Download and install base image node v8
 RUN wget https://nodejs.org/dist/v8.11.1/node-v8.11.1-linux-x64.tar.xz
 RUN tar xf node-v8.11.1-linux-x64.tar.xz
 RUN ln -s node-v8.11.1-linux-x64/node /usr/bin/node
@@ -91,3 +89,5 @@ EXPOSE 3000
 CMD [ "npm", "start" ]
 
 RUN echo "\n\033[32m-----------------------\033[0;39m" && echo "\033[32m-- MHMD-Driver Built --\033[0;39m" && echo "\033[32m-----------------------\033[0;39m\n"
+
+RUN echo "\n\033[32m---------------------------\033[0;39m" && echo "\033[32m-- MHMD-Driver Server Up --\033[0;39m" && echo "\033[32m---------------------------\033[0;39m\n"
