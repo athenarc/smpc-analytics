@@ -35,8 +35,8 @@ def main():
         output.write('<table name="' + BASENAME + '" dataSource="DS1" handler="import-script.sb">\n')
         for attribute in df.columns:
             infered_type = str(df[attribute].dtype)
-            if infered_type == 'object':
-                continue
+            # if infered_type == 'object':
+                # continue
             infered_type = 'float64'
             output.write('\t<column key="true" type="primitive">\n')
             output.write('\t\t<source name="' + attribute + '" type="' + infered_type + '"/>\n')

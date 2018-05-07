@@ -5,12 +5,20 @@
 ## Build
 # sudo docker build -t mhmd/driver --build-arg REPOSITORY_URL=my_secret_url . < mhmd-driver-dockerfile 
 
-## Run docker as a deamon
+## To stop the previous running docker container 
+# sudo docker stop ecstatic_turing
+
+## Run new docker container as a deamon
 # sudo docker run -p 3000:3000 -d mhmd/driver
 
 ## Copy the dataset inside the container
-# sudo docker cp mydataset.csv mhmd/driver:/mydataset.csv
+# sudo docker cp mydataset.csv ecstatic_turing:/mydataset.csv
 
+## OR to attach the docker container
+# sudo docker attach ecstatic_turing
+
+## Get terminal into docker container
+# sudo docker exec -i -t ecstatic_turing /bin/bash
 ####################
 
 # Download base image ubuntu 17.10 
@@ -75,6 +83,7 @@ COPY client client
 # Create app directory
 WORKDIR /mhmd-driver
 COPY xml_generator.py xml_generator.py
+COPY csv_preprocessor.py csv_preprocessor.py
 COPY package.json package.json
 RUN npm install
 COPY mhmd-driver.js mhmd-driver.js

@@ -1,3 +1,16 @@
+var SIMULATION_MODE = false;
+process.argv.forEach(function (val, index, array) {
+    if (val == '-sim' || val == '--sim' || val == '-simulation' || val == '--simulation') {
+        SIMULATION_MODE = true;
+    }
+});
+
+if (SIMULATION_MODE) {
+    console.log('\n[NODE] Running in simulation mode\n');
+} else {
+    console.log('\n[NODE] Running within Docker\n');
+}
+
 const express = require('express');
 const app = express();
 const { exec } = require('child_process');
@@ -49,19 +62,26 @@ app.post('/smpc/import', function(req, res) {
     var content = JSON.stringify(req.body);
 
     var file = req.body.file;
-    console.log('[NODE] Importing dataset: ' + file + '\n');
+    console.log('[NODE] Going to import dataset: ' + file + '\n');
     file_name = file.substring(0, file.lastIndexOf('.')); // remove extension of file
     
-    _exec('python /mhmd-driver/xml_generator.py --path ' + file, {stdio:[0,1,2],cwd: parent})
+    console.log('[NODE] Running CSV-preprocessor.');
+    console.log('\tpython /mhmd-driver/csv_preprocessor.py --path ' + file + '\n');
+    
+    _exec('python /mhmd-driver/csv_preprocessor.py --path ' + file, {stdio:[0,1,2],cwd: parent})
       .then((buffer) => {
-          console.log('[NODE] XML file created from ' + file + '\n');
-          console.log('[NODE] Running CSV-Importer\n');
-          // probably remove the yes|
-          return _exec('yes | sharemind-csv-importer --conf /mhmd-driver/client/client.conf --mode overwrite --csv ' + file + ' --model ' + file_name + '.xml --separator c --log ' + file_name + '.log', {stdio:[0,1,2],cwd: parent});
+          console.log('[NODE] Running XML-Generator');
+          console.log('\tpython /mhmd-driver/xml_generator.py --path ' + file_name + '_edited.csv\n');
+          return _exec('python /mhmd-driver/xml_generator.py --path ' + file_name + '_edited.csv', {stdio:[0,1,2],cwd: parent});
+      })
+      .then((buffer) => {
+          console.log('[NODE] Running CSV-Importer');
+          console.log('\tsharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv ' + file_name + '_edited.csv --model ' + file_name + '.xml --separator c --log ' + file_name + '.log\n');
+          return _exec('sharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv ' + file_name + '_edited.csv --model ' + file_name + '_edited.xml --separator c --log ' + file_name + '_edited.log', {stdio:[0,1,2],cwd: parent});
       })
       .then((result) => {
           console.log('[NODE] Response ready.\n');
-          res.send(file.toString());
+          res.end();
       })
       .catch((err) => {
           console.log(err);
