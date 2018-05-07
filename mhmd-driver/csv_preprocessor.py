@@ -7,6 +7,7 @@ import math
 import json
 import csv
 import argparse
+import hashlib
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--path', help= 'Path to csv filtered file (_filtered.csv)')
@@ -62,9 +63,11 @@ def main():
                     row[attribute] = mapped_values[value]
                 else:
                     if str(df[attribute].dtype) == 'object':
-                        new_value = attribute_counter[attribute]
-                        attribute_counter[attribute] += 1
-                        mapped_values[value] = new_value
+                        hash = hashlib.sha256(value).hexdigest()
+                        hash_int64 = int(hash, 16) % (2 ** 63)
+                        # print(attribute + '\n\t' + value + ' : ' + str(hash_int64) + '\n')
+                        new_value = str(hash_int64)
+                        mapped_values[value] = str(hash_int64)
                     else:
                         if args.id3 != False:
                             minimum =  attribute_min[attribute]
