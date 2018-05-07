@@ -80,11 +80,13 @@ app.post('/smpc/import', function(req, res) {
           return _exec('sharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv ' + file_name + '_edited.csv --model ' + file_name + '_edited.xml --separator c --log ' + file_name + '_edited.log', {stdio:[0,1,2],cwd: parent});
       })
       .then((result) => {
-          console.log('[NODE] Response ready.\n');
+          console.log('[NODE] Data importing Successful.\n');
           res.end();
       })
       .catch((err) => {
+          console.log('[NODE] Failure on data importing.\n');
           console.log(err);
+          res.status(400).send('Failure on data importing');
       });
 
 });

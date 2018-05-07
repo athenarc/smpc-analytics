@@ -5,6 +5,9 @@
 ## Build
 # sudo docker build -t mhmd/driver --build-arg REPOSITORY_URL=my_secret_url . < mhmd-driver-dockerfile 
 
+## Check containers 
+# sudo docker ps -a
+
 ## To stop the previous running docker container 
 # sudo docker stop ecstatic_turing
 
@@ -47,9 +50,6 @@ RUN echo "deb https://repo.cyber.ee/sharemind/academic-server/imis.athena-innova
 
 RUN wget -O /var/lib/apt/lists/repo.cyber.ee_sharemind_academic-server_imis.athena-innovation.gr%5f${REPOSITORY_URL}_debian_stretch_._Packages https://repo.cyber.ee/sharemind/academic-server/imis.athena-innovation.gr_${REPOSITORY_URL}/debian/stretch/Packages
 
-# RUN cat /etc/apt/sources.list.d/sharemind.list
-# RUN ls /var/lib/apt/lists/repo.cyber.ee_sharemind_academic-server_imis.athena-innovation.gr%5f${REPOSITORY_URL}_debian_stretch_._Packages
-
 # Update Software repository
 RUN apt-get update; exit 0
 
@@ -91,13 +91,3 @@ EXPOSE 3000
 CMD [ "npm", "start" ]
 
 RUN echo "\n\033[32m-----------------------\033[0;39m" && echo "\033[32m-- MHMD-Driver Built --\033[0;39m" && echo "\033[32m-----------------------\033[0;39m\n"
-
-## Download example dataset
-# RUN wget https://repo.cyber.ee/sharemind/academic-server/imis.athena-innovation.gr_${REPOSITORY_URL}/payment-history.tar.gz
-# RUN tar -xvzf payment-history.tar.gz
-
-# RUN sed -i -e 's/date.diff/date_diff/g' payment-history-10k.csv
-
-# Run csv importer
-# RUN yes | sharemind-csv-importer --conf client/client.conf --mode overwrite --csv payment-history-10k.csv --model payment-history.xml --separator c --log payment-history.log
-
