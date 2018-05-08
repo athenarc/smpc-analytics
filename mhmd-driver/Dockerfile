@@ -9,16 +9,16 @@
 # ./clear.sh
 
 ## Run new docker container as a deamon
-# sudo docker run -p 3000:3000 [--name=CONTAINER_NAME] -d mhmd/driver
+# sudo docker run -p 4000:3000 --name=CONTAINER_NAME -d mhmd/driver
 
 ## Copy the dataset inside the container
 # sudo docker cp mydataset.csv CONTAINER_NAME:/mydataset.csv
 
-## OR to attach the docker container
-# sudo docker attach CONTAINER_NAME
-
 ## Get terminal into docker container
 # sudo docker exec -i -t CONTAINER_NAME /bin/bash
+
+## OR to attach the docker container
+# sudo docker attach CONTAINER_NAME
 ####################
 
 # Download base image ubuntu 17.10
