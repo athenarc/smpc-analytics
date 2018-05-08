@@ -3,28 +3,25 @@
 ####################
 
 ## Build
-# sudo docker build -t mhmd/driver --build-arg REPOSITORY_URL=my_secret_url . < mhmd-driver-dockerfile 
+# sudo docker build -t mhmd/driver --build-arg REPOSITORY_URL=my_secret_url . < mhmd-driver-dockerfile
 
-## Check containers 
-# sudo docker ps -a
-
-## To stop the previous running docker container 
-# sudo docker stop ecstatic_turing
+## Stop and remove previous running container, if any
+# ./clear.sh
 
 ## Run new docker container as a deamon
-# sudo docker run -p 3000:3000 -d mhmd/driver
+# sudo docker run -p 3000:3000 [--name=CONTAINER_NAME] -d mhmd/driver
 
 ## Copy the dataset inside the container
-# sudo docker cp mydataset.csv ecstatic_turing:/mydataset.csv
+# sudo docker cp mydataset.csv CONTAINER_NAME:/mydataset.csv
 
 ## OR to attach the docker container
-# sudo docker attach ecstatic_turing
+# sudo docker attach CONTAINER_NAME
 
 ## Get terminal into docker container
-# sudo docker exec -i -t ecstatic_turing /bin/bash
+# sudo docker exec -i -t CONTAINER_NAME /bin/bash
 ####################
 
-# Download base image ubuntu 17.10 
+# Download base image ubuntu 17.10
 FROM ubuntu:17.10
 
 ARG REPOSITORY_URL
