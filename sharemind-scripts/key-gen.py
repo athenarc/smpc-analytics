@@ -8,8 +8,9 @@ class ProcessError(Exception):
     def __str__(self):
         return self.message
 
-def execute(command, stdout, stdin, stderr):
-    print('[INFO] Running: ' + ' '.join(command))
+def execute(command, stdout, stdin, stderr, verbose=False):
+    if verbose:
+        print('[INFO] Running: ' + ' '.join(command))
     process = Popen(command, stdout=stdout, stdin = stdin, stderr = stderr)
     out, err = process.communicate();
     rc = process.returncode
@@ -48,7 +49,7 @@ def main():
     public_key = args.CommonName + '-public-key'
     ascii_public_key = args.CommonName + '-public-key-ascii'
     try:
-        execute(["openssl", "req", "-x509", "-config", "/home/thanos/repositories/smpc-analytics/sharemind-scripts/openssl.cnf", "-extensions", "ext", "-subj", subj, "-days", str(args.days), "-nodes", "-newkey", "rsa:"+str(args.size), "-keyout", private_key, "-out", public_key, "-outform", "der"], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
+        execute(["openssl", "req", "-x509", "-config", "openssl.cnf", "-extensions", "ext", "-subj", subj, "-days", str(args.days), "-nodes", "-newkey", "rsa:"+str(args.size), "-keyout", private_key, "-out", public_key, "-outform", "der"], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
     except ProcessError as e:
         print('Error in key generation')
         return 1
