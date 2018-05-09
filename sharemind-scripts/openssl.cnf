@@ -1,0 +1,7 @@
+[req]
+distinguished_name=dn
+[ dn ]
+[ ext ]
+basicConstraints = critical, CA:FALSE
+keyUsage = critical, digitalSignature, keyEncipherment
+subjectKeyIdentifier=hash
