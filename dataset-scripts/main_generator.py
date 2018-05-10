@@ -22,6 +22,8 @@ import histogram;
 main_f = '''void main(){
 '''
 
+available_datasources = ['HospitalA', 'HospitalB', 'HospitalC']
+
 def is_number(s):
     try:
         float(s)
@@ -120,6 +122,9 @@ def main():
     if 'datasources' in configuration:
         numberOfDatasets = len(configuration['datasources'])
         data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(configuration['datasources'][i]) + ";" for i in range(len(configuration['datasources']))])
+    else:
+        numberOfDatasets = len(available_datasources)
+        data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(available_datasources[i]) + ";" for i in range(len(available_datasources))])
 
     main_f += '''
     string datasource = "DS1";
