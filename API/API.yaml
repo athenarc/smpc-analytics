@@ -52,7 +52,7 @@ paths:
       tags:
         - SMPC
       summary: Initiate a secure histogram computation with desired parameters.
-      description: "Compute histogram(s) on the specified attributes, based on specified datasources. A filter is applied before the histogram(s) computation. Returns the requested histogram(s) in JSON format."
+      description: "Compute histogram(s) on the specified attributes, based on specified datasources. A filter is applied before the histogram(s) computation. Returns the location of the requested computation."
       requestBody:
         required: true
         content:
@@ -82,7 +82,8 @@ paths:
     get:
       tags:
         - SMPC
-      summary: Poll for an ongoing computation status.
+      summary: "Poll for an ongoing computation status."
+      description: "Check the status of an ongoing computation. Returns its status, possibly its current step and on success, the computation result in JSON format."
       parameters:
         - in: query
           name: request
