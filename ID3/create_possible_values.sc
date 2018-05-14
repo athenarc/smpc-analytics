@@ -74,8 +74,8 @@ uint64 createDataProviders(uint64 data_providers_num, uint64 rows, uint64 column
             print("Done inserting in table " + table + "\n\n");
         }
     }
-    for (uint64 i = 0 ; i < data_providers_num ; i++) {
-        string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
+    for (uint64 d = 0 ; d < data_providers_num ; d++) {
+        string table = tdbVmapGetString(providers_vmap, "0", d :: uint64);
         if (print_messages) {
             print("Printing from table " + table + "");
         }
@@ -107,30 +107,42 @@ void main() {
 
     // Compute unique values
     uint64 possible_values_vmap = tdbVmapNew();
-    for (uint64 j = 0 ; j < columns ; j++) {
-        pd_shared3p float64[[1]] uniques(rows);
-        uint64 unique_cnt = 0;
-        for (uint64 i = 0 ; i < rows ; i++) {
 
-            bool exists = declassify(exists(uniques, unique_cnt, data[i,j]));
-            /**
-             * Leakage Evaluation:
-             *  Someone can infer the number and the positions of unique values.
-             *  However, the values themselves are encrypted.
-            **/
-            if (!exists) {
-                uniques[unique_cnt] = data[i,j];
-                unique_cnt++;
+    for (uint64 d = 0 ; d < data_providers_num ; d++) {
+        string table = tdbVmapGetString(providers_vmap, "0", d :: uint64);
+
+        for (uint64 j = 0 ; j < columns ; j++) {
+            pd_shared3p float64[[1]] data_from_provider = tdbReadColumn(datasource, table, j :: uint64); // read column j
+
+            pd_shared3p float64[[1]] uniques(rows); // initialize uniques with rows size
+            uint64 unique_cnt = 0;
+            for (uint64 i = 0 ; i < rows ; i++) {
+
+                bool exists = declassify(exists(uniques, unique_cnt, data_from_provider[i]));
+                /**
+                 * Leakage Evaluation:
+                 *  Someone can infer the number and the positions of unique values.
+                 *  However, the values themselves are encrypted.
+                **/
+                if (!exists) {
+                    uniques[unique_cnt] = data_from_provider[i];
+                    unique_cnt++;
+                }
             }
+            uniques = uniques[0:unique_cnt]; // keep only the uniques
+            tdbVmapAddValue(possible_values_vmap, arrayToString(j), uniques);
         }
-        uniques = uniques[0:unique_cnt];
-        tdbVmapAddValue(possible_values_vmap, arrayToString(j), uniques);
     }
-    print("Printing possible-values: ");
-    for (uint64 j = 0 ; j < columns ; j++) {
-        pd_shared3p float64[[1]] res = tdbVmapGetValue(possible_values_vmap, arrayToString(j), 0 :: uint64);
-        printVector(declassify(res));
-        print("\n");
+
+    print("\n\nPrinting possible-values: ");
+    for (uint64 d = 0 ; d < data_providers_num ; d++) {
+        print("Data Provider ", d, ":");
+
+        for (uint64 j = 0 ; j < columns ; j++) {
+            pd_shared3p float64[[1]] res = tdbVmapGetValue(possible_values_vmap, arrayToString(j), d :: uint64);
+            printVector(declassify(res));
+            print("\n");
+        }
     }
 
 }
