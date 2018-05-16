@@ -18,9 +18,9 @@ template <domain D, type T>
 D uint64[[1]] histogram(D T[[1]] arr, uint64 cells, D T min, D T max) {
     D uint64[[1]] output(cells);
     D float64 cell_width = ((float64) max - (float64) min) / (float64)cells;
-    D uint64[[1]] bitmap = (uint64)((float64)(arr-min)/cell_width);
+    D uint64[[1]] cellmap = (uint64)((float64)(arr-min)/cell_width);
     for (uint64 j = 0; j < cells; j++) {
-        D uint64[[1]] eq = (uint64)(bitmap == j) + ((uint64)(bitmap == cells) * (uint64)(j == cells-1));
+        D uint64[[1]] eq = (uint64)(cellmap == j) + ((uint64)(cellmap == cells) * (uint64)(j == cells-1));
         output[j] = sum(eq);
     }
     return output;
