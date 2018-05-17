@@ -3,6 +3,9 @@ import csv
 import json
 import os
 
+MESH_TERMS = ['Age Groups', 'Diseases']
+PATIENT_DIRECTORY = '../datasets/patient_files'
+
 def construct_dict(csv_file, delimiter=';'):
     with open(csv_file) as f:
         reader = csv.reader(f, skipinitialspace=True, delimiter=delimiter)
@@ -18,11 +21,18 @@ def mesh_tree_depth(code):
 def main():
     mesh_dict = construct_dict('../datasets/mtrees2018.csv') # name -> code
     mesh_dict_inverted = construct_dict('../datasets/mtrees2018_inverted.csv') # code -> name
+    direct_children = {}
 
-    pateint_directory = '../datasets/patient_files'
-    for filename in os.listdir(pateint_directory):
+    for term in MESH_TERMS:
+        code = mesh_dict[term]
+        depth = mesh_tree_depth(code)
+        children = [mesh_dict_inverted[key] for key in mesh_dict_inverted.keys() if key.startswith(code) and mesh_tree_depth(key) == depth + 1]
+        direct_children[term] = children
+
+
+    for filename in os.listdir(PATIENT_DIRECTORY):
         if filename.endswith('.json'):
-            full_name = os.path.join(pateint_directory, filename)
+            full_name = os.path.join(PATIENT_DIRECTORY, filename)
             with open(full_name) as patient_file:
                 print('File: '+filename)
                 patient_json = json.load(patient_file)
@@ -44,7 +54,6 @@ def main():
 
 
         print('-----------------------------------------------------------------------------')
-
 
 if __name__ == '__main__':
     main()
