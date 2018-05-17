@@ -30,14 +30,16 @@ def main():
         direct_children[term] = children
 
 
-    for filename in os.listdir(PATIENT_DIRECTORY):
+
+    for filename in os.listdir(PATIENT_DIRECTORY): # for each patient file
+        patient_values = {key: [] for key in MESH_TERMS} # initialize values to empty lsit, for every term in MESH_TERMS
         if filename.endswith('.json'):
             full_name = os.path.join(PATIENT_DIRECTORY, filename)
             with open(full_name) as patient_file:
                 print('File: '+filename)
                 patient_json = json.load(patient_file)
                 keywords = patient_json['keywords']
-                for keyword in keywords:
+                for keyword in keywords: # for each one of the patient's keywords
                     if keyword['valueIRI'].startswith('https://meshb.nlm.nih.gov'):
                         name = keyword['value']
                         code = mesh_dict[name]
@@ -48,11 +50,17 @@ def main():
                         top_level_code = mesh_branch_codes[0][0]
                         top_level_name = mesh_dict_inverted[top_level_code]
                         mesh_branch_names = [top_level_name] + mesh_branch_names
-                        print(' -> '.join(mesh_branch_names))
-                        # print('Key: ' + mesh_branch_names[0] + ', Value: ' + name)
-                        print('\n')
+                        # print(' -> '.join(mesh_branch_names))
+                        for term in MESH_TERMS:
+                            children = direct_children[term]
+                            value = set(mesh_branch_names).intersection(children)
+                            if len(value) > 0:
+                                if patient_values[term] == []:
+                                    patient_values[term] = [str(list(value)[0])]
+                                else:
+                                    patient_values[term].append(str(list(value)[0]))
 
-
+        print(patient_values)
         print('-----------------------------------------------------------------------------')
 
 if __name__ == '__main__':
