@@ -2,9 +2,11 @@ from __future__ import print_function
 import csv
 import json
 import os
+import pandas
 
-MESH_TERMS = ['Age Groups', 'Diseases']
+MESH_TERMS = ['Persons', 'Diseases']
 PATIENT_DIRECTORY = '../datasets/patient_files'
+OUTPUT_FILE = 'data.csv'
 
 def construct_dict(csv_file, delimiter=';'):
     with open(csv_file) as f:
@@ -30,7 +32,8 @@ def main():
         direct_children[term] = children
 
 
-
+    df = pandas.DataFrame(columns = ['Id'] + MESH_TERMS)
+    id = 0
     for filename in os.listdir(PATIENT_DIRECTORY): # for each patient file
         patient_values = {key: [] for key in MESH_TERMS} # initialize values to empty lsit, for every term in MESH_TERMS
         if filename.endswith('.json'):
@@ -62,6 +65,14 @@ def main():
 
         print(patient_values)
         print('-----------------------------------------------------------------------------')
+        for term in MESH_TERMS:
+            for value in patient_values[term]:
+                df = df.append({'Id' : id, term : value}, ignore_index = True)
+        id += 1
+
+    df.fillna(-1, inplace = True)
+    df.to_csv(OUTPUT_FILE, sep=';', index = False)
+    # print(df.to_string(index=False))
 
 if __name__ == '__main__':
     main()
