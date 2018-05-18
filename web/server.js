@@ -100,11 +100,15 @@ app.get('/smpc/queue', function(req, res) {
     });
 });
 
-function pipeline(req_counter, content, parent) {
+function pipeline(req_counter, content, parent, computation_type) {
     _writeFile(parent+'/configuration_' + req_counter + '.json', content, 'utf8')
         .then((buffer) => {
             console.log('[NODE] Request(' + req_counter + ') Configuration file was saved.\n');
-            return _exec('python dataset-scripts/main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
+            if (computation_type == 'count') {
+                return _exec('python dataset-scripts/count_main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
+            } else if (computation_type == 'histogram') {
+                return _exec('python dataset-scripts/main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
+            }
         })
         .then((buffer) => {
             console.log('[NODE] Request(' + req_counter + ') Main generated.\n');
@@ -148,7 +152,11 @@ function pipeline(req_counter, content, parent) {
                 });
             }
             console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
-            return _exec('python web/response.py out_' + req_counter + '.txt', {cwd: parent});
+            if (computation_type == 'count') {
+                return _exec('python web/response.py out_' + req_counter + '.txt', {cwd: parent});
+            } else if (computation_type == 'histogram') {
+                return _exec('python web/response.py out_' + req_counter + '.txt', {cwd: parent});
+            }
         })
         .then((result) => {
             console.log('[NODE] Request(' + req_counter + ') Response ready.\n');
@@ -177,7 +185,21 @@ app.post('/smpc/histogram', function(req, res) {
     res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
     db.put(req_counter, JSON.stringify({'status':'running'}))
     .then((buffer) => {
-        pipeline(req_counter, content, parent);
+        pipeline(req_counter, content, parent, 'histogram');
+    }).catch((err) => {
+        console.log(err);
+    });
+});
+
+app.post('/smpc/count', function(req, res) {
+    var parent = path.dirname(__basedir);
+    var content = JSON.stringify(req.body);
+    console.log(content);
+    req_counter++;
+    res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
+    db.put(req_counter, JSON.stringify({'status':'running'}))
+    .then((buffer) => {
+        pipeline(req_counter, content, parent, 'count');
     }).catch((err) => {
         console.log(err);
     });
@@ -231,45 +253,6 @@ app.post('/histogram', function(req, res) {
             console.log(err);
         });
 });
-
-
-function buildHtml(req) {
-    fs.readFile('cvi_summary.csv', function (err, fileData) {
-        var form = `
-<form action="/histogram" method="post">
-    <p>
-        <ul class="list-group">
-`;
-        parse(fileData, {columns: true, delimiter: ','}, function(err, rows) {
-            for (var i = 0; i < rows.length; i++) {
-                var field_name = rows[i].Field;
-                form = form + `
-             <li class="list-group-item">
-                <input type="checkbox" name="attributes" value="`+ field_name +`"> ` + field_name + ` &ensp;
-                <span style="float:right;"><input type="number" id="`+ field_name +`Cells" name="cells" min="1" max="15" style="display:none;"></span>
-            </li>
-`;
-            }
-            form = form + `
-        </ul>
-    </p>
-    <p>
-        <input type="submit" class="btn btn-info" value="Compute Histogram(s)">
-    </p>
-</form>
-`;
-
-            fs.writeFile(frontend+'form.html', form, function(err) {
-                if(err) {
-                    return console.log(err);
-                }
-                console.log("[NODE] form.html saved.");
-            });
-
-        });
-    });
-}
-
 
 
 app.listen(3000, () => console.log('Example app listening on port 3000!'));

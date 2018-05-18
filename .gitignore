@@ -139,3 +139,5 @@ typings/
 # Ignore configuration files
 mhmd-driver/client/*
 
+# Ignore Database files
+web/mydb/*
