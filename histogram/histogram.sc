@@ -70,7 +70,7 @@ template <domain D, type T>
 D uint64[[1]] histogram_categorical(D T[[1]] arr, uint64 P) {
     D uint64[[1]] output(P);
     for (uint64 i = 0; i < P; i++) {
-        D uint64[[1]] eq = (uint64)((uint64)arr == i);
+        D uint64[[1]] eq = (uint64)(arr == (int64)i);
         output[i] = sum(eq);
     }
     return output;
@@ -84,7 +84,7 @@ D uint64[[1]] histogram_categorical(D T[[1]] arr, uint64 P) {
 **/
 template <domain D>
 D uint64[[1]] histogram_categorical(string datasource, string table, uint64 index, uint64 P) {
-    D float64[[1]] column = tdbReadColumn(datasource, table, index);
+    D int64[[1]] column = tdbReadColumn(datasource, table, index);
     return(histogram_categorical(column, P));
 }
 
@@ -101,7 +101,7 @@ D uint64[[1]] histogram_categorical(string datasource, uint64 providers_vmap, ui
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
         string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
         print("Computing aggregates for data-provider " + table);
-        D float64[[1]] column = tdbReadColumn(datasource, table, index);
+        D int64[[1]] column = tdbReadColumn(datasource, table, index);
         result += histogram_categorical(column, P);
     }
     return result;
@@ -120,7 +120,7 @@ D uint64[[1]] histogram_categorical(string datasource, uint64 providers_vmap, ui
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
         string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
         print("Computing aggregates for data-provider " + table);
-        D float64[[1]] column = tdbReadColumn(datasource, table, column_name);
+        D int64[[1]] column = tdbReadColumn(datasource, table, column_name);
         result += histogram_categorical(column, P);
     }
     return result;
