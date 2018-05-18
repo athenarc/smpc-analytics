@@ -4,7 +4,7 @@ import json
 import os
 import pandas
 
-OUTPUT_FILE = 'mesh_mapping.json'
+OUTPUT_FILE = '../datasets/mesh_mapping.json'
 
 def construct_dict(csv_file, delimiter=';'):
     with open(csv_file) as f:
