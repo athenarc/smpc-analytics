@@ -7,7 +7,7 @@ import pandas
 MESH_TERMS = ['Persons', 'Diseases']
 PATIENT_DIRECTORY = '../datasets/patient_files'
 MAPPING = '../datasets/mesh_mapping.json'
-OUTPUT_FILE = 'data.csv'
+OUTPUT_FILE = '../datasets/data.csv'
 
 def construct_dict(csv_file, delimiter=';'):
     with open(csv_file) as f:
