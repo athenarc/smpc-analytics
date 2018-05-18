@@ -82,9 +82,9 @@ D uint64[[1]] histogram_categorical(D T[[1]] arr, uint64 P) {
  * public uint64 index: column index in the table
  * public int P: the number of different possible values contained in arr
 **/
-template <domain D, type T>
+template <domain D>
 D uint64[[1]] histogram_categorical(string datasource, string table, uint64 index, uint64 P) {
-    D T[[1]] column = tdbReadColumn(datasource, table, index);
+    D float64[[1]] column = tdbReadColumn(datasource, table, index);
     return(histogram_categorical(column, P));
 }
 
@@ -95,13 +95,13 @@ D uint64[[1]] histogram_categorical(string datasource, string table, uint64 inde
  * public uint64 index: column index in the table
  * public int P: the number of different possible values contained in arr
 **/
-template <domain D, type T>
+template <domain D>
 D uint64[[1]] histogram_categorical(string datasource, uint64 providers_vmap, uint64 data_providers_num, uint64 index, uint64 P) {
     D uint64[[1]] result(P);
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
         string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
         print("Computing aggregates for data-provider " + table);
-        D T[[1]] column = tdbReadColumn(datasource, table, index);
+        D float64[[1]] column = tdbReadColumn(datasource, table, index);
         result += histogram_categorical(column, P);
     }
     return result;
