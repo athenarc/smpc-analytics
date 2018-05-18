@@ -40,6 +40,34 @@ D uint64[[1]] histogram(string datasource, string table, uint64 index, uint64 ce
     return(histogram(column, cells, min, max));
 }
 
+
+/**
+ * private arr: 1D array of all data. size M, where M: #attributes
+ * public int P: the number of different possible values contained in arr
+**/
+template <domain D, type T>
+D uint64[[1]] histogram_categorical(D T[[1]] arr, uint64 P) {
+    D uint64[[1]] output(P);
+    for (uint64 i = 0; i < P; i++) {
+        D uint64[[1]] eq = (uint64)((uint64)arr == i);
+        output[i] = sum(eq);
+    }
+    return output;
+}
+
+/**
+ * public string datasource: name of the datasource
+ * public string table: name of the table
+ * public uint64 index: column index in the table
+ * public int P: the number of different possible values contained in arr
+**/
+template <domain D, type T>
+D uint64[[1]] histogram_categorical(string datasource, string table, uint64 index, uint64 P) {
+    D T[[1]] column = tdbReadColumn(datasource, table, index);
+    return(histogram_categorical(column, P));
+}
+
+
 /**
  * private arr: 2D array of all data tuples. size M x N, where M: #attributes, N: #tuples
  * public cells_list: list of numbers of cells for each histogram
