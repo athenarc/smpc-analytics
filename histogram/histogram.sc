@@ -40,6 +40,27 @@ D uint64[[1]] histogram(string datasource, string table, uint64 index, uint64 ce
     return(histogram(column, cells, min, max));
 }
 
+/**
+ * public string datasource: name of the datasource
+ * public uint64 providers_vmap: A tdb-Vmap with key 0 and value an array of the data-provider names
+ * public uint64 data_providers_num: the number of data-providers
+ * public uint64 index: column index in the table
+ * public cells: number of the histogram's cell
+ * private min: min value of arr
+ * private max: max value of arr
+**/
+template <domain D, type T>
+D uint64[[1]] histogram(string datasource, uint64 providers_vmap, uint64 data_providers_num, uint64 index, uint64 cells, D T min, D T max) {
+    D uint64[[1]] result(cells);
+    for (uint64 i = 0 ; i < data_providers_num ; i++) {
+        string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
+        print("Computing aggregates for data-provider " + table);
+        D T[[1]] column = tdbReadColumn(datasource, table, index);
+        result += histogram(column, cells, min, max);
+    }
+    return result;
+}
+
 
 /**
  * private arr: 1D array of all data. size M, where M: #attributes
@@ -65,6 +86,25 @@ template <domain D, type T>
 D uint64[[1]] histogram_categorical(string datasource, string table, uint64 index, uint64 P) {
     D T[[1]] column = tdbReadColumn(datasource, table, index);
     return(histogram_categorical(column, P));
+}
+
+/**
+ * public string datasource: name of the datasource
+ * public uint64 providers_vmap: A tdb-Vmap with key 0 and value an array of the data-provider names
+ * public uint64 data_providers_num: the number of data-providers
+ * public uint64 index: column index in the table
+ * public int P: the number of different possible values contained in arr
+**/
+template <domain D, type T>
+D uint64[[1]] histogram_categorical(string datasource, uint64 providers_vmap, uint64 data_providers_num, uint64 index, uint64 P) {
+    D uint64[[1]] result(P);
+    for (uint64 i = 0 ; i < data_providers_num ; i++) {
+        string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
+        print("Computing aggregates for data-provider " + table);
+        D T[[1]] column = tdbReadColumn(datasource, table, index);
+        result += histogram_categorical(column, P);
+    }
+    return result;
 }
 
 
@@ -97,28 +137,6 @@ D uint64[[1]] histogram(D T[[2]] arr, uint64[[1]] cells_list, D T[[1]] mins, D T
     }
     return hist_1d;
 }
-
-/**
- * public string datasource: name of the datasource
- * public uint64 providers_vmap: A tdb-Vmap with key 0 and value an array of the data-provider names
- * public uint64 data_providers_num: the number of data-providers
- * public uint64 index: column index in the table
- * public cells: number of the histogram's cell
- * private min: min value of arr
- * private max: max value of arr
-**/
-template <domain D, type T>
-D uint64[[1]] histogram(string datasource, uint64 providers_vmap, uint64 data_providers_num, uint64 index, uint64 cells, D T min, D T max) {
-    D uint64[[1]] result(cells);
-    for (uint64 i = 0 ; i < data_providers_num ; i++) {
-        string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
-        print("Computing aggregates for data-provider " + table);
-        D T[[1]] column = tdbReadColumn(datasource, table, index);
-        result += histogram(column, cells, min, max);
-    }
-    return result;
-}
-
 
 /**
  * private arr: 2D array of all data tuples. size N x M, where N: #tuples, M: #attributes
