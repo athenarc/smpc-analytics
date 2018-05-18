@@ -107,6 +107,24 @@ D uint64[[1]] histogram_categorical(string datasource, uint64 providers_vmap, ui
     return result;
 }
 
+/**
+ * public string datasource: name of the datasource
+ * public uint64 providers_vmap: A tdb-Vmap with key 0 and value an array of the data-provider names
+ * public uint64 data_providers_num: the number of data-providers
+ * public string column_name: column index in the table
+ * public int P: the number of different possible values contained in arr
+**/
+template <domain D>
+D uint64[[1]] histogram_categorical(string datasource, uint64 providers_vmap, uint64 data_providers_num, string column_name, uint64 P) {
+    D uint64[[1]] result(P);
+    for (uint64 i = 0 ; i < data_providers_num ; i++) {
+        string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
+        print("Computing aggregates for data-provider " + table);
+        D float64[[1]] column = tdbReadColumn(datasource, table, column_name);
+        result += histogram_categorical(column, P);
+    }
+    return result;
+}
 
 /**
  * private arr: 2D array of all data tuples. size M x N, where M: #attributes, N: #tuples
