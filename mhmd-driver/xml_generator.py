@@ -7,6 +7,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--path', help= 'Path to csv file (_filtered_edited.csv)')
+parser.add_argument('--float', help= 'Optional argument to force all columns have type float64', action='store_true')
 args = parser.parse_args()
 
 if args.path is not None:
@@ -34,10 +35,10 @@ def main():
     with open(OUTPUT,'w') as output:
         output.write('<table name="' + BASENAME + '" dataSource="DS1" handler="import-script.sb">\n')
         for attribute in df.columns:
-            infered_type = str(df[attribute].dtype)
-            # if infered_type == 'object':
-                # continue
-            infered_type = 'float64'
+            if args.float:
+                infered_type = 'float64'
+            else:
+                infered_type = str(df[attribute].dtype)
             output.write('\t<column key="true" type="primitive">\n')
             output.write('\t\t<source name="' + attribute + '" type="' + infered_type + '"/>\n')
             output.write('\t\t<target name="' + attribute + '" type="' + infered_type + '"/>\n')
