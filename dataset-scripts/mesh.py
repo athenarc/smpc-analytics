@@ -3,11 +3,16 @@ import csv
 import json
 import os
 import pandas
+import argparse
 
-MESH_TERMS = ['Persons', 'Diseases']
-PATIENT_DIRECTORY = '../datasets/patient_files'
-MAPPING = '../datasets/mesh_mapping.json'
-OUTPUT_FILE = '../datasets/data.csv'
+parser = argparse.ArgumentParser()
+parser.add_argument('configuration', help = 'Configuration file of the request')
+parser.add_argument('--patient_directory', help = 'Directory of the patient .json files.', default = '../datasets/patient_files')
+parser.add_argument('--mapping', help = 'File with the mesh term mapping (values to integers).', default = '../datasets/mesh_mapping.json')
+parser.add_argument('--output', help = 'The output csv to be created.', default = '../datasets/data.csv')
+args = parser.parse_args()
+
+
 
 def construct_dict(csv_file, delimiter=';'):
     with open(csv_file) as f:
@@ -22,9 +27,12 @@ def mesh_tree_depth(code):
         return code.count('.') + 1
 
 def main():
+    configuration = json.load(open(args.configuration))
+    # MESH_TERMS = ['Persons', 'Diseases']
+    MESH_TERMS = [configuration['attribute']]
     mesh_dict = construct_dict('../datasets/mtrees2018.csv') # name -> code
     mesh_dict_inverted = construct_dict('../datasets/mtrees2018_inverted.csv') # code -> name
-    mesh_mapping = json.load(open(MAPPING))
+    mesh_mapping = json.load(open(args.mapping))
     direct_children = {}
 
     for term in MESH_TERMS:
@@ -36,12 +44,12 @@ def main():
 
     df = pandas.DataFrame(columns = ['Id'] + MESH_TERMS)
     id = 0
-    for filename in os.listdir(PATIENT_DIRECTORY): # for each patient file
+    for filename in os.listdir(args.patient_directory): # for each patient file
         patient_values = {key: [] for key in MESH_TERMS} # initialize values to empty lsit, for every term in MESH_TERMS
         if filename.endswith('.json'):
-            full_name = os.path.join(PATIENT_DIRECTORY, filename)
+            full_name = os.path.join(args.patient_directory, filename)
             with open(full_name) as patient_file:
-                print('File: '+filename)
+                # print('File: '+filename)
                 patient_json = json.load(patient_file)
                 keywords = patient_json['keywords']
                 for keyword in keywords: # for each one of the patient's keywords
@@ -67,8 +75,8 @@ def main():
                                 else:
                                     patient_values[term].append(mapped_value)
 
-        print(patient_values)
-        print('-----------------------------------------------------------------------------')
+        # print(patient_values)
+        # print('-----------------------------------------------------------------------------')
         for term in MESH_TERMS:
             for value in patient_values[term]:
                 df = df.append({'Id' : id, term : value}, ignore_index = True)
@@ -76,8 +84,8 @@ def main():
 
     df.fillna(-1, inplace = True)
     df = df.astype(int)
-    df.to_csv(OUTPUT_FILE, sep=';', index = False)
-    # print(df.to_string(index=False))
+    df.to_csv(args.output, sep = ';', index = False)
+    print('CSV file generated at ' + args.output)
 
 if __name__ == '__main__':
     main()
