@@ -6,6 +6,7 @@ import pandas
 
 MESH_TERMS = ['Persons', 'Diseases']
 PATIENT_DIRECTORY = '../datasets/patient_files'
+MAPPING = '../datasets/mesh_mapping.json'
 OUTPUT_FILE = 'data.csv'
 
 def construct_dict(csv_file, delimiter=';'):
@@ -23,6 +24,7 @@ def mesh_tree_depth(code):
 def main():
     mesh_dict = construct_dict('../datasets/mtrees2018.csv') # name -> code
     mesh_dict_inverted = construct_dict('../datasets/mtrees2018_inverted.csv') # code -> name
+    mesh_mapping = json.load(open(MAPPING))
     direct_children = {}
 
     for term in MESH_TERMS:
@@ -58,10 +60,12 @@ def main():
                             children = direct_children[term]
                             value = set(mesh_branch_names).intersection(children)
                             if len(value) > 0:
+                                value = str(list(value)[0])
+                                mapped_value = mesh_mapping[term][value]
                                 if patient_values[term] == []:
-                                    patient_values[term] = [str(list(value)[0])]
+                                    patient_values[term] = [mapped_value]
                                 else:
-                                    patient_values[term].append(str(list(value)[0]))
+                                    patient_values[term].append(mapped_value)
 
         print(patient_values)
         print('-----------------------------------------------------------------------------')
@@ -71,6 +75,7 @@ def main():
         id += 1
 
     df.fillna(-1, inplace = True)
+    df = df.astype(int)
     df.to_csv(OUTPUT_FILE, sep=';', index = False)
     # print(df.to_string(index=False))
 

@@ -65,7 +65,7 @@ def main():
         data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(available_datasources[i]) + ";" for i in range(len(available_datasources))])
 
     attribute = configuration['attribute']
-    attribute_values = mapping[attribute]
+    attribute_values = len(mapping[attribute])
 
     main_f += '''
     string column_name = "'''+ attribute +'''";
@@ -90,7 +90,7 @@ def main():
     main_f += '''
     pd_shared3p uint64[[1]] histogram = histogram_categorical(datasource, providers_vmap, data_providers_num, column_name, P);
     print(arrayToString(declassify(histogram)));
-    print("\n");
+    print("\\n");
 }'''
 
     if os.path.isdir("./histogram/"):

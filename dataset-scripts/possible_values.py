@@ -26,9 +26,10 @@ def main():
     for term in mesh_dict.keys():
         code = mesh_dict[term]
         depth = mesh_tree_depth(code)
-        children = len([key for key in mesh_dict_inverted.keys() if key.startswith(code) and mesh_tree_depth(key) == depth + 1])
-        direct_children[term] = children
-        # print(term+': --> '+str(children))
+        children_codes = [key for key in mesh_dict_inverted.keys() if key.startswith(code) and mesh_tree_depth(key) == depth + 1]
+        childred_mapping = dict((mesh_dict_inverted[code] , i) for i,code in enumerate(children_codes) )
+        direct_children[term] = childred_mapping
+        # print(term+': --> '+str(childred_mapping))
 
     with open(OUTPUT_FILE, 'w') as outfile:
         json.dump(direct_children, outfile)
