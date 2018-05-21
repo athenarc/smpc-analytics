@@ -6,10 +6,12 @@ import pandas
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('configuration', help = 'Configuration file of the request')
-parser.add_argument('--patient_directory', help = 'Directory of the patient .json files.', default = '../datasets/patient_files')
-parser.add_argument('--mapping', help = 'File with the mesh term mapping (values to integers).', default = '../datasets/mesh_mapping.json')
-parser.add_argument('--output', help = 'The output csv to be created.', default = '../datasets/data.csv')
+parser.add_argument('attribute', help = 'Attribute of the request')
+parser.add_argument('--patient_directory', help = 'Directory of the patient .json files.', default = '/patient_files')
+parser.add_argument('--mapping', help = 'File with the mesh term mapping (values to integers).', default = '/mesh_mapping.json')
+parser.add_argument('--mtrees', help = 'File with the mesh term mapping (values to integers).', default = '/mtrees2018.csv')
+parser.add_argument('--mtrees_inverted', help = 'File with the mesh term mapping (values to integers).', default = '/mtrees2018_inverted.csv')
+parser.add_argument('--output', help = 'The output csv to be created.', default = '/data.csv')
 args = parser.parse_args()
 
 
@@ -27,11 +29,12 @@ def mesh_tree_depth(code):
         return code.count('.') + 1
 
 def main():
-    configuration = json.load(open(args.configuration))
+    # configuration = json.load(open(args.configuration))
     # MESH_TERMS = ['Persons', 'Diseases']
-    MESH_TERMS = [configuration['attribute']]
-    mesh_dict = construct_dict('../datasets/mtrees2018.csv') # name -> code
-    mesh_dict_inverted = construct_dict('../datasets/mtrees2018_inverted.csv') # code -> name
+    # MESH_TERMS = [configuration['attribute']]
+    MESH_TERMS = [args.attribute]
+    mesh_dict = construct_dict(args.mtrees) # name -> code
+    mesh_dict_inverted = construct_dict(args.mtrees_inverted) # code -> name
     mesh_mapping = json.load(open(args.mapping))
     direct_children = {}
 
@@ -84,7 +87,7 @@ def main():
 
     df.fillna(-1, inplace = True)
     df = df.astype(int)
-    df.to_csv(args.output, sep = ';', index = False)
+    df.to_csv(args.output, sep = ',', index = False)
     print('CSV file generated at ' + args.output)
 
 if __name__ == '__main__':
