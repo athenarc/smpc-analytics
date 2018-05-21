@@ -89,6 +89,7 @@ def main():
 '''
     main_f += '''
     pd_shared3p uint64[[1]] histogram = histogram_categorical(datasource, providers_vmap, data_providers_num, column_name, P);
+    print("{''' + str(attribute_values) + '''}", " Histogram");
     print(arrayToString(declassify(histogram)));
     print("\\n");
 }'''
