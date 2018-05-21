@@ -8,6 +8,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--path', help= 'Path to csv file (_filtered_edited.csv)')
 parser.add_argument('--float', help= 'Optional argument to force all columns have type float64', action='store_true')
+parser.add_argument('--table', help= 'Optional table name')
 args = parser.parse_args()
 
 if args.path is not None:
@@ -30,10 +31,14 @@ DIRECTORY, BASENAME = os.path.split(DATASET)
 BASENAME = os.path.splitext(BASENAME)[0]
 OUTPUT = DIRECTORY + '/' + BASENAME + '.xml'
 
+table_name = BASENAME
+if args.table != None:
+    table_name = args.table
+
 def main():
     df=pd.read_csv(DATASET,sep=',')
     with open(OUTPUT,'w') as output:
-        output.write('<table name="' + BASENAME + '" dataSource="DS1" handler="import-script.sb">\n')
+        output.write('<table name="' + table_name + '" dataSource="DS1" handler="import-script.sb">\n')
         for attribute in df.columns:
             if args.float:
                 infered_type = 'float64'
