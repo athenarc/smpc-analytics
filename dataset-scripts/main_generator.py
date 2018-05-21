@@ -55,7 +55,7 @@ def main():
         print('No arguement provided')
         sys.exit(1)
 
-    main_counter = configuration[14:-5]
+    main_counter = configuration.split('_')[-1].split('.')[0]
 
     configuration = json.load(open(configuration))
     numberOfFilters = 0
