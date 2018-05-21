@@ -13,6 +13,7 @@
 
 ## Copy the dataset inside the container
 # sudo docker cp mydataset.csv CONTAINER_NAME:/mydataset.csv
+# sudo docker cp ../datasets/patient_files/ CONTAINER_NAME:/patient_files
 
 ## Get terminal into docker container
 # sudo docker exec -i -t CONTAINER_NAME /bin/bash
@@ -78,7 +79,8 @@ COPY client client
 # Create app directory
 WORKDIR /mhmd-driver
 COPY xml_generator.py xml_generator.py
-COPY csv_preprocessor.py csv_preprocessor.py
+# COPY csv_preprocessor.py csv_preprocessor.py
+COPY mesh_json_to_csv.py mesh_json_to_csv.py
 COPY package.json package.json
 RUN npm install
 COPY mhmd-driver.js mhmd-driver.js
