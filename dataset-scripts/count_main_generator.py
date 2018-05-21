@@ -51,7 +51,7 @@ def main():
         print('No arguement provided')
         sys.exit(1)
 
-    main_counter = configuration[20:-5]
+    main_counter = configuration.split('_')[-1].split('.')[0]
 
     configuration = json.load(open(configuration))
     mapping = json.load(open(mesh_mapping))
@@ -89,6 +89,7 @@ def main():
 '''
     main_f += '''
     pd_shared3p uint64[[1]] histogram = histogram_categorical(datasource, providers_vmap, data_providers_num, column_name, P);
+    print("{''' + str(attribute_values) + '''}", " Histogram");
     print(arrayToString(declassify(histogram)));
     print("\\n");
 }'''
@@ -99,7 +100,7 @@ def main():
         OUTPUT_DIR = '../histogram/'
     else:
         OUTPUT_DIR = './'
-    with open(OUTPUT_DIR + 'count_histogram_main_' + main_counter + '.sc', 'w') as output:
+    with open(OUTPUT_DIR + 'histogram_main_' + main_counter + '.sc', 'w') as output:
         output.write(imports)
         output.write(main_f)
 
