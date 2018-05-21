@@ -1,16 +1,4 @@
-var SIMULATION_MODE = false;
-process.argv.forEach(function (val, index, array) {
-    if (val == '-sim' || val == '--sim' || val == '-simulation' || val == '--simulation') {
-        SIMULATION_MODE = true;
-    }
-});
-
-if (SIMULATION_MODE) {
-    console.log('\n[NODE] Running in simulation mode\n');
-} else {
-    console.log('\n[NODE] Running within Docker\n');
-}
-
+console.log('\n[NODE] Running within Docker\n');
 const express = require('express');
 const app = express();
 const { exec } = require('child_process');
@@ -21,6 +9,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 global.__basedir = __dirname;
 
+var hospitalName = "DummyHospName";
+fs.readFile('./hospital_name.txt', 'utf8', function(err, data) {
+    if (err) {
+        throw err;
+    }
+    hospitalName = data;
+});
 
 // function to return a promise to write to file
 function _writeFile(filename, content, encoding = null) {
@@ -69,8 +64,8 @@ app.post('/smpc/import', function(req, res) {
     _exec('python /mhmd-driver/mesh_json_to_csv.py \"' + attrib + '\"', {stdio:[0,1,2],cwd: parent})
       .then((buffer) => {
           console.log('[NODE] Running XML-Generator');
-          console.log('\tpython /mhmd-driver/xml_generator.py --path /data.csv \n');
-          return _exec('python /mhmd-driver/xml_generator.py --path /data.csv', {stdio:[0,1,2],cwd: parent});
+          console.log('\tpython /mhmd-driver/xml_generator.py --path /data.csv --table ' + hospitalName + '\n');
+          return _exec('python /mhmd-driver/xml_generator.py --path /data.csv --table ' + hospitalName, {stdio:[0,1,2],cwd: parent});
       })
       .then((buffer) => {
           console.log('[NODE] Running CSV-Importer');

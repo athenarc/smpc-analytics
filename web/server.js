@@ -18,6 +18,7 @@ const fs = require('fs');
 var path = require('path');
 var bodyParser = require('body-parser');
 var parse = require('csv-parse');
+var rp = require('request-promise');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 var frontend = __dirname + "/frontend/";
@@ -191,12 +192,53 @@ app.post('/smpc/histogram', function(req, res) {
     });
 });
 
+
+FgRed = "\x1b[31m";
+FgGreen = "\x1b[32m";
+ResetColor = "\x1b[0m";
+
 app.post('/smpc/count', function(req, res) {
     var parent = path.dirname(__basedir);
     var content = JSON.stringify(req.body);
     console.log(content);
     req_counter++;
+    
+    var attribute = req.body.attribute;
+    var datasources = req.body.datasources;
+    var mhmdDNS = JSON.parse(fs.readFileSync('MHMDdns.json', 'utf8'));
+    for (let datasrc of datasources) { // Check that all IPs exist
+        if ((datasrc in mhmdDNS) == false) { // If datasrc does not exist in DNS file, continue
+            console.log(FgRed + 'Error: ' + ResetColor + 'Unable to find IP for ' + datasrc + ', it does not exist in MHMDdns.json file.');
+            return res.status(400).send('Failure on data importing from ' + datasrc);
+        }
+    }
+    console.log('dsadasdasdas');
+    
+    
     res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
+    datasources.forEach(function(datasrc) {
+        var uri = mhmdDNS[datasrc];
+        // Configure the request
+        var options = {
+            method: 'POST',
+            uri: 'http://' + uri + '/smpc/import',
+            body: {
+                "attribute": "Persons" 
+            },
+            json: true // Automatically stringifies the body to JSON
+        };
+
+        // Start the request
+        rp(options)
+        .then(function (parsedBody) {
+            console.log(FgGreen + 'Success: ' + ResetColor + datasrc + ' at ' + uri);
+        })
+        .catch(function (err) {
+            console.log(err);
+            // res.status(400).send('Failure on data importing');
+        });
+    });
+    
     db.put(req_counter, JSON.stringify({'status':'running'}))
     .then((buffer) => {
         pipeline(req_counter, content, parent, 'count');
@@ -255,4 +297,4 @@ app.post('/histogram', function(req, res) {
 });
 
 
-app.listen(3000, () => console.log('Example app listening on port 3000!'));
+app.listen(3008, () => console.log('Example app listening on port 3000!'));
