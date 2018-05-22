@@ -20,17 +20,17 @@ paths:
       tags:
       - SMPC
       summary: Securely import data into the SMPC Platform.
-      description: ""
+      description: "Import a specified attribute into the SMPC cluster. This API call is used internally"
       requestBody:
-        description: The csv file that contains the data to be imported
+        description: The attribute for which data will be imported
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/File'
+              $ref: '#/components/schemas/Import'
       responses:
         '200':
-          description: File uploaded successfully.
+          description: Data imported successfully.
           content:
             application/json:
               schema:
@@ -47,21 +47,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /smpc/histogram/:
+  /smpc/count/:
     post:
       tags:
         - SMPC
-      summary: Initiate a secure histogram computation with desired parameters.
-      description: "Compute histogram(s) on the specified attributes, based on specified datasources. A filter is applied before the histogram(s) computation. Returns the location of the requested computation."
+      summary: Initiate a secure count computation on a specified attribute.
+      description: "Compute the counts of all possible values of a desired attribute, over the specifed datasources. The specified attribute should be a valid Mesh term."
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Histogram"
+              $ref: "#/components/schemas/Count"
       responses:
         '202':
-          description: Histogram computation accepted.
+          description: Count computation accepted.
           content:
             application/json:
               schema:
@@ -322,66 +322,27 @@ components:
         message:
           type: string
           description: Error message
-    File:
+    Import:
       required:
-      - file
+      - attribute
       properties:
-        file:
+        attribute:
           type: string
-          format: binary
-          example: "/datasets/cvi_identified.csv"
-    Histogram:
+          example: "Persons"
+    Count:
       required:
-        - attributes
+        - attribute
       properties:
-        attributes:
-          description: "Attributes for the histogram(s) to be computed"
-          type: "array"
-          items:
-            type: "array"
-            items:
-              type: "object"
-              properties:
-                name:
-                  type: "string"
-                  description: "Attribute's name."
-                cells:
-                  type: "integer"
-                  description: "Number of equi-width cells for that attribute."
-          example: [ [ {"name":"Age", "cells":5} ],[ {"name": "Height", cells: 3}, {"name": "Weight", cells: 4}, {"name": "Heart Rate", cells: 3}] ]
+        attribute:
+          description: "Attribute for which counts will be computed. Should be a valid Mesh term."
+          type: "string"
+          example: "Persons"
         datasources:
           description: "Datasources from which the histogram(s) will be computated. Optional. All datasources will be considered if left blank."
           type: "array"
           items:
             type: "string"
           example: ["HospitalA", "HospitalB"]
-        filters:
-          description: "List of conditions that should be met in order to take a record into consideration in a secure histogram computation. All conditions are joined with the same specified operator. Optional."
-          type: "object"
-          properties:
-            operator:
-              type: "string"
-              description: "Boolean Binary operator performed on the conditions"
-              enum:
-              - "AND"
-              - "OR"
-              - "XOR"
-            conditions:
-              type: "array"
-              items:
-                type: "object"
-                properties:
-                  attribute:
-                    type: "string"
-                  operator:
-                    type: "string"
-                    enum:
-                    - ">"
-                    - "<"
-                    - "="
-                  value:
-                    type: "string"
-              example: [{"attribute":"Sex", "operator":"=", "value":"Female" }, {"attribute":"Age", "operator":">", "value":"18" }]
     ComputationResponse:
       required:
         - status
@@ -399,20 +360,19 @@ components:
           description: "Current step of the computation"
           type: string
         result:
-          type: array
-          items:
-            type: object
-            description: "Serialized versions for the computed histogram."
-            properties:
-              cellsPerDimension:
-                type: array
-                items:
-                  type: integer
-              histogram:
-                type: array
-                items:
-                  type: integer
-          example: [{ "cellsPerDimension": [5], "histogram": [237, 211, 239, 161, 152] }, {"cellsPerDimension": [3, 4, 3], "histogram": [17, 2, 0, 17, 22, 3, 2, 55, 50, 0, 34, 24, 48, 14, 0, 66, 51, 11, 5, 142, 97, 0, 102, 98, 9, 3, 0, 16, 14, 2, 1, 30, 32, 0, 11, 22] } ]
+          type: object
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                properties:
+                  label: 
+                    type: string
+                  value:
+                    type: integer
+          example: {"data":[{"value":0,"label":"Prisoners"},{"value":0,"label":"Vegetarians"},{"value":0,"label":"Transients and Migrants"},{"value":10,"label":"Men"},{"value":0,"label":"Students"},{"value":0,"label":"Child, Abandoned"},{"value":0,"label":"Transplant Recipients"},{"value":0,"label":"Tissue Donors"},{"value":0,"label":"Refugees"},{"value":0,"label":"Spouses"},{"value":0,"label":"Pedestrians"},{"value":0,"label":"Child, Exceptional"},{"value":0,"label":"Minors"},{"value":0,"label":"Parents"},{"value":0,"label":"Emigrants and Immigrants"},{"value":0,"label":"Consultants"},{"value":0,"label":"Child, Foster"},{"value":0,"label":"Siblings"},{"value":0,"label":"Veterans"},{"value":0,"label":"Drug Users"},{"value":0,"label":"Sexual and Gender Minorities"},{"value":0,"label":"Sex Workers"},{"value":0,"label":"Child, Unwanted"},{"value":0,"label":"Jehovah's Witnesses"},{"value":0,"label":"Homebound Persons"},{"value":0,"label":"Occupational Groups"},{"value":0,"label":"Famous Persons"},{"value":0,"label":"Legal Guardians"},{"value":0,"label":"Terminally Ill"},{"value":0,"label":"Patients"},{"value":0,"label":"Homeless Persons"},{"value":0,"label":"Visitors to Patients"},{"value":0,"label":"Slaves"},{"value":0,"label":"Smokers"},{"value":0,"label":"Bedridden Persons"},{"value":0,"label":"Athletes"},{"value":0,"label":"Vulnerable Populations"},{"value":0,"label":"Abortion Applicants"},{"value":0,"label":"Adult Children"},{"value":0,"label":"Crime Victims"},{"value":9,"label":"Women"},{"value":0,"label":"Single Person"},{"value":0,"label":"Missionaries"},{"value":0,"label":"Caregivers"},{"value":0,"label":"Volunteers"},{"value":0,"label":"Criminals"},{"value":0,"label":"Survivors"},{"value":0,"label":"Working Poor"},{"value":0,"label":"Medically Uninsured"},{"value":0,"label":"Disabled Persons"},{"value":0,"label":"Disaster Victims"},{"value":0,"label":"Mentors"},{"value":0,"label":"Friends"},{"value":0,"label":"Child of Impaired Parents"},{"value":0,"label":"Sexual Partners"},{"value":0,"label":"Population Groups"},{"value":0,"label":"Age Groups"},{"value":0,"label":"Research Subjects"},{"value":0,"label":"Alcoholics"},{"value":0,"label":"Grandparents"},{"value":0,"label":"Multiple Birth Offspring"},{"value":0,"label":"Child, Orphaned"},{"value":0,"label":"Child, Adopted"}]}
+
     ComputationAccepted:
       required:
         - location
