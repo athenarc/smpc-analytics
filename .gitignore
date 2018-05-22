@@ -141,3 +141,8 @@ mhmd-driver/client/*
 
 # Ignore Database files
 web/mydb/*
+
+# Key-pairs
+*-private-key
+*-public-key
+*-public-key-ascii
