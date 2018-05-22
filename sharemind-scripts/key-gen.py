@@ -1,5 +1,7 @@
 import argparse
 import sys
+import json
+import getpass
 from subprocess import Popen, PIPE, STDOUT
 
 class ProcessError(Exception):
@@ -28,6 +30,7 @@ def main():
     parser.add_argument('--EmailAddress', help = 'Email address [emailAddress] of the client that the keys will be generated for')
     parser.add_argument('--days', help = 'Number of days that the certificate should be valid', default = 365, type = int)
     parser.add_argument('--size', help = 'Size of the RSA keys in bits', default = 2048, type = int)
+    parser.add_argument('--install', help = 'Set this flag if you wish the public key to be installed into the SMPC cluster', action = 'store_true')
     args = parser.parse_args()
 
     subj = ''
@@ -49,12 +52,12 @@ def main():
     public_key = args.CommonName + '-public-key'
     ascii_public_key = args.CommonName + '-public-key-ascii'
     try:
-        execute(["openssl", "req", "-x509", "-config", "openssl.cnf", "-extensions", "ext", "-subj", subj, "-days", str(args.days), "-nodes", "-newkey", "rsa:"+str(args.size), "-keyout", private_key, "-out", public_key, "-outform", "der"], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
+        execute(["openssl", "req", "-x509", "-config", "openssl.cnf", "-extensions", "ext", "-subj", subj, "-days", str(args.days), "-nodes", "-newkey", "rsa:"+str(args.size), "-keyout", private_key, "-out", public_key, "-outform", "der"], stdout=PIPE, stdin=PIPE, stderr=STDOUT, verbose=True)
     except ProcessError as e:
         print('Error in key generation')
         return 1
     try:
-        execute(["openssl", "rsa", "-in", private_key, "-out", private_key, "-outform", "der"], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
+        execute(["openssl", "rsa", "-in", private_key, "-out", private_key, "-outform", "der"], stdout=PIPE, stdin=PIPE, stderr=STDOUT, verbose=True)
     except ProcessError as e:
         print('Error in key generation')
         return 1
@@ -64,11 +67,29 @@ def main():
     with open(ascii_public_key, 'w') as ascii_file:
         command = ["openssl", "x509", "-text", "-noout", "-inform", "der", "-in", public_key]
         try:
-            execute(command, stdout=ascii_file, stdin=PIPE, stderr=STDOUT)
+            execute(command, stdout=ascii_file, stdin=PIPE, stderr=STDOUT, verbose=True)
         except ProcessError as e:
             print('Error in key generation')
             return 1
         print("Ascii version of " + private_key + " located at " + ascii_public_key )
+
+    if args.install:
+        smpc_servers = json.load(open('smpc_servers.json'))
+        servers = smpc_servers['servers']
+        users = smpc_servers['users']
+        local_user = getpass.getuser()
+        remote_user = users[local_user]
+        for server,ip in servers.items():
+            try:
+                execute(['sshpass', '-f', '/home/'+local_user+'/.p', 'scp', public_key, remote_user+'@'+ip+':/etc/sharemind/'  ], stdout=PIPE, stdin=PIPE, stderr=STDOUT, verbose=True)
+            except ProcessError as e:
+                print('Error copying key at server '+server)
+                return 1
+            try:
+                execute(['sshpass', '-f', '/home/'+local_user+'/.p', 'ssh', remote_user+'@'+ip, 'echo', '"'+public_key+': import-script.sb'+'" >> /etc/sharemind/server-whitelist.conf'], stdout=PIPE, stdin=PIPE, stderr=STDOUT, verbose=True)
+            except ProcessError as e:
+                print('Error copying key at server '+server)
+                return 1
 
 
 if __name__ == '__main__':
