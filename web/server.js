@@ -202,7 +202,7 @@ app.post('/smpc/count', function(req, res) {
     var content = JSON.stringify(req.body);
     console.log(content);
     req_counter++;
-    
+
     var attribute = req.body.attribute;
     var datasources = req.body.datasources;
     var mhmdDNS = JSON.parse(fs.readFileSync('MHMDdns.json', 'utf8'));
@@ -213,8 +213,8 @@ app.post('/smpc/count', function(req, res) {
         }
     }
     console.log('dsadasdasdas');
-    
-    
+
+
     res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
     datasources.forEach(function(datasrc) {
         var uri = mhmdDNS[datasrc];
@@ -223,7 +223,7 @@ app.post('/smpc/count', function(req, res) {
             method: 'POST',
             uri: 'http://' + uri + '/smpc/import',
             body: {
-                "attribute": "Persons" 
+                "attribute": attribute 
             },
             json: true // Automatically stringifies the body to JSON
         };
@@ -238,7 +238,7 @@ app.post('/smpc/count', function(req, res) {
             // res.status(400).send('Failure on data importing');
         });
     });
-    
+
     db.put(req_counter, JSON.stringify({'status':'running'}))
     .then((buffer) => {
         pipeline(req_counter, content, parent, 'count');
