@@ -2,81 +2,37 @@
 ### SMPC Server
 The SMPC Server interacts with the SMPC cluster. One can pose queries to the server and get answers resulting from the SMPC computation. For this purpose, the server provides the following RESTful API.
 
-#### /smpc/histogram **[POST]**
->Initiate a secure histogram computation with desired parameters.
+#### /smpc/count **[POST]**
+>Initiate a secure count computation on a specified attribute.
 
-The basic functionality that the SMPC cluster provides is secure histogram computation. This is possible through the `/smpc/histogram` POST request.
+You can get the securely computed counts for a specified Mesh term.
 
-Through the request's body, one can specify all the desired properties of the histograms to be computed. These include the number of histograms, the attributes on which the histogram(s) will be built, the datasources from which data will be used, and a set of filters / conditions that should hold for each data tuple taken into consideration when building the histogram(s).
+Through the request's body, one can specify the desired Mesh term. The values the count of which will be computed are the children of the specified Mesh term from the Mesh ontology. For example, if a user specifies that she wants the counts for the Mesh term _Age Groups_ `[M01.060]` , she will get 4 counts back corresponding to the four children of _Age Groups_, namely _Adolescent_ `[M01.060.057]`, _Adult_`[M01.060.116]`, _Child_`[M01.060.406]` and _Infant_`[M01.060.703]`.
 
 An example of the requests body can be found below.
 
 ```json
 {
-  "attributes": [
-    [
-      {
-        "name": "Age",
-        "cells": 5
-      }
-    ],
-    [
-      {
-        "name": "Height",
-        "cells": 3
-      },
-      {
-        "name": "Weight",
-        "cells": 4
-      },
-      {
-        "name": "Heart Rate",
-        "cells": 3
-      }
+    "attribute": "Persons",
+    "datasources": [
+      "HospitalA",
+      "HospitalB"
     ]
-  ],
-  "datasources": [
-    "HospitalA",
-    "HospitalB"
-  ],
-  "filters": {
-    "operator": "AND",
-    "conditions": [
-      {
-        "attribute": "Sex",
-        "operator": "=",
-        "value": "Female"
-      },
-      {
-        "attribute": "Age",
-        "operator": ">",
-        "value": "18"
-      }
-    ]
-  }
 }
 ```
 The request is a JSON string consisting of the following parameters.
-* `attributes` <span style="color:red">_required_</span> A list with an element (list) for each desired histogram. The length of this list is equal to the number of histograms that will be computed. For each histogram, one should provide a list of JSON objects, corresponding to the attributes on which this histogram will be built.
-These JSON objects have the following keys:
-    * `name` <span style="color:red">_required_</span> The name of the attribute (_string_).
-    * `cells` <span style="color:red">_required_</span> The number of histogram cells/buckets to be created for this attribute (_positive integer_).
-* `datasources` <span style="color:blue">_optional_</span> A list of the datasources (strings) from which the histogram(s) will be computed. If this key is left empty or not specified, all available datasources will be used.
-* `filters` <span style="color:blue">_optional_</span> A JSON object containing a boolean operator and a list of filters / conditions that that should be met for each data tuple considered int the secure histogram computation. If this field is left blank or not specified, all data tuples will be used for the computation. The object has the following keys:
-    * `operator` <span style="color:red">_required_</span> The boolean operator (_string_) that will be applied between all the specified conditions that follow. One of `[AND, OR, XOR]` In the case of multiple conditions, the operator is left-associative.
-    * `conditions` <span style="color:red">_required_</span> The list of conditions that should be met by each data tuple in the computation. Each condition is represented as a JSON object with the following keys.
-        * `attribute` <span style="color:red">_required_</span> The name of the attribute (_string_).
-        * `operator` <span style="color:red">_required_</span> The condition's operator (_string_). One of `[>, <, =]`.
-        * `value` <span style="color:red">_required_</span> The attribute's value (_string_).
+* `attribute` <span style="color:red">_required_</span> The name of the Mesh term for which the counts should be computed
+* `datasources` <span style="color:blue">_optional_</span> A list of the datasources (strings) from which the counts will be computed. If this key is left empty or not specified, all available datasources will be used.
+
 
 ##### Server's response
-The secure histogram computation is a potentially long running operation. For that reason the server's response to such a request is always `HTTP/1.1 202 Accepted`, along with a location in which one should periodicaly poll for the computation's status and/or result. An example response can be found below.
+The secure count computation is a potentially long running operation. For that reason the server's response to such a request is always `HTTP/1.1 202 Accepted`, along with a location in which one should periodically poll for the computation's status and/or result. An example response can be found below.
 ```json
 {
   "location": "/smpc/queue?request=1"
 }
 ```
-In order to check for the secure histogram computation's status, and/or retrieve the result you should periodically poll the above location using the `/smpc/queue` GET request, which is described below.
+In order to check for the secure count computation's status, and/or retrieve the result you should periodically poll the above location using the `/smpc/queue` GET request, which is described below.
 
 #### /smpc/queue **[GET]**
 >Check the status and/or result of a specified computation request.
@@ -88,83 +44,278 @@ The only parameter this GET request accepts is the id of the desired computation
 
 ##### Server's response
 
-The server responds with the specified computation's status, and possibly with its current computation step, or the final computation result, in the event that the computation ended successfully. The result for a histogram computation is a list with an element for each of the computed histograms. Each such element contains a serialized version of each histograms, along with how many cells were used for each attribute / dimension of the histogram. An example response can be found below.
-
+The server responds with the specified computation's status, and possibly with its current computation step, or the final computation result, in the event that the computation ended successfully. The result for a count computation is a list with pairs of `label`, `value` corresponding to the appropriate counts.
 
 ```json
 {
-    "status": "succeded",
-    "result":
-    [
-      {
-        "cellsPerDimension": [
-          5
-        ],
-        "histogram": [
-          237,
-          211,
-          239,
-          161,
-          152
+    "status": "succeeded",
+    "result": {
+        "data": [
+            {
+                "value": 0,
+                "label": "Prisoners"
+            },
+            {
+                "value": 0,
+                "label": "Vegetarians"
+            },
+            {
+                "value": 0,
+                "label": "Transients and Migrants"
+            },
+            {
+                "value": 10,
+                "label": "Men"
+            },
+            {
+                "value": 0,
+                "label": "Students"
+            },
+            {
+                "value": 0,
+                "label": "Child, Abandoned"
+            },
+            {
+                "value": 0,
+                "label": "Transplant Recipients"
+            },
+            {
+                "value": 0,
+                "label": "Tissue Donors"
+            },
+            {
+                "value": 0,
+                "label": "Refugees"
+            },
+            {
+                "value": 0,
+                "label": "Spouses"
+            },
+            {
+                "value": 0,
+                "label": "Pedestrians"
+            },
+            {
+                "value": 0,
+                "label": "Child, Exceptional"
+            },
+            {
+                "value": 0,
+                "label": "Minors"
+            },
+            {
+                "value": 0,
+                "label": "Parents"
+            },
+            {
+                "value": 0,
+                "label": "Emigrants and Immigrants"
+            },
+            {
+                "value": 0,
+                "label": "Consultants"
+            },
+            {
+                "value": 0,
+                "label": "Child, Foster"
+            },
+            {
+                "value": 0,
+                "label": "Siblings"
+            },
+            {
+                "value": 0,
+                "label": "Veterans"
+            },
+            {
+                "value": 0,
+                "label": "Drug Users"
+            },
+            {
+                "value": 0,
+                "label": "Sexual and Gender Minorities"
+            },
+            {
+                "value": 0,
+                "label": "Sex Workers"
+            },
+            {
+                "value": 0,
+                "label": "Child, Unwanted"
+            },
+            {
+                "value": 0,
+                "label": "Jehovah's Witnesses"
+            },
+            {
+                "value": 0,
+                "label": "Homebound Persons"
+            },
+            {
+                "value": 0,
+                "label": "Occupational Groups"
+            },
+            {
+                "value": 0,
+                "label": "Famous Persons"
+            },
+            {
+                "value": 0,
+                "label": "Legal Guardians"
+            },
+            {
+                "value": 0,
+                "label": "Terminally Ill"
+            },
+            {
+                "value": 0,
+                "label": "Patients"
+            },
+            {
+                "value": 0,
+                "label": "Homeless Persons"
+            },
+            {
+                "value": 0,
+                "label": "Visitors to Patients"
+            },
+            {
+                "value": 0,
+                "label": "Slaves"
+            },
+            {
+                "value": 0,
+                "label": "Smokers"
+            },
+            {
+                "value": 0,
+                "label": "Bedridden Persons"
+            },
+            {
+                "value": 0,
+                "label": "Athletes"
+            },
+            {
+                "value": 0,
+                "label": "Vulnerable Populations"
+            },
+            {
+                "value": 0,
+                "label": "Abortion Applicants"
+            },
+            {
+                "value": 0,
+                "label": "Adult Children"
+            },
+            {
+                "value": 0,
+                "label": "Crime Victims"
+            },
+            {
+                "value": 9,
+                "label": "Women"
+            },
+            {
+                "value": 0,
+                "label": "Single Person"
+            },
+            {
+                "value": 0,
+                "label": "Missionaries"
+            },
+            {
+                "value": 0,
+                "label": "Caregivers"
+            },
+            {
+                "value": 0,
+                "label": "Volunteers"
+            },
+            {
+                "value": 0,
+                "label": "Criminals"
+            },
+            {
+                "value": 0,
+                "label": "Survivors"
+            },
+            {
+                "value": 0,
+                "label": "Working Poor"
+            },
+            {
+                "value": 0,
+                "label": "Medically Uninsured"
+            },
+            {
+                "value": 0,
+                "label": "Disabled Persons"
+            },
+            {
+                "value": 0,
+                "label": "Disaster Victims"
+            },
+            {
+                "value": 0,
+                "label": "Mentors"
+            },
+            {
+                "value": 0,
+                "label": "Friends"
+            },
+            {
+                "value": 0,
+                "label": "Child of Impaired Parents"
+            },
+            {
+                "value": 0,
+                "label": "Sexual Partners"
+            },
+            {
+                "value": 0,
+                "label": "Population Groups"
+            },
+            {
+                "value": 0,
+                "label": "Age Groups"
+            },
+            {
+                "value": 0,
+                "label": "Research Subjects"
+            },
+            {
+                "value": 0,
+                "label": "Alcoholics"
+            },
+            {
+                "value": 0,
+                "label": "Grandparents"
+            },
+            {
+                "value": 0,
+                "label": "Multiple Birth Offspring"
+            },
+            {
+                "value": 0,
+                "label": "Child, Orphaned"
+            },
+            {
+                "value": 0,
+                "label": "Child, Adopted"
+            }
         ]
-      },
-      {
-        "cellsPerDimension": [
-          3,
-          4,
-          3
-        ],
-        "histogram": [
-          17,
-          2,
-          0,
-          17,
-          22,
-          3,
-          2,
-          55,
-          50,
-          0,
-          34,
-          24,
-          48,
-          14,
-          0,
-          66,
-          51,
-          11,
-          5,
-          142,
-          97,
-          0,
-          102,
-          98,
-          9,
-          3,
-          0,
-          16,
-          14,
-          2,
-          1,
-          30,
-          32,
-          0,
-          11,
-          22
-        ]
-      }
-    ]
+    }
 }
 ```
 The response is a JSON object containing the specified computation's status, and possibly its current step or result which is too a JSON object. The server's response has the following structure.
 
 * `status` <span style="color:red">_required_</span> A string indicating the computation's status. One of `[running, succeeded, failed, notstarted]`.
 * `step` <span style="color:blue">_optional_</span> A string indicating the current step of the computation. This is present in case that the computation is in the `running` state.
-* `result` <span style="color:blue">_optional_</span> A JSON object with the computation's result in case its status is `succeeded`. The JSON object is a list containing a JSON object for each computed histogram.
-Each such object contains the following keys.
-    * `cellsPerDimension` A list with an element (_positive integer_) for each attribute of this histogram. These integers represent the amount of cells / buckets that were created for each attribute of this histogram.
-    * `histogram` A list of integers representing a serialized version of the computed histogram. Given the serialized histogram and the number of cells for each dimension / attribute, one can reconstruct the original multidimensional histogram.
-
+* `result` <span style="color:blue">_optional_</span> A JSON object with the computation's result in case its status is `succeeded`.
+The JSON object contains a single key namely `data` with the computation result.
+    * `data` <span style="color:red">_required_</span> A list of JSON objects each one corresponding to a count. Each such object has the following keys.
+        * `label` A string, the value name corresponding to that count.
+        * `value` An integer, the actual count for that value.
 
 ___
 ### MHMD Driver
@@ -174,11 +325,11 @@ The MHMD Driver located on each hospital’s premises should support a RESTful A
 
 The secure importing of a dataset into the SMPC cluster is initiated with the `/smpc/import` POST request.
 
-The request's body contains the path of the file with the desired dataset on the server responsible for this request. This should be a path to a .csv file compatible with the global data schema. An example request body can be found below.
+The request's body contains the desired attribute / Mesh term for which data should be imported into the SMPC cluster. An example request body can be found below.
 ```json
 {
-  "file": "/datasets/cvi_identified.csv"
+  "attribute": "Persons"
 }
 ```
 The request body is a JSON string with the single following key:
-* `file`<span style="color:red">_required_</span> The path of the file with the data to be securely imported.
+* `attribute`<span style="color:red">_required_</span> The Mesh term for which data will be securely imported.
