@@ -223,7 +223,8 @@ app.post('/smpc/count', function(req, res) {
             method: 'POST',
             uri: 'http://' + uri + '/smpc/import',
             body: {
-                "attribute": attribute 
+                "attribute": attribute,
+                "datasource": datasrc
             },
             json: true // Automatically stringifies the body to JSON
         };

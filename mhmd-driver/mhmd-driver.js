@@ -9,13 +9,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 global.__basedir = __dirname;
 
-var hospitalName = "DummyHospName";
-fs.readFile('./hospital_name.txt', 'utf8', function(err, data) {
-    if (err) {
-        throw err;
-    }
-    hospitalName = data;
-});
 
 // function to return a promise to write to file
 function _writeFile(filename, content, encoding = null) {
@@ -57,6 +50,7 @@ app.post('/smpc/import', function(req, res) {
     var content = JSON.stringify(req.body);
 
     var attrib = req.body.attribute;
+    var hospitalName = req.body.datasource;
     console.log('[NODE] Going to import dataset from /patient_files, /mesh_mapping.json, /mtrees2018.csv, /mtrees2018_inverted.csv, for attribute ' + attrib + '\n');
     console.log('[NODE] Running CSV-preprocessor.');
     console.log('\tpython /mhmd-driver/mesh_json_to_csv.py \"' + attrib  + '\"\n');
