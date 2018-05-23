@@ -223,7 +223,8 @@ app.post('/smpc/count', function(req, res) {
             method: 'POST',
             uri: 'http://' + uri + '/smpc/import',
             body: {
-                "attribute": attribute 
+                "attribute": attribute,
+                "datasource": datasrc
             },
             json: true // Automatically stringifies the body to JSON
         };
@@ -296,5 +297,5 @@ app.post('/histogram', function(req, res) {
         });
 });
 
-
-app.listen(3008, () => console.log('Example app listening on port 3000!'));
+const port = 3000;
+app.listen(port, () => console.log('Example app listening on port ' + port + '!'));
