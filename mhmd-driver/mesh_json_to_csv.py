@@ -30,7 +30,7 @@ def mesh_tree_depth(code):
 
 def main():
     # configuration = json.load(open(args.configuration))
-    # MESH_TERMS = ['Persons', 'Diseases']
+    # MESH_TERMS = ['Age Groups', 'Environment']
     # MESH_TERMS = [configuration['attribute']]
     MESH_TERMS = [args.attribute]
     mesh_dict = construct_dict(args.mtrees) # name -> code
@@ -86,7 +86,14 @@ def main():
         id += 1
 
     df.fillna(-1, inplace = True)
+
+    if df.empty:
+        empty_row = {'Id' : -1}
+        empty_row.update({term: -1 for term in MESH_TERMS})
+        df = df.append(empty_row, ignore_index = True)
+
     df = df.astype(int)
+
     df.to_csv(args.output, sep = ',', index = False)
     print('CSV file generated at ' + args.output)
 
