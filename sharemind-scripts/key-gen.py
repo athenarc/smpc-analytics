@@ -4,6 +4,7 @@ import json
 import getpass
 from subprocess import Popen, PIPE, STDOUT
 from huepy import *
+import hashlib
 
 class ProcessError(Exception):
     def __init__(self, message=''):
@@ -74,7 +75,7 @@ def main():
         except ProcessError as e:
             print(bad('Error in key generation'))
             return 1
-        print(good("Ascii version of " + private_key + " located at " + ascii_public_key ))
+        print(good("Ascii version of " + public_key + " located at " + ascii_public_key ))
 
     if args.install:
         smpc_servers = json.load(open('smpc_servers.json'))
@@ -94,6 +95,21 @@ def main():
                 print(bad('Error copying key at server '+server))
                 return 1
         print(good('Public key ' + public_key + ' successfully installed in all SMPC servers'))
+
+    generated_keys = json.load(open('generated_keys.json'))
+    key_hash = hashlib.sha256(open(public_key).readline()).hexdigest()
+    if args.CommonName in generated_keys:
+        generated_keys[args.CommonName].append({'name' : public_key, 'hash' : key_hash})
+    else:
+        generated_keys[args.CommonName] = [{'name' : public_key, 'hash' : key_hash}]
+
+    with open('generated_keys.json', 'w') as outfile:
+        json.dump(generated_keys, outfile)
+
+    if args.verbose:
+        print(info('Public key for ' + args.CommonName + ' is ' + public_key ))
+        print(info('Hash: ' + hashlib.sha256(open(public_key).readline()).hexdigest()))
+
 
 if __name__ == '__main__':
     main()
