@@ -2,6 +2,7 @@ import argparse
 import sys
 import json
 import getpass
+import os
 from subprocess import Popen, PIPE, STDOUT
 from huepy import *
 import hashlib
@@ -96,7 +97,10 @@ def main():
                 return 1
         print(good('Public key ' + public_key + ' successfully installed in all SMPC servers'))
 
-    generated_keys = json.load(open('generated_keys.json'))
+    if os.path.isfile('generated_keys.json'):
+        generated_keys = json.load(open('generated_keys.json'))
+    else:
+        generated_keys = {}
     key_hash = hashlib.sha256(open(public_key).readline()).hexdigest()
     if args.CommonName in generated_keys:
         generated_keys[args.CommonName].append({'name' : public_key, 'hash' : key_hash})
