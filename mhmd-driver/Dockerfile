@@ -73,18 +73,23 @@ RUN ln -s node-v8.11.1-linux-x64/npx /usr/bin/npx
 RUN apt-get update; exit 0
 RUN apt-get install -y python-pip python-pandas npm
 
+# Copy the MESH Tree files
+COPY mesh_mapping.json /mesh_mapping.json
+COPY mtrees2018.csv /mtrees2018.csv
+COPY mtrees2018_inverted.csv /mtrees2018_inverted.csv
+
 # Change working directory
 RUN mkdir /mhmd-driver
 WORKDIR /mhmd-driver
 
-# Copy the client configurations from current directory  into the container at /client
+# Copy the client configurations from current directory into the container at /client
 COPY client client
 
 # Create app directory
 WORKDIR /mhmd-driver
 COPY xml_generator.py xml_generator.py
-# COPY csv_preprocessor.py csv_preprocessor.py
 COPY mesh_json_to_csv.py mesh_json_to_csv.py
+
 COPY package.json package.json
 RUN npm install
 COPY mhmd-driver.js mhmd-driver.js
