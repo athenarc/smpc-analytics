@@ -1,7 +1,9 @@
 import ast
 import sys
 import json
+import argparse
 import pandas as pd
+from huepy import *
 
 import os.path
 
@@ -39,22 +41,19 @@ def quote(x):
 
 def main():
     global main_f
-    print('Generating main..')
 
-    if len(sys.argv) > 1:
-        configuration = sys.argv[1]
-        if len(sys.argv) > 2:
-            mesh_mapping = sys.argv[2]
-        else:
-            mesh_mapping = 'datasets/mesh_mapping.json'
-    else:
-        print('No arguement provided')
-        sys.exit(1)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('configuration', help = 'Configuration file of the request')
+    parser.add_argument('--mapping', help = 'File with the mesh term mapping (values to integers).', default = 'mhmd-driver/mesh_mapping.json')
+    args = parser.parse_args()
 
-    main_counter = configuration.split('_')[-1].split('.')[0]
 
-    configuration = json.load(open(configuration))
-    mapping = json.load(open(mesh_mapping))
+    print(run('Generating main..'))
+
+    main_counter = args.configuration.split('_')[-1].split('.')[0]
+
+    configuration = json.load(open(args.configuration))
+    mapping = json.load(open(args.mapping))
 
 
     if 'datasources' in configuration:
@@ -64,15 +63,17 @@ def main():
         numberOfDatasets = len(available_datasources)
         data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(available_datasources[i]) + ";" for i in range(len(available_datasources))])
 
-    attribute = configuration['attribute']
-    attribute_values = len(mapping[attribute])
-
+    attributes = configuration['attributes']
+    attribute_values = [len(mapping[attribute]) for attribute in attributes]
     main_f += '''
-    string column_name = "'''+ attribute +'''";
-    uint64 P = '''+ str(attribute_values) +''';
+    uint64 attributes_vmap = tdbVmapNew();
+    uint64[[1]] Ps = {'''+ str(', '.join(map(str,attribute_values))) +'''};
     string datasource = "DS1";
     uint64 data_providers_num = ''' + str(numberOfDatasets) + ''';
 '''
+    for attribute in attributes:
+        main_f += '''
+    tdbVmapAddString(attributes_vmap, "0", ''' + quote(attribute) + ''');'''
     main_f += data_providers
     main_f += '''
     // Create the data-providers list
@@ -88,7 +89,7 @@ def main():
     print("Computing histogram");
 '''
     main_f += '''
-    pd_shared3p uint64[[1]] histogram = histogram_categorical(datasource, providers_vmap, data_providers_num, column_name, P);
+    pd_shared3p uint64[[1]] histogram = histogram_categorical(datasource, providers_vmap, data_providers_num, attributes_vmap, Ps);
     print("{''' + str(attribute_values) + '''}", " Histogram");
     print(arrayToString(declassify(histogram)));
     print("\\n");
@@ -103,6 +104,7 @@ def main():
     with open(OUTPUT_DIR + 'histogram_main_' + main_counter + '.sc', 'w') as output:
         output.write(imports)
         output.write(main_f)
+    print(good('Main generated at ' + OUTPUT_DIR + 'histogram_main_' + main_counter + '.sc'))
 
 if __name__ == '__main__':
     main()
