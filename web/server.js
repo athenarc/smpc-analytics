@@ -203,7 +203,7 @@ app.post('/smpc/count', function(req, res) {
     console.log(content);
     req_counter++;
 
-    var attribute = req.body.attribute;
+    var attributes = req.body.attributes;
     var datasources = req.body.datasources;
     var mhmdDNS = JSON.parse(fs.readFileSync('MHMDdns.json', 'utf8'));
     for (let datasrc of datasources) { // Check that all IPs exist
@@ -212,8 +212,6 @@ app.post('/smpc/count', function(req, res) {
             return res.status(400).send('Failure on data importing from ' + datasrc);
         }
     }
-    console.log('dsadasdasdas');
-
 
     res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
     datasources.forEach(function(datasrc) {
@@ -223,7 +221,7 @@ app.post('/smpc/count', function(req, res) {
             method: 'POST',
             uri: 'http://' + uri + '/smpc/import',
             body: {
-                "attribute": attribute,
+                "attributes": attributes,
                 "datasource": datasrc
             },
             json: true // Automatically stringifies the body to JSON

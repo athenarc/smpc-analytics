@@ -10,7 +10,7 @@ import sys
 from collections import OrderedDict
 
 parser = argparse.ArgumentParser()
-parser.add_argument('attribute', nargs = '+', help = 'Attributes of the request')
+parser.add_argument('attributes', help = 'Attributes of the request')
 parser.add_argument('--patient_directory', help = 'Directory of the patient .json files.', default = '/patient_files')
 parser.add_argument('--mapping', help = 'File with the mesh term mapping (values to integers).', default = '/mesh_mapping.json')
 parser.add_argument('--mtrees', help = 'File with the mesh term mapping (values to integers).', default = '/mtrees2018.csv')
@@ -33,7 +33,7 @@ def mesh_tree_depth(code):
         return code.count('.') + 1
 
 def main():
-    MESH_TERMS = args.attribute
+    MESH_TERMS = args.attributes.split(',')
     mesh_dict = construct_dict(args.mtrees) # name -> code
     mesh_dict_inverted = construct_dict(args.mtrees_inverted) # code -> name
     mesh_mapping = json.load(open(args.mapping))
