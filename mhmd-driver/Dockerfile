@@ -73,6 +73,10 @@ RUN ln -s node-v8.11.1-linux-x64/npx /usr/bin/npx
 RUN apt-get update; exit 0
 RUN apt-get install -y python-pip python-pandas npm
 
+# Copy and install python dependencies
+COPY requirements.txt /requirements.txt
+RUN pip install -r /requirements.txt
+
 # Copy the MESH Tree files
 COPY mesh_mapping.json /mesh_mapping.json
 COPY mtrees2018.csv /mtrees2018.csv
