@@ -111,7 +111,7 @@ D uint64[[1]] histogram_categorical(string datasource, uint64 providers_vmap, ui
  * public string datasource: name of the datasource
  * public uint64 providers_vmap: A tdb-Vmap with key 0 and value an array of the data-provider names
  * public uint64 data_providers_num: the number of data-providers
- * public string column_name: column index in the table
+ * public string column_name: column name in the table
  * public int P: the number of different possible values contained in arr
 **/
 template <domain D>
@@ -124,6 +124,59 @@ D uint64[[1]] histogram_categorical(string datasource, uint64 providers_vmap, ui
         result += histogram_categorical(column, P);
     }
     return result;
+}
+
+/**
+ * public datasource: name of the datasource
+ * public table: name of the table
+ * public uint64 data_providers_num: the number of data-providers
+ * public attributes_vmap: list(vmap) of attributes of the table, for which we compute their histograms (column names)
+ * public Ps: array of P values for each attribute
+**/
+template <domain D>
+D uint64[[1]] histogram_categorical(string datasource, string table, uint64 attributes_vmap, uint64[[1]] Ps) {
+    uint64 N = tdbGetRowCount(datasource, table);                               // number of tuples
+    D int64[[1]] positions(N);
+    uint64 requested_attributes = size(Ps);                                     // amount of attributes wanted for this histogram
+    for (uint64 a = 0; a < requested_attributes; a++) {                         // for each attribute
+        string attribute_name = tdbVmapGetString(attributes_vmap, "0", a);
+        D int64[[1]] column = tdbReadColumn(datasource, table, attribute_name);
+        int64 prod = (int64)product(Ps[a+1:]);
+        positions += column * prod;
+    }
+    uint64 length = product(Ps);
+    D uint64[[1]] histogram(length);
+    for (uint64 j = 0; j < length ; j++) {                      // for each cell of histogram h
+        D bool[[1]] eq = (positions == (int64)j);
+        histogram[j] = sum(eq);
+    }
+    return histogram;
+}
+
+/**
+ * public datasource: name of the datasource
+ * public uint64 providers_vmap: A tdb-Vmap with key 0 and value an array of the data-provider names
+ * public uint64 data_providers_num: the number of data-providers
+ * public attributes_vmap: list(vmap) of attributes of the table, for which we compute their histograms (column names)
+ * public Ps: array of P values for each attribute
+**/
+template <domain D>
+D uint64[[1]] histogram_categorical(string datasource, uint64 providers_vmap, uint64 data_providers_num, uint64 attributes_vmap, uint64[[1]] Ps) {
+    uint64 length = product(Ps);
+    D uint64[[2]] results(data_providers_num, length);
+    for (uint64 j = 0 ; j < data_providers_num ; j++) {
+        string table = tdbVmapGetString(providers_vmap, "0", j);
+        print("Computing aggregates for data-provider " + table);
+        D uint64[[1]] res = histogram_categorical(datasource, table, attributes_vmap, Ps);
+        results[j,:] = res;
+    }
+
+    D uint64[[1]] histogram = results[0,:];
+    for (uint64 j = 1 ; j < data_providers_num ; j++) {
+        D uint64[[1]] res_hist = results[j,:];
+        histogram += res_hist;
+    }
+    return histogram;
 }
 
 /**
