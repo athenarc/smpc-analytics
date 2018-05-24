@@ -4,8 +4,10 @@ import json
 import os
 import pandas
 import argparse
+import itertools
 from huepy import *
 import sys
+from collections import OrderedDict
 
 parser = argparse.ArgumentParser()
 parser.add_argument('attribute', nargs = '+', help = 'Attributes of the request')
@@ -16,7 +18,6 @@ parser.add_argument('--mtrees_inverted', help = 'File with the mesh term mapping
 parser.add_argument('--output', help = 'The output csv to be created.', default = '/data.csv')
 parser.add_argument('--verbose', help = 'See verbose output', action = 'store_true')
 args = parser.parse_args()
-
 
 
 def construct_dict(csv_file, delimiter=';'):
@@ -50,7 +51,7 @@ def main():
 
     df = pandas.DataFrame(columns = MESH_TERMS)
     for filename in os.listdir(args.patient_directory): # for each patient file
-        patient_values = {key: [] for key in MESH_TERMS} # initialize values to empty lsit, for every term in MESH_TERMS
+        patient_values = OrderedDict([(key, [-1]) for key in MESH_TERMS]) # initialize values to list with null value (-1), for every term in MESH_TERMS. Keep insertion order.
         if filename.endswith('.json'):
             full_name = os.path.join(args.patient_directory, filename)
             with open(full_name) as patient_file:
@@ -70,24 +71,23 @@ def main():
                         top_level_name = mesh_dict_inverted[top_level_code]
                         mesh_branch_names = [top_level_name] + mesh_branch_names
                         if args.verbose:
-                            print(info(' -> '.join(mesh_branch_names)))
+                            print(info(yellow('* ') + ' -> '.join(mesh_branch_names)))
                         for term in MESH_TERMS:
                             children = direct_children[term]
                             value = set(mesh_branch_names).intersection(children)
                             if len(value) > 0:
                                 value = str(list(value)[0])
                                 mapped_value = mesh_mapping[term][value]
-                                if patient_values[term] == []:
+                                if patient_values[term] == [-1]:
                                     patient_values[term] = [mapped_value]
                                 else:
                                     patient_values[term].append(mapped_value)
 
         if args.verbose:
-            print(info(patient_values))
-            print('-----------------------------------------------------------------------------')
-        for term in MESH_TERMS:
-            for value in patient_values[term]:
-                df = df.append({term : value}, ignore_index = True)
+            print(info(dict(patient_values)))
+            print(yellow('-----------------------------------------------------------------------------------------------------'))
+        for product in [zip(MESH_TERMS, p) for p in itertools.product(*[values for key,values in patient_values.items()])]: # cartesian product of all attribute values
+            df = df.append(dict(product), ignore_index = True)
 
     df.fillna(-1, inplace = True)
 
