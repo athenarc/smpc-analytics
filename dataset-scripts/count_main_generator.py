@@ -73,7 +73,8 @@ def main():
 '''
     for attribute in attributes:
         main_f += '''
-    tdbVmapAddString(attributes_vmap, "0", ''' + quote(attribute) + ''');'''
+    tdbVmapAddString(attributes_vmap, "0", ''' + quote(attribute) + ''');
+'''
     main_f += data_providers
     main_f += '''
     // Create the data-providers list
@@ -90,7 +91,7 @@ def main():
 '''
     main_f += '''
     pd_shared3p uint64[[1]] histogram = histogram_categorical(datasource, providers_vmap, data_providers_num, attributes_vmap, Ps);
-    print("{''' + str(attribute_values) + '''}", " Histogram");
+    print("{'''+ str(', '.join(map(str,attribute_values))) +'''}", " Histogram");
     print(arrayToString(declassify(histogram)));
     print("\\n");
 }'''
