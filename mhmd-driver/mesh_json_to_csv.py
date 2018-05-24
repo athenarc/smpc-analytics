@@ -5,6 +5,7 @@ import os
 import pandas
 import argparse
 from huepy import *
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument('attribute', nargs = '+', help = 'Attributes of the request')
@@ -38,14 +39,16 @@ def main():
     direct_children = {}
 
     for term in MESH_TERMS:
+        if term not in mesh_dict:
+            print(bad('Wrong Mesh term: "' + term + '"'))
+            sys.exit(1)
         code = mesh_dict[term]
         depth = mesh_tree_depth(code)
         children = [mesh_dict_inverted[key] for key in mesh_dict_inverted.keys() if key.startswith(code) and mesh_tree_depth(key) == depth + 1]
         direct_children[term] = children
 
 
-    df = pandas.DataFrame(columns = ['Id'] + MESH_TERMS)
-    id = 0
+    df = pandas.DataFrame(columns = MESH_TERMS)
     for filename in os.listdir(args.patient_directory): # for each patient file
         patient_values = {key: [] for key in MESH_TERMS} # initialize values to empty lsit, for every term in MESH_TERMS
         if filename.endswith('.json'):
@@ -84,15 +87,12 @@ def main():
             print('-----------------------------------------------------------------------------')
         for term in MESH_TERMS:
             for value in patient_values[term]:
-                df = df.append({'Id' : id, term : value}, ignore_index = True)
-        id += 1
+                df = df.append({term : value}, ignore_index = True)
 
     df.fillna(-1, inplace = True)
 
     if df.empty:
-        empty_row = {'Id' : -1}
-        empty_row.update({term: -1 for term in MESH_TERMS})
-        df = df.append(empty_row, ignore_index = True)
+        df = df.append({term: -1 for term in MESH_TERMS}, ignore_index = True)
 
     df = df.astype(int)
 
