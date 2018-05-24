@@ -4,14 +4,16 @@ import json
 import os
 import pandas
 import argparse
+from huepy import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('attribute', help = 'Attribute of the request')
+parser.add_argument('attribute', nargs = '+', help = 'Attributes of the request')
 parser.add_argument('--patient_directory', help = 'Directory of the patient .json files.', default = '/patient_files')
 parser.add_argument('--mapping', help = 'File with the mesh term mapping (values to integers).', default = '/mesh_mapping.json')
 parser.add_argument('--mtrees', help = 'File with the mesh term mapping (values to integers).', default = '/mtrees2018.csv')
 parser.add_argument('--mtrees_inverted', help = 'File with the mesh term mapping (values to integers).', default = '/mtrees2018_inverted.csv')
 parser.add_argument('--output', help = 'The output csv to be created.', default = '/data.csv')
+parser.add_argument('--verbose', help = 'See verbose output', action = 'store_true')
 args = parser.parse_args()
 
 
@@ -29,10 +31,7 @@ def mesh_tree_depth(code):
         return code.count('.') + 1
 
 def main():
-    # configuration = json.load(open(args.configuration))
-    # MESH_TERMS = ['Age Groups', 'Environment']
-    # MESH_TERMS = [configuration['attribute']]
-    MESH_TERMS = [args.attribute]
+    MESH_TERMS = args.attribute
     mesh_dict = construct_dict(args.mtrees) # name -> code
     mesh_dict_inverted = construct_dict(args.mtrees_inverted) # code -> name
     mesh_mapping = json.load(open(args.mapping))
@@ -52,7 +51,8 @@ def main():
         if filename.endswith('.json'):
             full_name = os.path.join(args.patient_directory, filename)
             with open(full_name) as patient_file:
-                # print('File: '+filename)
+                if args.verbose:
+                    print(info('File: '+filename))
                 patient_json = json.load(patient_file)
                 keywords = patient_json['keywords']
                 for keyword in keywords: # for each one of the patient's keywords
@@ -66,7 +66,8 @@ def main():
                         top_level_code = mesh_branch_codes[0][0]
                         top_level_name = mesh_dict_inverted[top_level_code]
                         mesh_branch_names = [top_level_name] + mesh_branch_names
-                        # print(' -> '.join(mesh_branch_names))
+                        if args.verbose:
+                            print(info(' -> '.join(mesh_branch_names)))
                         for term in MESH_TERMS:
                             children = direct_children[term]
                             value = set(mesh_branch_names).intersection(children)
@@ -78,8 +79,9 @@ def main():
                                 else:
                                     patient_values[term].append(mapped_value)
 
-        # print(patient_values)
-        # print('-----------------------------------------------------------------------------')
+        if args.verbose:
+            print(info(patient_values))
+            print('-----------------------------------------------------------------------------')
         for term in MESH_TERMS:
             for value in patient_values[term]:
                 df = df.append({'Id' : id, term : value}, ignore_index = True)
@@ -95,7 +97,7 @@ def main():
     df = df.astype(int)
 
     df.to_csv(args.output, sep = ',', index = False)
-    print('CSV file generated at ' + args.output)
+    print(good('CSV file generated successfully at ' + args.output))
 
 if __name__ == '__main__':
     main()
