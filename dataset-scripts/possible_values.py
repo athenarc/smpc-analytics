@@ -5,9 +5,9 @@ import argparse
 from huepy import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--mtrees', help = 'File with the mesh term mapping (values to integers).', default = '/m.json')
-parser.add_argument('--mtrees_inverted', help = 'File with the mesh term mapping (values to integers).', default = '/m_inv.json')
-parser.add_argument('--output', help = 'The output csv to be created.', default = '../datasets/mesh_mapping.json')
+parser.add_argument('--mtrees', help = 'File with the mesh term mapping (values to integers).', default = '../mhmd-driver/m.json')
+parser.add_argument('--mtrees_inverted', help = 'File with the mesh term mapping (values to integers).', default = '../mhmd-driver/m_inv.json')
+parser.add_argument('--output', help = 'The output csv to be created.', default = '../mhmd-driver/mesh_mapping.json')
 parser.add_argument('--verbose', help = 'See verbose output', action = 'store_true')
 args = parser.parse_args()
 

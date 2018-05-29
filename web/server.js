@@ -154,7 +154,7 @@ function pipeline(req_counter, content, parent, computation_type) {
             }
             console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
             if (computation_type == 'count') {
-                return _exec('python web/response.py out_' + req_counter + '.txt | python web/transform_response.py  configuration_' + req_counter + '.json --mapping datasets/mesh_mapping.json' , {cwd: parent});
+                return _exec('python web/response.py out_' + req_counter + '.txt | python web/transform_response.py  configuration_' + req_counter + '.json --mapping mhmd-driver/mesh_mapping.json' , {cwd: parent});
             } else if (computation_type == 'histogram') {
                 return _exec('python web/response.py out_' + req_counter + '.txt', {cwd: parent});
             }
