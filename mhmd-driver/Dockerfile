@@ -79,8 +79,8 @@ RUN pip install -r /requirements.txt
 
 # Copy the MESH Tree files
 COPY mesh_mapping.json /mesh_mapping.json
-COPY mtrees2018.csv /mtrees2018.csv
-COPY mtrees2018_inverted.csv /mtrees2018_inverted.csv
+COPY m.json /m.json
+COPY m_inv.json /m_inv.json
 
 # Change working directory
 RUN mkdir /mhmd-driver
