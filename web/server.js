@@ -94,8 +94,7 @@ app.get('/smpc/queue', function(req, res) {
     db.get(request)
     .then((value) => {
         res.send(value);
-    })
-    .catch((err) => {
+    }).catch((err) => {
         console.log(err);
         res.send(JSON.stringify({'status':'notstarted'}));
     });
@@ -103,79 +102,73 @@ app.get('/smpc/queue', function(req, res) {
 
 function pipeline(req_counter, content, parent, computation_type) {
     _writeFile(parent+'/configuration_' + req_counter + '.json', content, 'utf8')
-        .then((buffer) => {
-            console.log('[NODE] Request(' + req_counter + ') Configuration file was saved.\n');
-            if (computation_type == 'count') {
-                return _exec('python dataset-scripts/count_main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
-            } else if (computation_type == 'histogram') {
-                return _exec('python dataset-scripts/main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
-            }
-        })
-        .then((buffer) => {
-            console.log('[NODE] Request(' + req_counter + ') Main generated.\n');
-            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code generated. Now compiling.'}))
-            .catch((err) => {
-                console.log(err);
-            });
-            return _unlinkIfExists(parent + '/histogram/.histogram_main_' + req_counter + '.sb.src');
-        })
-        .then((msg) => {
-            if (SIMULATION_MODE) {
-                console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
-                return _exec('sharemind-scripts/compile.sh histogram/histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
-            } else {
-                console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
-                return _exec('sharemind-scripts/sm_compile_and_run.sh histogram/histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
-            }
-        })
-        .then((buffer) => {
-            if (SIMULATION_MODE) {
-                db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'}))
-                .catch((err) => {
-                    console.log(err);
-                });
-                console.log('[NODE] Request(' + req_counter + ') Program compiled.\n');
-                return _exec('sharemind-scripts/run.sh histogram/histogram_main_' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
-            } else {
-                db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'}))
-                .catch((err) => {
-                    console.log(err);
-                });
-                console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
-                return _exec('tail -n +`cut -d " "  -f "9-" /etc/sharemind/server.log  | grep -n "Starting process" | tail -n 1 | cut -d ":" -f 1` /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
-            }
-        })
-        .then((buffer) => {
-            if (SIMULATION_MODE) {
-                db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'}))
-                .catch((err) => {
-                    console.log(err);
-                });
-            }
-            console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
-            if (computation_type == 'count') {
-                return _exec('python web/response.py out_' + req_counter + '.txt | python web/transform_response.py  configuration_' + req_counter + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json' , {cwd: parent});
-            } else if (computation_type == 'histogram') {
-                return _exec('python web/response.py out_' + req_counter + '.txt', {cwd: parent});
-            }
-        })
-        .then((result) => {
-            console.log('[NODE] Request(' + req_counter + ') Response ready.\n');
-            var result_obj = {'status':'succeeded','result': ''};
-            result_obj.result = JSON.parse(result);
-            db.put(req_counter, JSON.stringify(result_obj))
-            .catch((err) => {
-                console.log(err);
-            });
-            return;
-        })
+    .then((buffer) => {
+        console.log('[NODE] Request(' + req_counter + ') Configuration file was saved.\n');
+        if (computation_type == 'count') {
+            return _exec('python dataset-scripts/count_main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
+        } else if (computation_type == 'histogram') {
+            return _exec('python dataset-scripts/main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
+        }
+    }).then((buffer) => {
+        console.log('[NODE] Request(' + req_counter + ') Main generated.\n');
+        db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code generated. Now compiling.'}))
         .catch((err) => {
-            db.put(req_counter, JSON.stringify({'status':'failed'}))
-            .catch((err) => {
-                console.log(err);
-            });
             console.log(err);
         });
+        return _unlinkIfExists(parent + '/histogram/.histogram_main_' + req_counter + '.sb.src');
+    }).then((msg) => {
+        if (SIMULATION_MODE) {
+            console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
+            return _exec('sharemind-scripts/compile.sh histogram/histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
+        } else {
+            console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
+            return _exec('sharemind-scripts/sm_compile_and_run.sh histogram/histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
+        }
+    }).then((buffer) => {
+        if (SIMULATION_MODE) {
+            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'}))
+            .catch((err) => {
+                console.log(err);
+            });
+            console.log('[NODE] Request(' + req_counter + ') Program compiled.\n');
+            return _exec('sharemind-scripts/run.sh histogram/histogram_main_' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
+        } else {
+            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'}))
+            .catch((err) => {
+                console.log(err);
+            });
+            console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
+            return _exec('tail -n +`cut -d " "  -f "9-" /etc/sharemind/server.log  | grep -n "Starting process" | tail -n 1 | cut -d ":" -f 1` /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
+        }
+    }).then((buffer) => {
+        if (SIMULATION_MODE) {
+            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'}))
+            .catch((err) => {
+                console.log(err);
+            });
+        }
+        console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
+        if (computation_type == 'count') {
+            return _exec('python web/response.py out_' + req_counter + '.txt | python web/transform_response.py  configuration_' + req_counter + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json' , {cwd: parent});
+        } else if (computation_type == 'histogram') {
+            return _exec('python web/response.py out_' + req_counter + '.txt', {cwd: parent});
+        }
+    }).then((result) => {
+        console.log('[NODE] Request(' + req_counter + ') Response ready.\n');
+        var result_obj = {'status':'succeeded','result': ''};
+        result_obj.result = JSON.parse(result);
+        db.put(req_counter, JSON.stringify(result_obj))
+        .catch((err) => {
+            console.log(err);
+        });
+        return;
+    }).catch((err) => {
+        db.put(req_counter, JSON.stringify({'status':'failed'}))
+        .catch((err) => {
+            console.log(err);
+        });
+        console.log(err);
+    });
 }
 
 app.post('/smpc/histogram', function(req, res) {
@@ -193,58 +186,50 @@ app.post('/smpc/histogram', function(req, res) {
 });
 
 
-FgRed = "\x1b[31m";
-FgGreen = "\x1b[32m";
-ResetColor = "\x1b[0m";
-
 app.post('/smpc/count', function(req, res) {
     var parent = path.dirname(__basedir);
     var content = JSON.stringify(req.body);
     console.log(content);
     req_counter++;
-
     var attributes = req.body.attributes;
     var datasources = req.body.datasources;
     var mhmdDNS = JSON.parse(fs.readFileSync('MHMDdns.json', 'utf8'));
-    for (let datasrc of datasources) { // Check that all IPs exist
-        if ((datasrc in mhmdDNS) == false) { // If datasrc does not exist in DNS file, continue
+    for (let datasrc of datasources) {        // Check that all IPs exist
+        if ((datasrc in mhmdDNS) == false) {  // If datasrc does not exist in DNS file, continue
             console.log(FgRed + 'Error: ' + ResetColor + 'Unable to find IP for ' + datasrc + ', it does not exist in MHMDdns.json file.');
             return res.status(400).send('Failure on data importing from ' + datasrc);
         }
     }
-
+    // since no error occured in the above loop, we have all IPs
     res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
+    // send the requests for import
     datasources.forEach(function(datasrc) {
         var uri = mhmdDNS[datasrc];
-        // Configure the request
-        var options = {
+        var options = {                       // Configure the request
             method: 'POST',
             uri: 'http://' + uri + '/smpc/import',
             body: {
                 "attributes": attributes,
                 "datasource": datasrc
             },
-            json: true // Automatically stringifies the body to JSON
+            json: true                        // Automatically stringifies the body to JSON
         };
 
-        // Start the request
-        rp(options)
+        rp(options)                           // Start the request
         .then(function (parsedBody) {
             console.log(FgGreen + 'Success: ' + ResetColor + datasrc + ' at ' + uri);
-        })
-        .catch(function (err) {
+        }).catch(function (err) {
             console.log(err);
-            // res.status(400).send('Failure on data importing');
         });
-    });
-
-    db.put(req_counter, JSON.stringify({'status':'running'}))
-    .then((buffer) => {
+    }).then((buffer) => {
+        db.put(req_counter, JSON.stringify({'status':'running'}));
+    }).then((buffer) => {
         pipeline(req_counter, content, parent, 'count');
     }).catch((err) => {
         console.log(err);
     });
 });
+
 
 app.post('/histogram', function(req, res) {
     var parent = path.dirname(__basedir);
@@ -253,47 +238,45 @@ app.post('/histogram', function(req, res) {
     req_counter++;
 
     _writeFile(parent+'/configuration_' + req_counter + '.json', content, 'utf8')
-        .then((buffer) => {
-            console.log('[NODE] Request(' + req_counter + ') Configuration file was saved.\n');
-            return _exec('python dataset-scripts/main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
-        })
-        .then((buffer) => {
-            console.log('[NODE] Request(' + req_counter + ') Main generated.\n');
-            return _unlinkIfExists(parent + '/histogram/.histogram_main_' + req_counter + '.sb.src');
-        })
-        .then((msg) => {
-            if (SIMULATION_MODE) {
-                console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
-                return _exec('sharemind-scripts/compile.sh histogram/histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
-            } else {
-                console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
-                return _exec('sharemind-scripts/sm_compile_and_run.sh histogram/histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
-            }
-        })
-        .then((buffer) => {
-            if (SIMULATION_MODE) {
-                console.log('[NODE] Request(' + req_counter + ') Program compiled.\n');
-                return _exec('sharemind-scripts/run.sh histogram/histogram_main_' + req_counter + '.sb 2> web/out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
-            } else {
-                console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
-                return _exec('tail -n +`cut -d " "  -f "9-" /etc/sharemind/server.log  | grep -n "Starting process" | tail -n 1 | cut -d ":" -f 1` /etc/sharemind/server.log | cut -d " "  -f "9-" >  web/out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
-            }
-        })
-        .then((buffer) => {
+    .then((buffer) => {
+        console.log('[NODE] Request(' + req_counter + ') Configuration file was saved.\n');
+        return _exec('python dataset-scripts/main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
+    }).then((buffer) => {
+        console.log('[NODE] Request(' + req_counter + ') Main generated.\n');
+        return _unlinkIfExists(parent + '/histogram/.histogram_main_' + req_counter + '.sb.src');
+    }).then((msg) => {
+        if (SIMULATION_MODE) {
+            console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
+            return _exec('sharemind-scripts/compile.sh histogram/histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
+        } else {
+            console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
+            return _exec('sharemind-scripts/sm_compile_and_run.sh histogram/histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
+        }
+    }).then((buffer) => {
+        if (SIMULATION_MODE) {
+            console.log('[NODE] Request(' + req_counter + ') Program compiled.\n');
+            return _exec('sharemind-scripts/run.sh histogram/histogram_main_' + req_counter + '.sb 2> web/out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
+        } else {
             console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
-            return _exec('python plot.py ' + req_counter);
-        })
-        .then((result) => {
-            console.log('[NODE] Request(' + req_counter + ') Plotting done.\n');
-            var graph_name = result.toString();
-            graph_name = graph_name.slice(0,-1);
-            console.log('[NODE]' + graph_name);
-            res.send(graph_name);
-        })
-        .catch((err) => {
-            console.log(err);
-        });
+            return _exec('tail -n +`cut -d " "  -f "9-" /etc/sharemind/server.log  | grep -n "Starting process" | tail -n 1 | cut -d ":" -f 1` /etc/sharemind/server.log | cut -d " "  -f "9-" >  web/out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
+        }
+    }).then((buffer) => {
+        console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
+        return _exec('python plot.py ' + req_counter);
+    }).then((result) => {
+        console.log('[NODE] Request(' + req_counter + ') Plotting done.\n');
+        var graph_name = result.toString();
+        graph_name = graph_name.slice(0,-1);
+        console.log('[NODE]' + graph_name);
+        res.send(graph_name);
+    }).catch((err) => {
+        console.log(err);
+    });
 });
 
 const port = 3000;
 app.listen(port, () => console.log('Example app listening on port ' + port + '!'));
+
+const FgRed = "\x1b[31m";
+const FgGreen = "\x1b[32m";
+const ResetColor = "\x1b[0m";
