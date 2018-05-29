@@ -10,7 +10,7 @@ import sys
 from collections import OrderedDict
 
 parser = argparse.ArgumentParser()
-parser.add_argument('attribute', nargs='+', help = 'Attributes of the request')
+parser.add_argument('attributes', help = 'Attributes of the request')
 parser.add_argument('--patient_directory', help = 'Directory of the patient .json files.', default = '/patient_files')
 parser.add_argument('--mapping', help = 'File with the mesh term mapping (values to integers).', default = '/mesh_mapping.json')
 parser.add_argument('--mtrees', help = 'File with the mesh term mapping (values to integers).', default = '/m.json')
@@ -39,7 +39,7 @@ def main():
     mesh_dict = json.load(open(args.mtrees))
     mesh_dict_inverted = json.load(open(args.mtrees_inverted))
     mesh_mapping = json.load(open(args.mapping))
-    MESH_TERM_IDS = args.attribute
+    MESH_TERM_IDS = args.attributes.split()
     MESH_TERM_NAMES = [mesh_dict_inverted[id] for id in MESH_TERM_IDS]
     direct_children = {}
 
