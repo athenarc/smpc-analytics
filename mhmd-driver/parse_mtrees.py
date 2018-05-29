@@ -5,7 +5,7 @@ import argparse
 from huepy import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('file', help= 'Combined file with mtrees JSON data')
+parser.add_argument('file', help= 'File with mtrees JSON data')
 parser.add_argument('--verbose', help = 'See verbose output', action = 'store_true')
 args = parser.parse_args()
 
