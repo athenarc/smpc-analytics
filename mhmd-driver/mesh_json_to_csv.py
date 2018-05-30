@@ -13,8 +13,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('attributes', help = 'Attributes of the request')
 parser.add_argument('--patient_directory', help = 'Directory of the patient .json files.', default = '/patient_files')
 parser.add_argument('--mapping', help = 'File with the mesh term mapping (values to integers).', default = '/mesh_mapping.json')
-parser.add_argument('--mtrees', help = 'File with the mesh term mapping (values to integers).', default = '/m.json')
-parser.add_argument('--mtrees_inverted', help = 'File with the mesh term mapping (values to integers).', default = '/m_inv.json')
+parser.add_argument('--mtrees', help = 'File with the mesh dictionary (names to ids).', default = '/m.json')
+parser.add_argument('--mtrees_inverted', help = 'File with the inverted mesh dictionary (ids to names)..', default = '/m_inv.json')
 parser.add_argument('--output', help = 'The output csv to be created.', default = '/data.csv')
 parser.add_argument('--verbose', help = 'See verbose output', action = 'store_true')
 args = parser.parse_args()
@@ -47,7 +47,6 @@ def main():
         if term not in mesh_dict or id not in mesh_dict_inverted:
             print(bad('Wrong Mesh term: "' + term + ' [' + id + ']"'))
             sys.exit(1)
-        code = mesh_dict[term]['code']
         depth = mesh_tree_depth(id)
         children = [key for key in mesh_dict_inverted.keys() if key.startswith(id) and mesh_tree_depth(key) == depth + 1]
         direct_children[id] = children

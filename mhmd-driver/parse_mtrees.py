@@ -5,7 +5,9 @@ import argparse
 from huepy import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('file', help= 'File with mtrees JSON data')
+parser.add_argument('file', help= 'File with mtrees data (CSV or JSON)')
+parser.add_argument('--mtrees', help = 'File with the mesh dictionary to be created (names to ids).', default = 'mhmd-driver/m.json')
+parser.add_argument('--mtrees_inverted', help = 'File with the inverted mesh dictionary to be created (ids to names).', default = 'mhmd-driver/m_inv.json')
 parser.add_argument('--verbose', help = 'See verbose output', action = 'store_true')
 args = parser.parse_args()
 
@@ -14,25 +16,47 @@ def main():
     d = {}
     d_inv = {}
     if args.verbose:
-        print(run('Reading mtrees JSON file..'))
-    mtrees = json.load(open(args.file))
-    length = len(mtrees)
-    if args.verbose:
-        print(info('File contains ' + str(length) + ' entries.'))
-        print(run('Building dictionairies..'))
-    for entry in mtrees:
-        name = entry['name']
-        code = entry['code']
-        id = entry['id']
-        if name in d:
-            d[name]['ids'].append(id)
-        else:
-            d[name] = {'code': code, 'ids': [id]}
+        print(run('Reading mtrees file..'))
+    if args.file.endswith('.json'):
+        mtrees = json.load(open(args.file))
+        length = len(mtrees)
+        if args.verbose:
+            print(info('File contains ' + str(length) + ' entries.'))
+            print(run('Building dictionairies..'))
+        for entry in mtrees:
+            name = entry['name']
+            # code = entry['code']
+            id = entry['id']
+            if name in d:
+                d[name]['ids'].append(id)
+            else:
+                # d[name] = {'code': code, 'ids': [id]}
+                d[name] = {'ids': [id]}
 
-        if id not in d_inv:
-            d_inv[id] = name
-        else:
-            print(bad(id+' not in d'))
+            if id not in d_inv:
+                d_inv[id] = name
+            else:
+                print(bad(id+' not in d'))
+    elif args.file.endswith('.csv'):
+        with open(args.file, 'r') as input:
+            if args.verbose:
+                print(run('Building dictionairies..'))
+            for line in input:
+                name = line.split(';')[0]
+                id = line.split(';')[1].strip()
+                if name in d:
+                    d[name]['ids'].append(id)
+                else:
+                    # d[name] = {'code': code, 'ids': [id]}
+                    d[name] = {'ids': [id]}
+
+                if id not in d_inv:
+                    d_inv[id] = name
+                else:
+                    print(bad(id+' not in d'))
+    else:
+        print(bad('Wrong input file format'))
+        print(bad('Expected a CSV or JSON file.'))
 
     # Add missing values -- Top tree level
 
