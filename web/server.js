@@ -89,6 +89,24 @@ function _unlinkIfExists(filename) {
     });
 }
 
+// function to return a promise to send request for import
+function _sendRequest(datasrc, mhmdDNS, attributes) {
+    var uri = mhmdDNS[datasrc];
+    var options = {                       // Configure the request
+        method: 'POST',
+        uri: 'http://' + uri + '/smpc/import',
+        body: {
+            "attributes": attributes,
+            "datasource": datasrc
+        },
+        json: true                        // Automatically stringifies the body to JSON
+    };
+    
+    console.log(FgGreen + 'Request for import sent to: ' + datasrc + ' at ' + uri + ResetColor);
+    return rp(options);                   // Return promise to start the request
+}
+
+
 app.get('/smpc/queue', function(req, res) {
     request = req.query.request;
     db.get(request)
@@ -99,6 +117,7 @@ app.get('/smpc/queue', function(req, res) {
         res.send(JSON.stringify({'status':'notstarted'}));
     });
 });
+
 
 function pipeline(req_counter, content, parent, computation_type) {
     _writeFile(parent+'/configuration_' + req_counter + '.json', content, 'utf8')
@@ -202,26 +221,16 @@ app.post('/smpc/count', function(req, res) {
     }
     // since no error occured in the above loop, we have all IPs
     res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
-    // send the requests for import
-    datasources.forEach(function(datasrc) {
-        var uri = mhmdDNS[datasrc];
-        var options = {                       // Configure the request
-            method: 'POST',
-            uri: 'http://' + uri + '/smpc/import',
-            body: {
-                "attributes": attributes,
-                "datasource": datasrc
-            },
-            json: true                        // Automatically stringifies the body to JSON
-        };
-
-        rp(options)                           // Start the request
-        .then(function (parsedBody) {
-            console.log(FgGreen + 'Success: ' + ResetColor + datasrc + ' at ' + uri);
-        }).catch(function (err) {
-            console.log(err);
-        });
-    }).then((buffer) => {
+    
+    // // send the requests for import
+    var import_promises = [];
+    for (let datasrc of datasources) {
+        import_promises.push(_sendRequest(datasrc, mhmdDNS, attributes));
+    }
+    // wait them all to finish
+    Promise.all(import_promises)
+    .then((buffer) => {
+        console.log(FgGreen + 'Importing Finished ' + ResetColor);
         db.put(req_counter, JSON.stringify({'status':'running'}));
     }).then((buffer) => {
         pipeline(req_counter, content, parent, 'count');
