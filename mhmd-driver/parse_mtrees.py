@@ -95,9 +95,9 @@ def main():
     d_inv['Z'] = 'Geographicals'
 
 
-    with open('m.json', 'w') as outfile:
+    with open(args.mtrees, 'w') as outfile:
         json.dump(d, outfile)
-    with open('m_inv.json', 'w') as outfile:
+    with open(args.mtrees_inverted, 'w') as outfile:
         json.dump(d_inv, outfile)
 
     print(good('Dictionaries successfully stored.'))
