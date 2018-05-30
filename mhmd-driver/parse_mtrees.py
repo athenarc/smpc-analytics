@@ -8,9 +8,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument('file', help= 'File with mtrees data (CSV or JSON)')
 parser.add_argument('--mtrees', help = 'File with the mesh dictionary to be created (names to ids).', default = 'mhmd-driver/m.json')
 parser.add_argument('--mtrees_inverted', help = 'File with the inverted mesh dictionary to be created (ids to names).', default = 'mhmd-driver/m_inv.json')
+parser.add_argument('--mapping', help = 'File with the mesh term mapping to be created (values to integers).', default = 'mhmd-driver/mesh_mapping.json')
 parser.add_argument('--verbose', help = 'See verbose output', action = 'store_true')
 args = parser.parse_args()
 
+def mesh_tree_depth(id):
+    if len(id) == 1:
+        return 0
+    else:
+        return id.count('.') + 1
 
 def main():
     d = {}
@@ -100,7 +106,23 @@ def main():
     with open(args.mtrees_inverted, 'w') as outfile:
         json.dump(d_inv, outfile)
 
-    print(good('Dictionaries successfully stored.'))
+    print(good('Dictionaries successfully stored at ' + args.mtrees + ' and ' + args.mtrees_inverted + '.'))
+
+    direct_children = {}
+
+    if args.verbose:
+        print(run('Generating Mesh mapping..'))
+    for id in d_inv.keys():
+        depth = mesh_tree_depth(id)
+        children_ids = [key for key in d_inv.keys() if key.startswith(id) and mesh_tree_depth(key) == depth + 1]
+        childred_mapping = dict((id , i) for i,id in enumerate(children_ids) )
+        direct_children[id] = childred_mapping
+        # print(info(id+': --> '+str(childred_mapping)))
+
+    with open(args.mapping, 'w') as outfile:
+        json.dump(direct_children, outfile)
+
+    print(good('Mesh mapping generated successfully at' + args.mapping + '.'))
 
 if __name__ == '__main__':
     main()
