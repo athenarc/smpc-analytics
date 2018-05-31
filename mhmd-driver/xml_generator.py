@@ -4,32 +4,25 @@ import os.path
 import sys
 import math
 import argparse
+from huepy import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--path', help= 'Path to csv file (_filtered_edited.csv)')
+parser.add_argument('data', help= 'Path to csv file (_filtered_edited.csv)')
 parser.add_argument('--float', help= 'Optional argument to force all columns have type float64', action='store_true')
 parser.add_argument('--table', help= 'Optional table name')
 args = parser.parse_args()
 
-if args.path is not None:
-    DATASET = args.path
-else:
-    if os.path.exists('./datasets/analysis_test_data/cvi_identified.csv'):
-        DATASET = './datasets/analysis_test_data/cvi_identified.csv'
-    elif os.path.exists('../datasets/analysis_test_data/cvi_identified.csv'):
-        DATASET = '../datasets/analysis_test_data/cvi_identified.csv'
-    elif os.path.exists('../../datasets/analysis_test_data/cvi_identified.csv'):
-        DATASET = '../../datasets/analysis_test_data/cvi_identified.csv'
+DATASET = args.data
 
 if not os.path.exists(DATASET):
-    print('\nUnable to find default dataset, please specify one.\n')
-    sys.exit(-1)
+    print(bad('Unable to find dataset, please specify one.'))
+    sys.exit(1)
 
-print('Generating XML data from csv dataset: "' + DATASET + '"\n')
+print(run('Generating XML data from csv dataset: "' + DATASET + '"'))
 
 DIRECTORY, BASENAME = os.path.split(DATASET)
 BASENAME = os.path.splitext(BASENAME)[0]
-OUTPUT = DIRECTORY + '/' + BASENAME + '.xml'
+OUTPUT = os.path.join(DIRECTORY, BASENAME + '.xml')
 
 table_name = BASENAME
 if args.table != None:
@@ -49,7 +42,7 @@ def main():
             output.write('\t\t<target name="' + attribute + '" type="' + infered_type + '"/>\n')
             output.write('\t</column>\n')
         output.write('</table>\n')
-    print('Created file: "' + OUTPUT + '"')
+    print(good('Created file: "' + OUTPUT + '"'))
 
 if __name__ == '__main__':
     main()

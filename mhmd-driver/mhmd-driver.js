@@ -57,8 +57,8 @@ app.post('/smpc/import', function(req, res) {
     _exec('python /mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\"', {stdio:[0,1,2],cwd: parent})
       .then((buffer) => {
           console.log('[NODE] Running XML-Generator');
-          console.log('\tpython /mhmd-driver/xml_generator.py --path /data.csv --table ' + hospitalName + '\n');
-          return _exec('python /mhmd-driver/xml_generator.py --path /data.csv --table ' + hospitalName, {stdio:[0,1,2],cwd: parent});
+          console.log('\tpython /mhmd-driver/xml_generator.py /data.csv --table ' + hospitalName + '\n');
+          return _exec('python /mhmd-driver/xml_generator.py /data.csv --table ' + hospitalName, {stdio:[0,1,2],cwd: parent});
       })
       .then((buffer) => {
           console.log('[NODE] Running CSV-Importer');
