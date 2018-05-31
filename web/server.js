@@ -101,7 +101,7 @@ function _sendRequest(datasrc, mhmdDNS, attributes) {
         },
         json: true                        // Automatically stringifies the body to JSON
     };
-    
+
     console.log(FgGreen + 'Request for import sent to: ' + datasrc + ' at ' + uri + ResetColor);
     return rp(options);                   // Return promise to start the request
 }
@@ -127,6 +127,8 @@ function pipeline(req_counter, content, parent, computation_type) {
             return _exec('python dataset-scripts/count_main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
         } else if (computation_type == 'histogram') {
             return _exec('python dataset-scripts/main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
+        } else if (computation_type == 'id3') {
+            return _exec('python dataset-scripts/id3_main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
         }
     }).then((buffer) => {
         console.log('[NODE] Request(' + req_counter + ') Main generated.\n');
@@ -134,14 +136,26 @@ function pipeline(req_counter, content, parent, computation_type) {
         .catch((err) => {
             console.log(err);
         });
-        return _unlinkIfExists(parent + '/histogram/.histogram_main_' + req_counter + '.sb.src');
+        if (computation_type == 'count' || computation_type == 'histogram') {
+            return _unlinkIfExists(parent + '/histogram/.main' + req_counter + '.sb.src');
+        } else if (computation_type == 'id3'){
+            return _unlinkIfExists(parent + '/ID3/.main' + req_counter + '.sb.src');
+        }
     }).then((msg) => {
         if (SIMULATION_MODE) {
             console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
-            return _exec('sharemind-scripts/compile.sh histogram/histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
+            if (computation_type == 'count' || computation_type == 'histogram') {
+                return _exec('sharemind-scripts/compile.sh histogram/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
+            } else if(computation_type == 'id3'){
+                return _exec('sharemind-scripts/compile.sh ID3/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
+            }
         } else {
             console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
-            return _exec('sharemind-scripts/sm_compile_and_run.sh histogram/histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
+            if (computation_type == 'count' || computation_type == 'histogram') {
+                return _exec('sharemind-scripts/sm_compile_and_run.sh histogram/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
+            } else if(computation_type == 'id3'){
+                return _exec('sharemind-scripts/sm_compile_and_run.sh ID3/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
+            }
         }
     }).then((buffer) => {
         if (SIMULATION_MODE) {
@@ -150,7 +164,11 @@ function pipeline(req_counter, content, parent, computation_type) {
                 console.log(err);
             });
             console.log('[NODE] Request(' + req_counter + ') Program compiled.\n');
-            return _exec('sharemind-scripts/run.sh histogram/histogram_main_' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
+            if (computation_type == 'count' || computation_type == 'histogram') {
+                return _exec('sharemind-scripts/run.sh histogram/main' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
+            } else if(computation_type == 'id3'){
+                return _exec('sharemind-scripts/run.sh ID3/main' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
+            }
         } else {
             db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'}))
             .catch((err) => {
@@ -171,6 +189,8 @@ function pipeline(req_counter, content, parent, computation_type) {
             return _exec('python web/response.py out_' + req_counter + '.txt | python web/transform_response.py  configuration_' + req_counter + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json' , {cwd: parent});
         } else if (computation_type == 'histogram') {
             return _exec('python web/response.py out_' + req_counter + '.txt', {cwd: parent});
+        } else if (computation_type == 'id3') {
+            return _exec('python web/id3_response.py out_' + req_counter + '.txt', {cwd: parent});
         }
     }).then((result) => {
         console.log('[NODE] Request(' + req_counter + ') Response ready.\n');
@@ -221,7 +241,8 @@ app.post('/smpc/count', function(req, res) {
     }
     // since no error occured in the above loop, we have all IPs
     res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
-    
+    db.put(req_counter, JSON.stringify({'status':'running', 'step' : 'Securely importing data'}));
+
     // // send the requests for import
     var import_promises = [];
     for (let datasrc of datasources) {
@@ -231,9 +252,44 @@ app.post('/smpc/count', function(req, res) {
     Promise.all(import_promises)
     .then((buffer) => {
         console.log(FgGreen + 'Importing Finished ' + ResetColor);
-        db.put(req_counter, JSON.stringify({'status':'running'}));
     }).then((buffer) => {
         pipeline(req_counter, content, parent, 'count');
+    }).catch((err) => {
+        console.log(err);
+    });
+});
+
+app.post('/smpc/id3', function(req, res) {
+    var parent = path.dirname(__basedir);
+    var content = JSON.stringify(req.body);
+    console.log(content);
+    req_counter++;
+    var attributes = req.body.attributes;
+    var class_attribute = req.body.class_attribute;
+    var datasources = req.body.datasources;
+    attributes.push(class_attribute);
+    var mhmdDNS = JSON.parse(fs.readFileSync('MHMDdns.json', 'utf8'));
+    for (let datasrc of datasources) {        // Check that all IPs exist
+        if ((datasrc in mhmdDNS) == false) {  // If datasrc does not exist in DNS file, continue
+            console.log(FgRed + 'Error: ' + ResetColor + 'Unable to find IP for ' + datasrc + ', it does not exist in MHMDdns.json file.');
+            return res.status(400).send('Failure on data importing from ' + datasrc);
+        }
+    }
+    // since no error occured in the above loop, we have all IPs
+    res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
+    db.put(req_counter, JSON.stringify({'status':'running', 'step' : 'Securely importing data'}));
+
+    // // send the requests for import
+    var import_promises = [];
+    for (let datasrc of datasources) {
+        import_promises.push(_sendRequest(datasrc, mhmdDNS, attributes));
+    }
+    // wait them all to finish
+    Promise.all(import_promises)
+    .then((buffer) => {
+        console.log(FgGreen + 'Importing Finished ' + ResetColor);
+    }).then((buffer) => {
+        pipeline(req_counter, content, parent, 'id3');
     }).catch((err) => {
         console.log(err);
     });
