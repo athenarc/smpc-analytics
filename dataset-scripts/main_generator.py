@@ -170,7 +170,7 @@ def main():
         OUTPUT_DIR = '../histogram/'
     else:
         OUTPUT_DIR = './'
-    with open(OUTPUT_DIR + 'histogram_main_' + main_counter + '.sc', 'w') as output:
+    with open(OUTPUT_DIR + 'main_' + main_counter + '.sc', 'w') as output:
         output.write(imports)
         output.write(main_f)
 

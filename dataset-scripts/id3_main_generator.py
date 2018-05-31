@@ -123,10 +123,10 @@ def main():
         OUTPUT_DIR = '../ID3/'
     else:
         OUTPUT_DIR = './'
-    with open(OUTPUT_DIR + 'id3_main_' + main_counter + '.sc', 'w') as output:
+    with open(OUTPUT_DIR + 'main_' + main_counter + '.sc', 'w') as output:
         output.write(imports)
         output.write(main_f)
-    print(good('Main generated at ' + OUTPUT_DIR + 'id3_main_' + main_counter + '.sc'))
+    print(good('Main generated at ' + OUTPUT_DIR + 'main_' + main_counter + '.sc'))
 
 
 
