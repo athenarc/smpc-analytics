@@ -51,10 +51,10 @@ app.post('/smpc/import', function(req, res) {
 
     var attributes = req.body.attributes;
     var hospitalName = req.body.datasource;
-    console.log('[NODE] Going to import dataset from /patient_files, /mesh_mapping.json, /mtrees2018.csv, /mtrees2018_inverted.csv, for attributes ' + attributes + '\n');
+    console.log('[NODE] Going to import dataset from /patients.json, /mesh_mapping.json, /mtrees2018.csv, /mtrees2018_inverted.csv, for attributes ' + attributes + '\n');
     console.log('[NODE] Running CSV-preprocessor.');
-    console.log('\tpython /mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ')  + '\"\n');
-    _exec('python /mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\"', {stdio:[0,1,2],cwd: parent})
+    console.log('\tpython /mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ')  + '\" /patients.json\n');
+    _exec('python /mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" /patients.json', {stdio:[0,1,2],cwd: parent})
       .then((buffer) => {
           console.log('[NODE] Running XML-Generator');
           console.log('\tpython /mhmd-driver/xml_generator.py /data.csv --table ' + hospitalName + '\n');

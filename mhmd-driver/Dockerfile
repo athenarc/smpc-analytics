@@ -12,9 +12,9 @@
 # sudo docker run -p 4000:3000 --name=CONTAINER_NAME -d mhmd/driver
 
 ## Copy the dataset inside the container
-# sudo docker cp ../datasets/patient_files/ CONTAINER_NAME:/patient_files
-# sudo docker cp ../datasets/mtrees2018.csv CONTAINER_NAME:/mtrees2018.csv
-# sudo docker cp ../datasets/mtrees2018_inverted.csv CONTAINER_NAME:/mtrees2018_inverted.csv
+# sudo docker cp ../datasets/patients.jsonCONTAINER_NAME:/patients.json
+# sudo docker cp ../datasets/m.json CONTAINER_NAME:/m.json
+# sudo docker cp ../datasets/m_inv.json CONTAINER_NAME:/m_inv.json
 # sudo docker cp ../datasets/mesh_mapping.json CONTAINER_NAME:/mesh_mapping.json
 #   OR
 # ./copy_datasets_to_container.sh CONTAINER_NAME

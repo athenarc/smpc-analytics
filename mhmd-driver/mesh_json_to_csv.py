@@ -10,8 +10,8 @@ import sys
 from collections import OrderedDict
 
 parser = argparse.ArgumentParser()
-parser.add_argument('attributes', help = 'Attributes of the request')
-parser.add_argument('--patient_directory', help = 'Directory of the patient .json files.', default = '/patient_files')
+parser.add_argument('attributes', help = 'Attributes of the request. Space separated Mesh IDs.')
+parser.add_argument('patients_file', help = 'Json file with patient metadata.')
 parser.add_argument('--mapping', help = 'File with the mesh term mapping (values to integers).', default = '/mesh_mapping.json')
 parser.add_argument('--mtrees', help = 'File with the mesh dictionary (names to ids).', default = '/m.json')
 parser.add_argument('--mtrees_inverted', help = 'File with the inverted mesh dictionary (ids to names)..', default = '/m_inv.json')
@@ -36,6 +36,8 @@ def mesh_tree_depth(id):
         return id.count('.') + 1
 
 def main():
+    if args.verbose:
+        print(run('Loading Mesh dictionaries..'))
     mesh_dict = json.load(open(args.mtrees))
     mesh_dict_inverted = json.load(open(args.mtrees_inverted))
     mesh_mapping = json.load(open(args.mapping))
@@ -53,43 +55,46 @@ def main():
 
 
     df = pandas.DataFrame(columns = MESH_TERM_IDS)
-    for filename in os.listdir(args.patient_directory): # for each patient file
+    if args.verbose:
+        print(run('Reading patient JSON metadata..'))
+    combined_patient_file = json.load(open(args.patients_file))
+    length = len(combined_patient_file)
+    if args.verbose:
+        print(info('File contains ' + str(length) + ' entries.'))
+    for patient_json in combined_patient_file:
         patient_values = OrderedDict([(key, [-1]) for key in MESH_TERM_IDS]) # initialize values to list with null value (-1), for every id in MESH_TERM_IDS. Keep insertion order.
-        if filename.endswith('.json'):
-            full_name = os.path.join(args.patient_directory, filename)
-            with open(full_name) as patient_file:
+        if args.verbose:
+            identifier =  patient_json['identifier']['identifier']
+            print(info('Patient ID: '+identifier))
+        keywords = patient_json['keywords']
+        for keyword in keywords: # for each one of the patient's keywords
+            if keyword['valueIRI'].startswith('https://meshb.nlm.nih.gov'):
+                name = keyword['value']
+                if name not in mesh_dict: # Missing key case. Should be further investigated. Continue for now.
+                    continue
                 if args.verbose:
-                    print(info('File: '+filename))
-                patient_json = json.load(patient_file)
-                keywords = patient_json['keywords']
-                for keyword in keywords: # for each one of the patient's keywords
-                    if keyword['valueIRI'].startswith('https://meshb.nlm.nih.gov'):
-                        name = keyword['value']
-                        if name not in mesh_dict: # Missing key case. Should be further investigated. Continue for now.
-                            continue
-                        if args.verbose:
-                            print(info(''))
-                            print(info('Name: '+ name))
-                        ids = mesh_dict[name]['ids'] # Each name/code has multiple ids
-                        id_found = False
-                        for keyword_id in ids: # Iterate over each id. If a match is found break.
-                            if args.verbose:
-                                print(info(yellow('* ') +'ID: '+ keyword_id))
-                                print_branch(keyword_id, mesh_dict_inverted)
+                    print(info(''))
+                    print(info('Mesh Name: '+ name))
+                ids = mesh_dict[name]['ids'] # Each name/code has multiple ids
+                id_found = False
+                for keyword_id in ids: # Iterate over each id. If a match is found break.
+                    if args.verbose:
+                        print(info(yellow('* ') +'Mesh ID: '+ keyword_id))
+                        print_branch(keyword_id, mesh_dict_inverted)
 
-                            for mesh_id in MESH_TERM_IDS:
-                                children = direct_children[mesh_id]
-                                for child in children:
-                                    if child in keyword_id: # If child is a substring of keyword_id
-                                        id_found = True # We found a matching id. No need to check for the rest.
-                                        mapped_value = mesh_mapping[mesh_id][child]
-                                        if patient_values[mesh_id] == [-1]:
-                                            patient_values[mesh_id] = [mapped_value]
-                                        else:
-                                            patient_values[mesh_id].append(mapped_value)
-                                        break
-                            if id_found:
+                    for mesh_id in MESH_TERM_IDS:
+                        children = direct_children[mesh_id]
+                        for child in children:
+                            if child in keyword_id: # If child is a substring of keyword_id
+                                id_found = True # We found a matching id. No need to check for the rest.
+                                mapped_value = mesh_mapping[mesh_id][child]
+                                if patient_values[mesh_id] == [-1]:
+                                    patient_values[mesh_id] = [mapped_value]
+                                else:
+                                    patient_values[mesh_id].append(mapped_value)
                                 break
+                    if id_found:
+                        break
 
         if args.verbose:
             print(info(dict(patient_values)))
