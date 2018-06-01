@@ -36,8 +36,7 @@ def mesh_tree_depth(id):
         return id.count('.') + 1
 
 def main():
-    if args.verbose:
-        print(run('Loading Mesh dictionaries..'))
+    print(run('Loading Mesh dictionaries..'))
     mesh_dict = json.load(open(args.mtrees))
     mesh_dict_inverted = json.load(open(args.mtrees_inverted))
     mesh_mapping = json.load(open(args.mapping))
@@ -55,8 +54,7 @@ def main():
 
 
     df = pandas.DataFrame(columns = MESH_TERM_IDS)
-    if args.verbose:
-        print(run('Reading patient JSON metadata..'))
+    print(run('Reading patient JSON metadata..'))
     combined_patient_file = json.load(open(args.patients_file))
     length = len(combined_patient_file)
     if args.verbose:
@@ -81,7 +79,6 @@ def main():
                     if args.verbose:
                         print(info(yellow('* ') +'Mesh ID: '+ keyword_id))
                         print_branch(keyword_id, mesh_dict_inverted)
-
                     for mesh_id in MESH_TERM_IDS:
                         children = direct_children[mesh_id]
                         for child in children:
@@ -99,6 +96,8 @@ def main():
         if args.verbose:
             print(info(dict(patient_values)))
             print(yellow('-----------------------------------------------------------------------------------------------------'))
+        if [value for key, value in patient_values.items()] == [[-1] for _ in range(len(MESH_TERM_IDS))]: # If patient does not have any of the specified Mesh terms.
+            continue
         for product in [zip(MESH_TERM_IDS, p) for p in itertools.product(*[values for key,values in patient_values.items()])]: # cartesian product of all attribute values
             df = df.append(dict(product), ignore_index = True)
 
