@@ -127,19 +127,22 @@ pd_shared3p bool all_examples_same(uint64 example_indexes_vmap) {
     pd_shared3p uint64 res = 0;
     pd_shared3p uint64[[1]] class_counts(max_attribute_values);
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
+        pd_shared3p uint64 partial_res = 0;
         string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
         pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
         uint64 rows = tdbGetRowCount(datasource, table);
         uint64 columns = tdbGetColumnCount(datasource, table);
         pd_shared3p int64[[1]] label_column = tdbReadColumn(datasource, table, class_index);
+        pd_shared3p int64 positive_indexes = sum(example_indexes);
         for (uint64 a = 0; a < max_attribute_values; a++) {
             pd_shared3p int64 label = possible_values[class_index, a];
             pd_shared3p uint64[[1]] eq = (uint64)(label_column == label) * (uint64)(example_indexes != 0) * (uint64)(label != -1);
             class_counts[a] = sum(eq);
-            res += (uint64)(class_counts[a] == (uint64) sum(example_indexes));
+            partial_res += (uint64)(class_counts[a] == (uint64) positive_indexes);
         }
+        res += (uint64) (partial_res > 0);
     }
-    return (bool)res;
+    return (res == data_providers_num);
 }
 
 
@@ -263,7 +266,6 @@ pd_shared3p xor_uint8[[1]] id3(uint64 example_indexes_vmap, pd_shared3p uint64[[
         pd_shared3p bool eq = (j == best_attribute_original_index);
         best_attribute_values += (int64)eq * possible_values[j,:]; // simd
     }
-
     for (uint64 v = 0 ; v < max_attribute_values ; v++) {
         pd_shared3p int64 value = best_attribute_values[v];
         if (declassify(value == -1)) {
@@ -279,8 +281,6 @@ pd_shared3p xor_uint8[[1]] id3(uint64 example_indexes_vmap, pd_shared3p uint64[[
                 pd_shared3p bool eq = (j == best_attribute_original_index);
                 best_attribute_column += (int64)eq * tdbReadColumn(datasource, table, j);
             }
-
-
             pd_shared3p int64[[1]] partial_subset(rows) = (int64)(best_attribute_column == value) * (int64)(example_indexes != 0);
             tdbVmapAddValue(subset, "0", partial_subset);
         }
