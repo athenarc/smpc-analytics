@@ -187,7 +187,7 @@ function addHistogramTab() {
   $('.selectpicker').selectpicker();
 }
 
-function addDecisionTreeTab() {
+function addDecisionTreeTabNumerical() {
   var nextTab = $('#tabs li').length;
 
   // remove the button from the end
@@ -345,10 +345,83 @@ function addDecisionTreeTab() {
   $('#tabs a:last').tab('show');
 
   // add the button to the end
-  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addDecisionTreeTab()" class="btn btn-success btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
+  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addDecisionTreeTabNumerical()" class="btn btn-success btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
 
   $('.selectpicker').selectpicker();
 }
+
+
+
+function addDecisionTreeTabCategorical() {
+  var nextTab = $('#tabs li').length;
+
+  // remove the button from the end
+  var add_btn = document.getElementById('btnAdd');
+  add_btn.parentElement.remove();
+
+  // create the tab and add it to the end
+  $('<li class="nav-item"><a class="nav-link" href="#tab'+nextTab+'" id="tab'+nextTab+'-tab" data-toggle="tab">Decision Tree '+nextTab+'</a></li>').appendTo('#tabs');
+
+  // create the tab content
+  $('<div class="tab-pane fade" id="tab'+nextTab+'">' +
+      `<div style="display: none;" id="loading-wrapper_tree_`+nextTab+`">
+        <div id="loading-text">LOADING</div>
+        <div id="loading-content"></div>
+      </div>` +
+      `<form action="/decisionTree" method="post" id="tree_` + nextTab + `">
+          </br>
+          <div class="btn-group">
+            Class Attribute
+            <input type="text" class="form-control" id="usr">
+          </div>
+          </br>
+          </br>
+
+          <div id="attribute_container_`+nextTab+`">
+            Attributes for Classification
+            
+            </br>
+            <div class="btn-group">
+              <input type="text" class="form-control" id="usr">
+            </div>
+          </div>
+          
+          </br>
+          <p>
+            <input type="button" id="filter_button_` + nextTab + `"" onclick="addAttributeToFormWithId(this.id)" class="btn btn-default" value="Add Attribute">
+          </p>
+          
+          </br>
+          <p>
+            <ul class="list-group">
+                <li class="list-group-item">
+                  <input type="checkbox" name="datasources" value="data_provider_0" checked="true"> Dataset 1
+                </li>
+                <li class="list-group-item">
+                  <input type="checkbox" name="datasources" value="data_provider_1" checked="true"> Dataset 2
+                </li>
+                <li class="list-group-item">
+                  <input type="checkbox" name="datasources" value="data_provider_2" checked="true"> Dataset 3
+                </li>
+            </ul>
+          </p>
+          <p>
+            <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-success" value="Compute Decision Tree">
+          </p>
+          
+        </form>`+
+    '</div>').appendTo('.tab-content');
+
+  // make the new tab active
+  $('#tabs a:last').tab('show');
+
+  // add the button to the end
+  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addDecisionTreeTabCategorical()" class="btn btn-success btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
+
+  $('.selectpicker').selectpicker();
+}
+
+
 
 function assignButtons(){
     var checkboxes = document.querySelectorAll('input[name="attributes"]');
@@ -544,3 +617,25 @@ function sendFormWithId(id) {
   });
 }
 
+function addAttributeToFormWithId(formId) {
+    var id = formId.substring(14);
+    var container = document.getElementById('attribute_container_'+id);
+    var children = container.childElementCount;
+    if (children == 0) {
+        var br = document.createElement('br');
+        container.appendChild(br);
+    }
+    var outer_div = document.createElement('div');
+
+    var input_div = document.createElement('div');
+    input_div.className = "btn-group";
+    var input = document.createElement('input');
+    input.name = "attribute_" + "values";
+    input.type = "text";
+    input.required = true;
+    input.className = "form-control";
+    input_div.appendChild(input);
+    outer_div.appendChild(input_div);
+
+    container.appendChild(outer_div);
+}

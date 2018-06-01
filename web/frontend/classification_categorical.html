@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Decision Trees Secure Creation</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js" integrity="sha384-FzT3vTVGXqf7wRfy8k4BiyzvbNfeYjK+frTVqZeNDFl8woCbF0CYG6g2fMEFFo/i" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="loading.css">
+  <link rel="stylesheet" type="text/css" href="buttons.css">
+</head>
+<body>
+  <div class="container">
+    <div class="jumbotron">
+      <div style="float: right;">
+        <a class="btn btn-warning btn-sm" href="classification_datasets.html" role="button">back</a>
+        <a class="btn btn-success btn-sm" href="index.html" role="button">Home</a>
+      </div>
+      
+      <h2>Decision Trees Secure Creation</h2>
+
+      <p>Select attributes for decision tree creation</p>
+    </div>
+
+    <div>
+      <h3>Medical Subject Headings (MeSH)</h3>
+      MeSH provides a hierarchically-organized terminology for indexing and cataloging of biomedical information such as MEDLINE/PUBmed and other NLM databases.
+      This dataset is based on a MeSH structure. In order to request a classification the attributes must be specified and should be in the form that is defined by MeSH.
+      
+      </br>
+      </br>
+      <a class="btn btn-success" href="https://meshb.nlm.nih.gov/treeView" role="button" target="_blank">MeSH Browser Tree View</a> 
+    </div>
+    </br>
+    </br>
+
+    <div class="card"><div class="card-body">
+      <ul class="nav nav-tabs active" id="tabs">
+          <li class="nav-item active">
+            <a class="nav-link active" href="#tab1" id="tab1-tab" data-toggle="tab">Decision Tree 1</a>
+          </li>
+          <li class="nav-item">
+            <a href="#" id="btnAdd"><input type="submit" onclick="addDecisionTreeTabCategorical()" class="btn btn-success btn-sm" value="+" id="tabButton"></input></a>
+          </li>
+      </ul>
+      <div class="tab-content">
+          <div class="tab-pane fade active in" id="tab1">
+            <div style="display:none;" id="loading-wrapper_tree_1">
+              <div id="loading-text">Loading</div>
+              <div id="loading-content"></div>
+            </div>
+
+
+            <form action="/decisionTree" method="post" id="tree_1">
+              </br>
+              <div class="btn-group">
+                Class Attribute
+                <input type="text" class="form-control" id="usr">
+              </div>
+              </br>
+              </br>
+
+              <div id="attribute_container_1">
+                Attributes for Classification
+                
+                </br>
+                <div class="btn-group">
+                  <input type="text" class="form-control" id="usr">
+                </div>
+              </div>
+              
+              </br>
+              <p>
+                <input type="button" id="filter_button_1" onclick="addAttributeToFormWithId(this.id)" class="btn btn-default" value="Add Attribute">
+              </p>
+              
+              </br>
+              <p>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                      <input type="checkbox" name="datasources" value="data_provider_0" checked="true"> Dataset 1
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="datasources" value="data_provider_1" checked="true"> Dataset 2
+                    </li>
+                    <li class="list-group-item">
+                      <input type="checkbox" name="datasources" value="data_provider_2" checked="true"> Dataset 3
+                    </li>
+                </ul>
+              </p>
+              <p>
+                <input type="button" id="button_tree_1" onclick="sendFormWithId(this.id)" class="btn btn-success" value="Compute Decision Tree">
+              </p>
+              
+            </form>
+          </div>
+      </div>
+    </div></div>
+
+
+  </div>
+</body>
+
+<!--  scripts -->
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src='./logic.js'></script>
+
+</html>
+
