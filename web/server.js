@@ -174,7 +174,7 @@ function pipeline(req_counter, content, parent, computation_type) {
             if (computation_type == 'count' || computation_type == 'histogram') {
                 return _exec('sharemind-scripts/run.sh histogram/main' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
             } else if(computation_type == 'id3'){
-                return _exec('sharemind-scripts/run.sh ID3/main' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
+                return _exec('sharemind-scripts/run.sh ID3/main' + req_counter + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > id3_out_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
             }
         } else {
             db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'}))
@@ -197,7 +197,7 @@ function pipeline(req_counter, content, parent, computation_type) {
         } else if (computation_type == 'histogram') {
             return _exec('python web/response.py out_' + req_counter + '.txt', {cwd: parent});
         } else if (computation_type == 'id3') {
-            return _exec('python web/id3_response.py out_' + req_counter + '.txt', {cwd: parent});
+            return _exec('python web/id3_response.py out_' + req_counter + '.json', {cwd: parent});
         }
     }).then((result) => {
         console.log('[NODE] Request(' + req_counter + ') Response ready.\n');
