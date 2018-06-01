@@ -144,20 +144,20 @@ function pipeline(req_counter, content, parent, computation_type) {
             });
         }
         if (computation_type == 'count' || computation_type == 'histogram') {
-            return _unlinkIfExists(parent + '/histogram/.main' + req_counter + '.sb.src');
+            return _unlinkIfExists(parent + '/histogram/.main_' + req_counter + '.sb.src');
         } else if (computation_type == 'id3'){
-            return _unlinkIfExists(parent + '/ID3/.main' + req_counter + '.sb.src');
+            return _unlinkIfExists(parent + '/ID3/.main_' + req_counter + '.sb.src');
         }
     }).then((msg) => {
         if (SIMULATION_MODE) {
-            console.log("[NODE] Old .main" + req_counter + ".sb.src deleted.\n");
+            console.log("[NODE] Old .main_" + req_counter + ".sb.src deleted.\n");
             if (computation_type == 'count' || computation_type == 'histogram') {
                 return _exec('sharemind-scripts/compile.sh histogram/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
             } else if(computation_type == 'id3'){
                 return _exec('sharemind-scripts/compile.sh ID3/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
             }
         } else {
-            console.log("[NODE] Old .main" + req_counter + ".sb.src deleted.\n");
+            console.log("[NODE] Old .main_" + req_counter + ".sb.src deleted.\n");
             if (computation_type == 'count' || computation_type == 'histogram') {
                 return _exec('sharemind-scripts/sm_compile_and_run.sh histogram/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
             } else if(computation_type == 'id3'){
