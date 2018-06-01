@@ -1,4 +1,4 @@
-function addHistogramTab() {
+function addHistogramNumericalTab() {
   var nextTab = $('#tabs li').length;
 
   // remove the button from the end
@@ -182,12 +182,76 @@ function addHistogramTab() {
   assignButtons();
 
   // add the button to the end
-  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addHistogramTab()" class="btn btn-info btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
+  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addHistogramNumericalTab()" class="btn btn-info btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
 
   $('.selectpicker').selectpicker();
 }
 
-function addDecisionTreeTabNumerical() {
+
+function addHistogramCategoricalTab() {
+  var nextTab = $('#tabs li').length;
+
+  // remove the button from the end
+  var add_btn = document.getElementById('btnAdd');
+  add_btn.parentElement.remove();
+
+  // create the tab and add it to the end
+  $('<li class="nav-item"><a class="nav-link" href="#tab'+nextTab+'" id="tab'+nextTab+'-tab" data-toggle="tab">Histogram '+nextTab+'</a></li>').appendTo('#tabs');
+
+  // create the tab content
+  $('<div class="tab-pane fade" id="tab'+nextTab+'">' +
+      `<div style="display: none;" id="loading-wrapper_tree_`+nextTab+`">
+        <div id="loading-text">LOADING</div>
+        <div id="loading-content"></div>
+      </div>` +
+      `<form action="/histogram" method="post" id="hist_` + nextTab + `">
+          </br>
+          <div id="attribute_container_`+nextTab+`">
+            Attributes for Aggregation
+            
+            </br>
+            <div class="btn-group">
+              <input type="text" class="form-control" id="usr">
+            </div>
+          </div>
+          
+          </br>
+          <p>
+            <input type="button" id="filter_button_` + nextTab + `"" onclick="addAttributeToFormWithId(this.id)" class="btn btn-default" value="Add Attribute">
+          </p>
+          
+          </br>
+          <p>
+            <ul class="list-group">
+                <li class="list-group-item">
+                  <input type="checkbox" name="datasources" value="data_provider_0" checked="true"> Dataset 1
+                </li>
+                <li class="list-group-item">
+                  <input type="checkbox" name="datasources" value="data_provider_1" checked="true"> Dataset 2
+                </li>
+                <li class="list-group-item">
+                  <input type="checkbox" name="datasources" value="data_provider_2" checked="true"> Dataset 3
+                </li>
+            </ul>
+          </p>
+          <p>
+            <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-primary" value="Compute Histogram">
+          </p>
+          
+        </form>`+
+    '</div>').appendTo('.tab-content');
+
+  // make the new tab active
+  $('#tabs a:last').tab('show');
+
+  // add the button to the end
+  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addHistogramCategoricalTab()" class="btn btn-primary btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
+
+  $('.selectpicker').selectpicker();
+}
+
+
+function addDecisionTreeNumericalTab() {
   var nextTab = $('#tabs li').length;
 
   // remove the button from the end
@@ -345,14 +409,13 @@ function addDecisionTreeTabNumerical() {
   $('#tabs a:last').tab('show');
 
   // add the button to the end
-  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addDecisionTreeTabNumerical()" class="btn btn-success btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
+  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addDecisionTreeNumericalTab()" class="btn btn-success btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
 
   $('.selectpicker').selectpicker();
 }
 
 
-
-function addDecisionTreeTabCategorical() {
+function addDecisionTreeCategoricalTab() {
   var nextTab = $('#tabs li').length;
 
   // remove the button from the end
@@ -416,7 +479,7 @@ function addDecisionTreeTabCategorical() {
   $('#tabs a:last').tab('show');
 
   // add the button to the end
-  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addDecisionTreeTabCategorical()" class="btn btn-success btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
+  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addDecisionTreeCategoricalTab()" class="btn btn-success btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
 
   $('.selectpicker').selectpicker();
 }
