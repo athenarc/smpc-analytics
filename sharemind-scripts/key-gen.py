@@ -21,6 +21,8 @@ def execute(command, stdout, stdin, stderr, verbose=False):
     out, err = process.communicate();
     rc = process.returncode
     if rc != 0:
+        if verbose:
+            print(out)
         raise ProcessError()
 
 def main():
