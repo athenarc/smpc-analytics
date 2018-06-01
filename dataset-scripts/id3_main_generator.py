@@ -73,7 +73,8 @@ def main():
     main_f += data_providers
     main_f += '''
     // Create the data-providers list
-    uint64 providers_vmap = tdbVmapNew();
+    providers_vmap = tdbVmapNew();
+    data_providers_num = ''' + str(numberOfDatasets) + ''';
 '''
     for i in range(numberOfDatasets):
         main_f += '''
@@ -81,15 +82,16 @@ def main():
 '''
     attributes = configuration['attributes']
     class_attribute = configuration['class_attribute']
-    original_attributes = list(range(len(attributes)))
+    original_attributes = list(range(len(attributes)+1))
     main_f += '''
-    pd_shared3p uint64[[1]] original_attributes_without_class = {'''+','.join(map(str,original_attributes))+'''};
+    original_attributes = {'''+','.join(map(str,original_attributes))+'''};
+    pd_shared3p uint64[[1]] original_attributes_without_class = {'''+','.join(map(str,original_attributes[:-1]))+'''};
     class_index = ''' + str(len(attributes)) + ''';
 '''
 
     attribute_values = [len(mapping[attribute]) for attribute in attributes]
     max_attribute_values = max(attribute_values)
-    columns = len(attributes)
+    columns = len(attributes) + 1
     # possible_values = [list(range(p)) for p in attribute_values]
     possible_values = [possible_value + [-1]*(max_attribute_values-len(possible_value)) for possible_value in [list(range(p)) for p in attribute_values]]
     possible_classes = list(range(len(mapping[class_attribute])))
@@ -97,7 +99,7 @@ def main():
     main_f += '''
     columns = ''' + str(columns) + ''';
     max_attribute_values = ''' + str(max_attribute_values) + ''';
-    possible_values = reshape({'''+','.join([','.join(map(str,possible_value)) for possible_value in possible_values])+'''},columns+1,max_attribute_values);
+    possible_values = reshape({'''+','.join([','.join(map(str,possible_value)) for possible_value in possible_values])+'''},columns,max_attribute_values);
 '''
     main_f += '''
     // Open connection to DB and Insert data to different tables
