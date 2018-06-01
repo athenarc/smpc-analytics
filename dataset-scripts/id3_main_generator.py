@@ -80,6 +80,7 @@ def main():
     tdbVmapAddString(providers_vmap, "0", table_'''+ str(i) +''');
 '''
     attributes = configuration['attributes']
+    class_attribute = configuration['class_attribute']
     original_attributes = list(range(len(attributes)))
     main_f += '''
     pd_shared3p uint64[[1]] original_attributes_without_class = {'''+','.join(map(str,original_attributes))+'''};
@@ -91,10 +92,12 @@ def main():
     columns = len(attributes)
     # possible_values = [list(range(p)) for p in attribute_values]
     possible_values = [possible_value + [-1]*(max_attribute_values-len(possible_value)) for possible_value in [list(range(p)) for p in attribute_values]]
+    possible_classes = list(range(len(mapping[class_attribute])))
+    possible_values.append(possible_classes + [-1]*(max_attribute_values-len(possible_classes))  )
     main_f += '''
     columns = ''' + str(columns) + ''';
     max_attribute_values = ''' + str(max_attribute_values) + ''';
-    possible_values = reshape({'''+','.join([','.join(map(str,possible_value)) for possible_value in possible_values])+'''},columns,max_attribute_values);
+    possible_values = reshape({'''+','.join([','.join(map(str,possible_value)) for possible_value in possible_values])+'''},columns+1,max_attribute_values);
 '''
     main_f += '''
     // Open connection to DB and Insert data to different tables
