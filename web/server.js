@@ -183,7 +183,7 @@ function pipeline(req_counter, content, parent, computation_type) {
 function pipeline_simulation(req_counter, content, parent, computation_type) {
     _writeFile(parent+'/configuration_' + req_counter + '.json', content, 'utf8')
     .then((buffer) => {
-        console.log('[NODE SIMULATIO] Request(' + req_counter + ') Configuration file was saved.\n');
+        console.log('[NODE SIMULATION] Request(' + req_counter + ') Configuration file was saved.\n');
         if (computation_type == 'count') {
             return _exec('python dataset-scripts/count_main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
         } else if (computation_type == 'histogram') {
@@ -192,7 +192,7 @@ function pipeline_simulation(req_counter, content, parent, computation_type) {
             return _exec('python dataset-scripts/id3_main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
         }
     }).then((buffer) => {
-        console.log('[NODE SIMULATIO] Request(' + req_counter + ') Main generated.\n');
+        console.log('[NODE SIMULATION] Request(' + req_counter + ') Main generated.\n');
         db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code generated. Now compiling.'})).catch((err) => {
             console.log(err);
         });
@@ -202,7 +202,7 @@ function pipeline_simulation(req_counter, content, parent, computation_type) {
             return _unlinkIfExists(parent + '/ID3/.main_' + req_counter + '.sb.src');
         }
     }).then((msg) => {
-        console.log("[NODE SIMULATIO] Old .main_" + req_counter + ".sb.src deleted.\n");
+        console.log("[NODE SIMULATION] Old .main_" + req_counter + ".sb.src deleted.\n");
         if (computation_type == 'count' || computation_type == 'histogram') {
             return _exec('sharemind-scripts/compile.sh histogram/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
         } else if(computation_type == 'id3'){
@@ -212,7 +212,7 @@ function pipeline_simulation(req_counter, content, parent, computation_type) {
         db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'})).catch((err) => {
             console.log(err);
         });
-        console.log('[NODE SIMULATIO] Request(' + req_counter + ') Program compiled.\n');
+        console.log('[NODE SIMULATION] Request(' + req_counter + ') Program compiled.\n');
         if (computation_type == 'count' || computation_type == 'histogram') {
             return _exec('sharemind-scripts/run.sh histogram/main' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
         } else if(computation_type == 'id3'){
@@ -222,7 +222,7 @@ function pipeline_simulation(req_counter, content, parent, computation_type) {
         db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'})).catch((err) => {
             console.log(err);
         });
-        console.log('[NODE SIMULATIO] Request(' + req_counter + ') Program executed.\n');
+        console.log('[NODE SIMULATION] Request(' + req_counter + ') Program executed.\n');
         if (computation_type == 'count') {
             return _exec('python web/response.py out_' + req_counter + '.txt | python web/transform_response.py  configuration_' + req_counter + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json' , {cwd: parent});
         } else if (computation_type == 'histogram') {
@@ -231,7 +231,7 @@ function pipeline_simulation(req_counter, content, parent, computation_type) {
             return _exec('python web/id3_response.py out_' + req_counter + '.json', {cwd: parent});
         }
     }).then((result) => {
-        console.log('[NODE SIMULATIO] Request(' + req_counter + ') Response ready.\n');
+        console.log('[NODE SIMULATION] Request(' + req_counter + ') Response ready.\n');
         var result_obj = {'status':'succeeded','result': ''};
         result_obj.result = JSON.parse(result);
         db.put(req_counter, JSON.stringify(result_obj)).catch((err) => {
