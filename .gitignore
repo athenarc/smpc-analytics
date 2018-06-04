@@ -147,5 +147,5 @@ web/mydb/*
 *-public-key
 *-public-key-ascii
 
-
-simulated_import.sc
+# Auto-generated SecreC files
+simulated_import_*.sc
