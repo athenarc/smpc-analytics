@@ -150,13 +150,13 @@ function import_locally(req, res, parent, req_counter, computation_type) {
             return res.status(400).send('Failure on data importing from ' + datasrc);
         }
     }
-    
-    // exec asynch python simulated imports 
+
+    // exec asynch python simulated imports
     var import_promises = [];
     for (let datasrc of datasources) {
         var dataset = localDNS[datasrc];
         console.log('[NODE SIMULATION] Request(' + req_counter + ') python simulated_import.py ' + dataset + ' --table ' + datasrc + ' --float \n');
-        
+
         import_promises.push( _exec('python simulated_import.py ' + dataset + ' --table ' + datasrc + ' --float', {stdio:[0,1,2],cwd: parent}) );
     }
     // return array of promises for import
@@ -217,7 +217,7 @@ function pipeline(req_counter, content, parent, computation_type) {
         } else if (computation_type == 'histogram') {
             return _exec('python web/response.py out_' + req_counter + '.txt', {cwd: parent});
         } else if (computation_type == 'id3') {
-            return _exec('python web/id3_response.py out_' + req_counter + '.json', {cwd: parent});
+            return _exec('python web/id3_response.py out_' + req_counter + '.json configuration_' + req_counter + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent});
         }
     }).then((result) => {
         console.log('[NODE] Request(' + req_counter + ') Response ready.\n');
@@ -285,7 +285,7 @@ function pipeline_simulation(req_counter, content, parent, computation_type) {
         } else if (computation_type == 'histogram') {
             return _exec('python web/response.py out_' + req_counter + '.txt', {cwd: parent});
         } else if (computation_type == 'id3') {
-            return _exec('python web/id3_response.py out_' + req_counter + '.json', {cwd: parent});
+            return _exec('python web/id3_response.py out_' + req_counter + '.json configuration_' + req_counter + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent});
         }
     }).then((result) => {
         console.log('[NODE SIMULATION] Request(' + req_counter + ') Response ready.\n');
@@ -328,7 +328,7 @@ app.post('/smpc/count', function(req, res) {
     var content = JSON.stringify(req.body);
     console.log(content);
     req_counter++;
-    
+
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
@@ -336,7 +336,7 @@ app.post('/smpc/count', function(req, res) {
     } else {
         import_promises = import_from_servers(req, res, req_counter, 'count');
     }
-    
+
     // wait them all to finish
     Promise.all(import_promises)
     .then((buffer) => {
@@ -357,7 +357,7 @@ app.post('/smpc/id3', function(req, res) {
     var content = JSON.stringify(req.body);
     console.log(content);
     req_counter++;
-    
+
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
@@ -365,7 +365,7 @@ app.post('/smpc/id3', function(req, res) {
     } else {
         import_promises = import_from_servers(req, res, req_counter, 'id3');
     }
-    
+
     // wait them all to finish
     Promise.all(import_promises)
     .then((buffer) => {
@@ -390,7 +390,7 @@ app.post('/histogram', function(req, res) {
     var content = JSON.stringify(req.body);
     console.log(content);
     req_counter++;
-    
+
     var print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
     _writeFile(parent+'/configuration_' + req_counter + '.json', content, 'utf8')
     .then((buffer) => {
