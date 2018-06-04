@@ -27,13 +27,8 @@ def main():
             if line.startswith('{'):
                 tree = json.loads(line)
                 converted, nodes, edges, leaves = convert_tree(tree)
-                # print(json.dumps(nodes))
-                # print('\n')
-                # print(json.dumps(edges))
                 break
-    # json.dump(converted, open(args.id3_output, 'w'))
     if args.plot:
-        # print(leaves)
         plotted_file = plot(nodes, edges, leaves)
         print(plotted_file)
     else:
