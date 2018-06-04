@@ -100,17 +100,18 @@ def main():
                 return 1
         print(good('Public key ' + public_key + ' successfully installed in all SMPC servers'))
 
-    if os.path.isfile('generated_keys.json'):
-        generated_keys = json.load(open('generated_keys.json'))
+    generated_keys_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),'generated_keys.json')
+    if os.path.isfile(generated_keys_file):
+        generated_keys = json.load(open(generated_keys_file))
     else:
         generated_keys = {}
     key_hash = hashlib.sha256(open(public_key).readline()).hexdigest()
     if args.CommonName in generated_keys:
-        generated_keys[args.CommonName].append({'name' : public_key, 'hash' : key_hash})
+        generated_keys[args.CommonName].append({'filename' : os.path.abspath(public_key), 'hash' : key_hash})
     else:
-        generated_keys[args.CommonName] = [{'name' : public_key, 'hash' : key_hash}]
+        generated_keys[args.CommonName] = [{'filename' : os.path.abspath(public_key), 'hash' : key_hash}]
 
-    with open('generated_keys.json', 'w') as outfile:
+    with open(generated_keys_file, 'w') as outfile:
         json.dump(generated_keys, outfile)
 
     if args.verbose:
