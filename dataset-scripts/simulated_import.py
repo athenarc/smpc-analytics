@@ -31,7 +31,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('file', help = 'CSV file to be imported')
     parser.add_argument('--table', help= 'Optional table name')
-    parser.add_argument('--float', help= 'Optional argument to force all columns have type float64', action='store_true')
     parser.add_argument('--attributes', help = 'Optional argument. A subset of the CSV columns only which will be imported. Semi-colon separated column names.')
     parser.add_argument('--verbose', help = 'See executed commands in verbose output', action = 'store_true')
     args = parser.parse_args()
@@ -40,7 +39,7 @@ def main():
     secrec_source = secrec_filename + '.sc'
     secrec_executable =secrec_filename + '.sb'
 
-    build_secrec_script(args.file, args.table, args.float, args.verbose, args.attributes, secrec_source)
+    build_secrec_script(args.file, args.table, args.verbose, args.attributes, secrec_source)
 
     try:
         execute(['../sharemind-scripts/compile.sh',os.path.relpath(secrec_source, CURRENT_FILE_DIRECTORY)], stdout=PIPE, stdin=PIPE, stderr=STDOUT, verbose=args.verbose)
@@ -70,7 +69,7 @@ def quote(x):
     else:
         return '"' + x + '"'
 
-def build_secrec_script(data, table, float, verbose, columns, secrec_source = 'simulated_import.sc'):
+def build_secrec_script(data, table, verbose, columns, secrec_source = 'simulated_import.sc'):
     indentation = '    '
 
     imports = '''
@@ -109,10 +108,9 @@ domain pd_shared3p shared3p;
     for index, row in df.iterrows():
         imported_array += [row[i] for i in df.columns]
 
-    if float:
-        infered_type = 'float64'
+    data_type = 'float64'
     main_f += '''
-    pd_shared3p  ''' + infered_type + '''[[2]] imported_array = reshape({''' + ','.join(map(str,imported_array)) + '''}, rows, columns);
+    pd_shared3p  ''' + data_type + '''[[2]] imported_array = reshape({''' + ','.join(map(str,imported_array)) + '''}, rows, columns);
     print("Opening connection to db: ", datasource);
     tdbOpenConnection(datasource);
 
@@ -133,12 +131,8 @@ domain pd_shared3p shared3p;
 '''
     i = 0
     for attribute in df.columns:
-        if float:
-            infered_type = 'float64'
-        else:
-            infered_type = str(df[attribute].dtype)
         main_f += '''
-    pd_shared3p ''' + infered_type + ''' v''' + str(i) + ''';
+    pd_shared3p ''' + data_type + ''' v''' + str(i) + ''';
     tdbVmapAddType(parameters, "types", v''' + str(i) + ''');
     tdbVmapAddString(parameters, "names", ''' + quote(attribute) + ''');
 '''
@@ -147,7 +141,7 @@ domain pd_shared3p shared3p;
     main_f += '''
     tdbTableCreate(datasource, table, parameters);
     print("Inserting data to table " + table + "...");
-    pd_shared3p  ''' + infered_type + '''[[1]] row;
+    pd_shared3p  ''' + data_type + '''[[1]] row;
     for (uint i = 0; i < nrows; ++i) {
         row = imported_array[i,:];
         tdbInsertRow(datasource, table, row);
