@@ -106,6 +106,34 @@ function _sendRequest(datasrc, mhmdDNS, attributes) {
     return rp(options);                   // Return promise to start the request
 }
 
+// function to send requests for import and return array of promises
+function import_from_servers(req, res, req_counter, computation_type) {
+    var attributes = req.body.attributes;
+    var datasources = req.body.datasources;
+    if (computation_type == 'id3') {
+        var class_attribute = req.body.class_attribute;
+        attributes.push(class_attribute);
+    }
+    var mhmdDNS = JSON.parse(fs.readFileSync('MHMDdns.json', 'utf8'));
+    for (let datasrc of datasources) {        // Check that all IPs exist
+        if ((datasrc in mhmdDNS) == false) {  // If datasrc does not exist in DNS file, continue
+            console.log(FgRed + 'Error: ' + ResetColor + 'Unable to find IP for ' + datasrc + ', it does not exist in MHMDdns.json file.');
+            return res.status(400).send('Failure on data importing from ' + datasrc);
+        }
+    }
+    // since no error occured in the above loop, we have all IPs
+    res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
+    db.put(req_counter, JSON.stringify({'status':'running', 'step' : 'Securely importing data'}));
+
+    // // send the requests for import
+    var import_promises = [];
+    for (let datasrc of datasources) {
+        import_promises.push(_sendRequest(datasrc, mhmdDNS, attributes));
+    }
+    // return array of promises for import
+    return import_promises;
+}
+
 
 app.get('/smpc/queue', function(req, res) {
     request = req.query.request;
@@ -271,24 +299,9 @@ app.post('/smpc/count', function(req, res) {
     var content = JSON.stringify(req.body);
     console.log(content);
     req_counter++;
-    var attributes = req.body.attributes;
-    var datasources = req.body.datasources;
-    var mhmdDNS = JSON.parse(fs.readFileSync('MHMDdns.json', 'utf8'));
-    for (let datasrc of datasources) {        // Check that all IPs exist
-        if ((datasrc in mhmdDNS) == false) {  // If datasrc does not exist in DNS file, continue
-            console.log(FgRed + 'Error: ' + ResetColor + 'Unable to find IP for ' + datasrc + ', it does not exist in MHMDdns.json file.');
-            return res.status(400).send('Failure on data importing from ' + datasrc);
-        }
-    }
-    // since no error occured in the above loop, we have all IPs
-    res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
-    db.put(req_counter, JSON.stringify({'status':'running', 'step' : 'Securely importing data'}));
-
-    // // send the requests for import
-    var import_promises = [];
-    for (let datasrc of datasources) {
-        import_promises.push(_sendRequest(datasrc, mhmdDNS, attributes));
-    }
+    
+    // create array of requests for import
+    var import_promises = import_from_servers(req, res, req_counter, 'count');
     // wait them all to finish
     Promise.all(import_promises)
     .then((buffer) => {
@@ -309,26 +322,9 @@ app.post('/smpc/id3', function(req, res) {
     var content = JSON.stringify(req.body);
     console.log(content);
     req_counter++;
-    var attributes = req.body.attributes;
-    var class_attribute = req.body.class_attribute;
-    var datasources = req.body.datasources;
-    attributes.push(class_attribute);
-    var mhmdDNS = JSON.parse(fs.readFileSync('MHMDdns.json', 'utf8'));
-    for (let datasrc of datasources) {        // Check that all IPs exist
-        if ((datasrc in mhmdDNS) == false) {  // If datasrc does not exist in DNS file, continue
-            console.log(FgRed + 'Error: ' + ResetColor + 'Unable to find IP for ' + datasrc + ', it does not exist in MHMDdns.json file.');
-            return res.status(400).send('Failure on data importing from ' + datasrc);
-        }
-    }
-    // since no error occured in the above loop, we have all IPs
-    res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
-    db.put(req_counter, JSON.stringify({'status':'running', 'step' : 'Securely importing data'}));
-
-    // // send the requests for import
-    var import_promises = [];
-    for (let datasrc of datasources) {
-        import_promises.push(_sendRequest(datasrc, mhmdDNS, attributes));
-    }
+    
+    // create array of requests for import
+    var import_promises = import_from_servers(req, res, req_counter, 'id3');
     // wait them all to finish
     Promise.all(import_promises)
     .then((buffer) => {
