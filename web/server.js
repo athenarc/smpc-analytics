@@ -136,13 +136,7 @@ function import_from_servers(req, res, req_counter, computation_type) {
 
 
 // function to import local data and return promise
-function import_locally(req, res, parent, req_counter, computation_type) {
-    var attributes = req.body.attributes;
-    var datasources = req.body.datasources;
-    if (computation_type == 'id3') {
-        var class_attribute = req.body.class_attribute;
-        attributes.push(class_attribute);
-    }
+function import_locally(attributes, datasources, res, parent, req_counter) {
     var localDNS = JSON.parse(fs.readFileSync('localDNS.json', 'utf8'));
     for (let datasrc of datasources) {        // Check that all IPs exist
         if ((datasrc in localDNS) == false) {  // If datasrc does not exist in DNS file, continue
@@ -155,9 +149,9 @@ function import_locally(req, res, parent, req_counter, computation_type) {
     var import_promises = [];
     for (let datasrc of datasources) {
         var dataset = localDNS[datasrc];
-        console.log('[NODE SIMULATION] Request(' + req_counter + ') python simulated_import.py ' + dataset + ' --table ' + datasrc + ' --float \n');
+        console.log('[NODE SIMULATION] Request(' + req_counter + ') python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table ' + datasrc + '\n');
 
-        import_promises.push( _exec('python simulated_import.py ' + dataset + ' --table ' + datasrc + ' --float', {stdio:[0,1,2],cwd: parent}) );
+        import_promises.push( _exec('python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + ' --table ' + datasrc, {stdio:[0,1,2],cwd: parent}) );
     }
     // return array of promises for import
     return import_promises;
@@ -310,21 +304,37 @@ app.post('/smpc/histogram', function(req, res) {
     var content = JSON.stringify(req.body);
     console.log(content);
     req_counter++;
+    var attributes = req.body.attributes;
+    var datasources = req.body.datasources;
 
+    var import_promises = [];
+    if (SIMULATION_MODE) {
+        // create list of attribute names from the POST request
+        var attributes_lst = [];
+        for (var i = 0; i < attributes.length; i++) {
+            for (var j = 0; j < attributes[i].length; j++) {
+                attributes_lst.push(attributes[i][j].name);
+            }
+        }
+        import_promises = import_locally(attributes_lst, datasources, res, parent, req_counter);
+    } else {
 
-    // TODO: Importing !!
+      // TODO: Importing with servers !!
 
-
-    var plot = (typeof req.body.plot !== 'undefined' && req.body.plot); // if plot exists in req.body
-    if (!plot) {
-        res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
     }
     var print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
-    db.put(req_counter, JSON.stringify({'status':'running'}))
+    
+    Promise.all(import_promises)
     .then((buffer) => {
+        console.log(FgGreen + 'Importing Finished ' + ResetColor);
+        var plot = (typeof req.body.plot !== 'undefined' && req.body.plot); // if plot exists in req.body
+        if (!plot) {
+            res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
+        }
+        return db.put(req_counter, JSON.stringify({'status':'running'}));
+    }).then((buffer) => {
         return _writeFile(parent+'/configuration_' + req_counter + '.json', content, 'utf8');
-      })
-    .then((buffer) => {
+    }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + req_counter + ') Configuration file was saved.\n');
         return _exec('python dataset-scripts/main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
     }).then((buffer) => {
@@ -397,11 +407,13 @@ app.post('/smpc/count', function(req, res) {
     console.log(content);
     req_counter++;
     var plot = (typeof req.body.plot !== 'undefined' && req.body.plot); // if plot exists in req.body
-
+    var attributes = req.body.attributes;
+    var datasources = req.body.datasources;
+    
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
-        import_promises = import_locally(req, res, parent, req_counter, 'count');
+        import_promises = import_locally(attributes, datasources, res, parent, req_counter);
     } else {
         import_promises = import_from_servers(req, res, req_counter, 'count');
     }
@@ -427,11 +439,15 @@ app.post('/smpc/id3', function(req, res) {
     console.log(content);
     req_counter++;
     var plot = (typeof req.body.plot !== 'undefined' && req.body.plot); // if plot exists in req.body
-
+    var attributes = req.body.attributes;
+    var datasources = req.body.datasources;
+    var class_attribute = req.body.class_attribute;
+    attributes.push(class_attribute);
+    
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
-        import_promises = import_locally(req, res, parent, req_counter, 'id3');
+        import_promises = import_locally(attributes, datasources, res, parent, req_counter);
     } else {
         import_promises = import_from_servers(req, res, req_counter, 'id3');
     }
