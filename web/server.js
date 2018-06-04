@@ -323,11 +323,11 @@ app.post('/smpc/histogram', function(req, res) {
 
     }
     var print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
+    var plot = (typeof req.body.plot !== 'undefined' && req.body.plot); // if plot exists in req.body
     
     Promise.all(import_promises)
     .then((buffer) => {
         console.log(FgGreen + 'Importing Finished ' + ResetColor);
-        var plot = (typeof req.body.plot !== 'undefined' && req.body.plot); // if plot exists in req.body
         if (!plot) {
             res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
         }
