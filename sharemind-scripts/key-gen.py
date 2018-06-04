@@ -36,6 +36,7 @@ def main():
     parser.add_argument('--EmailAddress', help = 'Email address [emailAddress] of the client that the keys will be generated for')
     parser.add_argument('--days', help = 'Number of days that the certificate should be valid', default = 365, type = int)
     parser.add_argument('--size', help = 'Size of the RSA keys in bits', default = 2048, type = int)
+    parser.add_argument('--output_dir', help = 'Directory in which keys will be genereted.', default = '.')
     parser.add_argument('--verbose', help = 'See executed commands in verbose output', action = 'store_true')
     parser.add_argument('--install', help = 'Set this flag if you wish the public key to be installed into the SMPC cluster', action = 'store_true')
     args = parser.parse_args()
@@ -55,11 +56,11 @@ def main():
     if args.EmailAddress != None:
         subj += '/emailAddress='+args.EmailAddress
 
-    private_key = args.CommonName + '-private-key'
-    public_key = args.CommonName + '-public-key'
-    ascii_public_key = args.CommonName + '-public-key-ascii'
+    private_key = os.path.join(args.output_dir,args.CommonName + '-private-key')
+    public_key = os.path.join(args.output_dir,args.CommonName + '-public-key')
+    ascii_public_key = os.path.join(args.output_dir,args.CommonName + '-public-key-ascii')
     try:
-        execute(["openssl", "req", "-x509", "-config", "openssl.cnf", "-extensions", "ext", "-subj", subj, "-days", str(args.days), "-nodes", "-newkey", "rsa:"+str(args.size), "-keyout", private_key, "-out", public_key, "-outform", "der"], stdout=PIPE, stdin=PIPE, stderr=STDOUT, verbose=args.verbose)
+        execute(["openssl", "req", "-x509", "-config", os.path.join(os.path.dirname(os.path.realpath(__file__)),"openssl.cnf"), "-extensions", "ext", "-subj", subj, "-days", str(args.days), "-nodes", "-newkey", "rsa:"+str(args.size), "-keyout", private_key, "-out", public_key, "-outform", "der"], stdout=PIPE, stdin=PIPE, stderr=STDOUT, verbose=args.verbose)
     except ProcessError as e:
         print(bad('Error in key generation'))
         return 1
