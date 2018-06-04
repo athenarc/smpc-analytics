@@ -135,13 +135,42 @@ function import_from_servers(req, res, req_counter, computation_type) {
 }
 
 
+// function to import local data and return promise
+function import_locally(req, res, parent, req_counter, computation_type) {
+    var attributes = req.body.attributes;
+    var datasources = req.body.datasources;
+    if (computation_type == 'id3') {
+        var class_attribute = req.body.class_attribute;
+        attributes.push(class_attribute);
+    }
+    var localDNS = JSON.parse(fs.readFileSync('localDNS.json', 'utf8'));
+    for (let datasrc of datasources) {        // Check that all IPs exist
+        if ((datasrc in localDNS) == false) {  // If datasrc does not exist in DNS file, continue
+            console.log(FgRed + 'Error: ' + ResetColor + 'Unable to find path for ' + datasrc + ', it does not exist in localDNS.json file.');
+            return res.status(400).send('Failure on data importing from ' + datasrc);
+        }
+    }
+    
+    // exec asynch python simulated imports 
+    var import_promises = [];
+    for (let datasrc of datasources) {
+        var dataset = localDNS[datasrc];
+        console.log('[NODE SIMULATION] Request(' + req_counter + ') python simulated_import.py ' + dataset + ' --table ' + datasrc + ' --float \n');
+        
+        import_promises.push( _exec('python simulated_import.py ' + dataset + ' --table ' + datasrc + ' --float', {stdio:[0,1,2],cwd: parent}) );
+    }
+    // return array of promises for import
+    return import_promises;
+}
+
+
 app.get('/smpc/queue', function(req, res) {
     request = req.query.request;
     db.get(request)
     .then((value) => {
         res.send(value);
     }).catch((err) => {
-        console.log(err);
+        console.log(FgRed + '[NODE] ' + ResetColor + err);
         res.send(JSON.stringify({'status':'notstarted'}));
     });
 });
@@ -161,7 +190,7 @@ function pipeline(req_counter, content, parent, computation_type) {
     }).then((buffer) => {
         console.log('[NODE] Request(' + req_counter + ') Main generated.\n');
         db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code generated. Now compiling and running.'})).catch((err) => {
-            console.log(err);
+            console.log(FgRed + '[NODE] ' + ResetColor + err);
         });
         if (computation_type == 'count' || computation_type == 'histogram') {
             return _unlinkIfExists(parent + '/histogram/.main_' + req_counter + '.sb.src');
@@ -177,7 +206,7 @@ function pipeline(req_counter, content, parent, computation_type) {
         }
     }).then((buffer) => {
         db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'})).catch((err) => {
-            console.log(err);
+            console.log(FgRed + '[NODE] ' + ResetColor + err);
         });
         console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
         return _exec('tail -n +`cut -d " "  -f "9-" /etc/sharemind/server.log  | grep -n "Starting process" | tail -n 1 | cut -d ":" -f 1` /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
@@ -195,15 +224,15 @@ function pipeline(req_counter, content, parent, computation_type) {
         var result_obj = {'status':'succeeded','result': ''};
         result_obj.result = JSON.parse(result);
         db.put(req_counter, JSON.stringify(result_obj)).catch((err) => {
-            console.log(err);
+            console.log(FgRed + '[NODE] ' + ResetColor + err);
         });
         return;
     }).catch((err) => {
         db.put(req_counter, JSON.stringify({'status':'failed'}))
         .catch((err) => {
-            console.log(err);
+            console.log(FgRed + '[NODE] ' + ResetColor + err);
         });
-        console.log(err);
+        console.log(FgRed + '[NODE] ' + ResetColor + err);
     });
 }
 
@@ -222,7 +251,7 @@ function pipeline_simulation(req_counter, content, parent, computation_type) {
     }).then((buffer) => {
         console.log('[NODE SIMULATION] Request(' + req_counter + ') Main generated.\n');
         db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code generated. Now compiling.'})).catch((err) => {
-            console.log(err);
+            console.log(FgRed + '[NODE] ' + ResetColor + err);
         });
         if (computation_type == 'count' || computation_type == 'histogram') {
             return _unlinkIfExists(parent + '/histogram/.main_' + req_counter + '.sb.src');
@@ -238,7 +267,7 @@ function pipeline_simulation(req_counter, content, parent, computation_type) {
         }
     }).then((buffer) => {
         db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'})).catch((err) => {
-            console.log(err);
+            console.log(FgRed + '[NODE] ' + ResetColor + err);
         });
         console.log('[NODE SIMULATION] Request(' + req_counter + ') Program compiled.\n');
         if (computation_type == 'count' || computation_type == 'histogram') {
@@ -248,7 +277,7 @@ function pipeline_simulation(req_counter, content, parent, computation_type) {
         }
     }).then((buffer) => {
         db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'})).catch((err) => {
-            console.log(err);
+            console.log(FgRed + '[NODE] ' + ResetColor + err);
         });
         console.log('[NODE SIMULATION] Request(' + req_counter + ') Program executed.\n');
         if (computation_type == 'count') {
@@ -263,15 +292,15 @@ function pipeline_simulation(req_counter, content, parent, computation_type) {
         var result_obj = {'status':'succeeded','result': ''};
         result_obj.result = JSON.parse(result);
         db.put(req_counter, JSON.stringify(result_obj)).catch((err) => {
-            console.log(err);
+            console.log(FgRed + '[NODE] ' + ResetColor + err);
         });
         return;
     }).catch((err) => {
         db.put(req_counter, JSON.stringify({'status':'failed'}))
         .catch((err) => {
-            console.log(err);
+            console.log(FgRed + '[NODE] ' + ResetColor + err);
         });
-        console.log(err);
+        console.log(FgRed + '[NODE] ' + ResetColor + err);
     });
 }
 
@@ -289,7 +318,7 @@ app.post('/smpc/histogram', function(req, res) {
             pipeline(req_counter, content, parent, 'histogram');
         }
     }).catch((err) => {
-        console.log(err);
+        console.log(FgRed + '[NODE] ' + ResetColor + err);
     });
 });
 
@@ -301,7 +330,13 @@ app.post('/smpc/count', function(req, res) {
     req_counter++;
     
     // create array of requests for import
-    var import_promises = import_from_servers(req, res, req_counter, 'count');
+    var import_promises = [];
+    if (SIMULATION_MODE) {
+        import_promises = import_locally(req, res, parent, req_counter, 'count');
+    } else {
+        import_promises = import_from_servers(req, res, req_counter, 'count');
+    }
+    
     // wait them all to finish
     Promise.all(import_promises)
     .then((buffer) => {
@@ -313,7 +348,7 @@ app.post('/smpc/count', function(req, res) {
             pipeline(req_counter, content, parent, 'count');
         }
     }).catch((err) => {
-        console.log(err);
+        console.log(FgRed + '[NODE] ' + ResetColor + err);
     });
 });
 
@@ -324,7 +359,13 @@ app.post('/smpc/id3', function(req, res) {
     req_counter++;
     
     // create array of requests for import
-    var import_promises = import_from_servers(req, res, req_counter, 'id3');
+    var import_promises = [];
+    if (SIMULATION_MODE) {
+        import_promises = import_locally(req, res, parent, req_counter, 'id3');
+    } else {
+        import_promises = import_from_servers(req, res, req_counter, 'id3');
+    }
+    
     // wait them all to finish
     Promise.all(import_promises)
     .then((buffer) => {
@@ -336,7 +377,7 @@ app.post('/smpc/id3', function(req, res) {
             pipeline(req_counter, content, parent, 'id3');
         }
     }).catch((err) => {
-        console.log(err);
+        console.log(FgRed + '[NODE] ' + ResetColor + err);
     });
 });
 
@@ -384,7 +425,7 @@ app.post('/histogram', function(req, res) {
         console.log('['+print_msg+']' + graph_name);
         res.send(graph_name);
     }).catch((err) => {
-        console.log(err);
+        console.log(FgRed + '[NODE] ' + ResetColor + err);
     });
 });
 
