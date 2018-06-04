@@ -46,7 +46,7 @@ for attribute in df.columns:
         mins.append(0.0)
         maxs.append(0.0)
 
-with open('out_' + req_counter + '.txt', 'r') as results:
+with open('../out_' + req_counter + '.txt', 'r') as results:
     ai = 1
     for line in results:
         if line.startswith('{') and 'Histogram' in line:

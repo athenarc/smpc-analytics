@@ -14,7 +14,7 @@ function addHistogramNumericalTab() {
         <div id="loading-text">LOADING</div>
         <div id="loading-content"></div>
       </div>` +
-      `<form action="/histogram" method="post" id="hist_`+nextTab+`">
+      `<form action="/smpc/histogram" method="post" id="hist_`+nextTab+`">
         <p>
           <ul class="list-group">
               <li class="list-group-item">
@@ -204,22 +204,22 @@ function addHistogramCategoricalTab() {
         <div id="loading-text">LOADING</div>
         <div id="loading-content"></div>
       </div>` +
-      `<form action="/histogram" method="post" id="hist_` + nextTab + `">
+      `<form action="/smpc/histogram" method="post" id="hist_` + nextTab + `">
           </br>
           <div id="attribute_container_`+nextTab+`">
             Attributes for Aggregation
-            
+
             </br>
             <div class="btn-group">
               <input type="text" class="form-control" id="usr">
             </div>
           </div>
-          
+
           </br>
           <p>
             <input type="button" id="filter_button_` + nextTab + `"" onclick="addAttributeToFormWithId(this.id)" class="btn btn-default" value="Add Attribute">
           </p>
-          
+
           </br>
           <p>
             <ul class="list-group">
@@ -237,7 +237,7 @@ function addHistogramCategoricalTab() {
           <p>
             <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-primary" value="Compute Histogram">
           </p>
-          
+
         </form>`+
     '</div>').appendTo('.tab-content');
 
@@ -442,18 +442,18 @@ function addDecisionTreeCategoricalTab() {
 
           <div id="attribute_container_`+nextTab+`">
             Attributes for Classification
-            
+
             </br>
             <div class="btn-group">
               <input type="text" class="form-control" id="usr">
             </div>
           </div>
-          
+
           </br>
           <p>
             <input type="button" id="filter_button_` + nextTab + `"" onclick="addAttributeToFormWithId(this.id)" class="btn btn-default" value="Add Attribute">
           </p>
-          
+
           </br>
           <p>
             <ul class="list-group">
@@ -471,7 +471,7 @@ function addDecisionTreeCategoricalTab() {
           <p>
             <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-success" value="Compute Decision Tree">
           </p>
-          
+
         </form>`+
     '</div>').appendTo('.tab-content');
 
@@ -598,7 +598,7 @@ function objectifyForm(formArray) {//serialize data function
   var returnArray = {};
   for (var i = 0; i < formArray.length; i++){
       formJSON = {'attribute_names' : [], 'attribute_cells' : []};
-      finalJson = {'attributes' : [[]]};
+      finalJson = {'plot': 'yeshhh', 'attributes' : [[]]};
       var form  = formArray[i];
       for (var j = 0; j < form.length; j++){
           var element = form[j];
@@ -667,7 +667,7 @@ function sendFormWithId(id) {
   var jsonReq = objectifyForm($('#'+formId));
   $.ajax({
       type: 'POST',
-      url: '/histogram',
+      url: '/smpc/histogram',
       data : jsonReq,
       beforeSend : function() {
         document.getElementById(formId).style.display = "none"; // hide the attribute list
