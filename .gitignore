@@ -146,3 +146,6 @@ web/mydb/*
 *-private-key
 *-public-key
 *-public-key-ascii
+
+
+simulated_import.sc
