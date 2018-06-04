@@ -36,6 +36,7 @@ def main():
     parser.add_argument('--EmailAddress', help = 'Email address [emailAddress] of the client that the keys will be generated for')
     parser.add_argument('--days', help = 'Number of days that the certificate should be valid', default = 365, type = int)
     parser.add_argument('--size', help = 'Size of the RSA keys in bits', default = 2048, type = int)
+    parser.add_argument('--output_dir', help = 'Directory in which keys will be genereted.', default = '.')
     parser.add_argument('--verbose', help = 'See executed commands in verbose output', action = 'store_true')
     parser.add_argument('--install', help = 'Set this flag if you wish the public key to be installed into the SMPC cluster', action = 'store_true')
     args = parser.parse_args()
@@ -55,11 +56,11 @@ def main():
     if args.EmailAddress != None:
         subj += '/emailAddress='+args.EmailAddress
 
-    private_key = args.CommonName + '-private-key'
-    public_key = args.CommonName + '-public-key'
-    ascii_public_key = args.CommonName + '-public-key-ascii'
+    private_key = os.path.join(args.output_dir,args.CommonName + '-private-key')
+    public_key = os.path.join(args.output_dir,args.CommonName + '-public-key')
+    ascii_public_key = os.path.join(args.output_dir,args.CommonName + '-public-key-ascii')
     try:
-        execute(["openssl", "req", "-x509", "-config", "openssl.cnf", "-extensions", "ext", "-subj", subj, "-days", str(args.days), "-nodes", "-newkey", "rsa:"+str(args.size), "-keyout", private_key, "-out", public_key, "-outform", "der"], stdout=PIPE, stdin=PIPE, stderr=STDOUT, verbose=args.verbose)
+        execute(["openssl", "req", "-x509", "-config", os.path.join(os.path.dirname(os.path.realpath(__file__)),"openssl.cnf"), "-extensions", "ext", "-subj", subj, "-days", str(args.days), "-nodes", "-newkey", "rsa:"+str(args.size), "-keyout", private_key, "-out", public_key, "-outform", "der"], stdout=PIPE, stdin=PIPE, stderr=STDOUT, verbose=args.verbose)
     except ProcessError as e:
         print(bad('Error in key generation'))
         return 1
@@ -99,17 +100,18 @@ def main():
                 return 1
         print(good('Public key ' + public_key + ' successfully installed in all SMPC servers'))
 
-    if os.path.isfile('generated_keys.json'):
-        generated_keys = json.load(open('generated_keys.json'))
+    generated_keys_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),'generated_keys.json')
+    if os.path.isfile(generated_keys_file):
+        generated_keys = json.load(open(generated_keys_file))
     else:
         generated_keys = {}
     key_hash = hashlib.sha256(open(public_key).readline()).hexdigest()
     if args.CommonName in generated_keys:
-        generated_keys[args.CommonName].append({'name' : public_key, 'hash' : key_hash})
+        generated_keys[args.CommonName].append({'filename' : os.path.abspath(public_key), 'hash' : key_hash})
     else:
-        generated_keys[args.CommonName] = [{'name' : public_key, 'hash' : key_hash}]
+        generated_keys[args.CommonName] = [{'filename' : os.path.abspath(public_key), 'hash' : key_hash}]
 
-    with open('generated_keys.json', 'w') as outfile:
+    with open(generated_keys_file, 'w') as outfile:
         json.dump(generated_keys, outfile)
 
     if args.verbose:
