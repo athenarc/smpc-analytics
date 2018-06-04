@@ -132,42 +132,26 @@ function pipeline(req_counter, content, parent, computation_type) {
         }
     }).then((buffer) => {
         console.log('[NODE] Request(' + req_counter + ') Main generated.\n');
-        if (SIMULATION_MODE) {
-            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code generated. Now compiling.'}))
-            .catch((err) => {
-                console.log(err);
-            });
-        } else {
-            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code generated. Now compiling and running.'}))
-            .catch((err) => {
-                console.log(err);
-            });
-        }
+        var db_msg = (SIMULATION_MODE) ? JSON.stringify({'status':'running', 'step':'SecreC code generated. Now compiling.'}) : JSON.stringify({'status':'running', 'step':'SecreC code generated. Now compiling and running.'});
+        db.put(req_counter, db_msg).catch((err) => {
+            console.log(err);
+        });
         if (computation_type == 'count' || computation_type == 'histogram') {
             return _unlinkIfExists(parent + '/histogram/.main_' + req_counter + '.sb.src');
         } else if (computation_type == 'id3'){
             return _unlinkIfExists(parent + '/ID3/.main_' + req_counter + '.sb.src');
         }
     }).then((msg) => {
-        if (SIMULATION_MODE) {
-            console.log("[NODE] Old .main_" + req_counter + ".sb.src deleted.\n");
-            if (computation_type == 'count' || computation_type == 'histogram') {
-                return _exec('sharemind-scripts/compile.sh histogram/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
-            } else if(computation_type == 'id3'){
-                return _exec('sharemind-scripts/compile.sh ID3/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
-            }
-        } else {
-            console.log("[NODE] Old .main_" + req_counter + ".sb.src deleted.\n");
-            if (computation_type == 'count' || computation_type == 'histogram') {
-                return _exec('sharemind-scripts/sm_compile_and_run.sh histogram/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
-            } else if(computation_type == 'id3'){
-                return _exec('sharemind-scripts/sm_compile_and_run.sh ID3/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
-            }
+        var exec_arg1 = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh' : 'sharemind-scripts/sm_compile_and_run.sh';
+        console.log("[NODE] Old .main_" + req_counter + ".sb.src deleted.\n");
+        if (computation_type == 'count' || computation_type == 'histogram') {
+            return _exec(exec_arg1 + ' histogram/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
+        } else if(computation_type == 'id3'){
+            return _exec(exec_arg1 + ' ID3/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
         }
     }).then((buffer) => {
         if (SIMULATION_MODE) {
-            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'}))
-            .catch((err) => {
+            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'})).catch((err) => {
                 console.log(err);
             });
             console.log('[NODE] Request(' + req_counter + ') Program compiled.\n');
@@ -177,8 +161,7 @@ function pipeline(req_counter, content, parent, computation_type) {
                 return _exec('sharemind-scripts/run.sh ID3/main' + req_counter + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > id3_out_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
             }
         } else {
-            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'}))
-            .catch((err) => {
+            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'})).catch((err) => {
                 console.log(err);
             });
             console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
@@ -186,8 +169,7 @@ function pipeline(req_counter, content, parent, computation_type) {
         }
     }).then((buffer) => {
         if (SIMULATION_MODE) {
-            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'}))
-            .catch((err) => {
+            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'})).catch((err) => {
                 console.log(err);
             });
         }
@@ -203,8 +185,7 @@ function pipeline(req_counter, content, parent, computation_type) {
         console.log('[NODE] Request(' + req_counter + ') Response ready.\n');
         var result_obj = {'status':'succeeded','result': ''};
         result_obj.result = JSON.parse(result);
-        db.put(req_counter, JSON.stringify(result_obj))
-        .catch((err) => {
+        db.put(req_counter, JSON.stringify(result_obj)).catch((err) => {
             console.log(err);
         });
         return;
@@ -302,6 +283,9 @@ app.post('/smpc/id3', function(req, res) {
     });
 });
 
+
+//------------------------------------------------------------------------//
+//------------------------------------------------------------------------//
 
 app.post('/histogram', function(req, res) {
     var parent = path.dirname(__basedir);
