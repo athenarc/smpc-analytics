@@ -315,19 +315,19 @@ app.post('/histogram', function(req, res) {
         return _exec('python dataset-scripts/main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
     }).then((buffer) => {
         console.log('[NODE] Request(' + req_counter + ') Main generated.\n');
-        return _unlinkIfExists(parent + '/histogram/.histogram_main_' + req_counter + '.sb.src');
+        return _unlinkIfExists(parent + '/histogram/.main_' + req_counter + '.sb.src');
     }).then((msg) => {
         if (SIMULATION_MODE) {
             console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
-            return _exec('sharemind-scripts/compile.sh histogram/histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
+            return _exec('sharemind-scripts/compile.sh histogram/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
         } else {
             console.log("[NODE] Old .histogram_main" + req_counter + ".sb.src deleted.\n");
-            return _exec('sharemind-scripts/sm_compile_and_run.sh histogram/histogram_main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
+            return _exec('sharemind-scripts/sm_compile_and_run.sh histogram/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
         }
     }).then((buffer) => {
         if (SIMULATION_MODE) {
             console.log('[NODE] Request(' + req_counter + ') Program compiled.\n');
-            return _exec('sharemind-scripts/run.sh histogram/histogram_main_' + req_counter + '.sb 2> web/out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
+            return _exec('sharemind-scripts/run.sh histogram/main_' + req_counter + '.sb 2> web/out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
         } else {
             console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
             return _exec('tail -n +`cut -d " "  -f "9-" /etc/sharemind/server.log  | grep -n "Starting process" | tail -n 1 | cut -d ":" -f 1` /etc/sharemind/server.log | cut -d " "  -f "9-" >  web/out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
