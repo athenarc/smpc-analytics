@@ -39,13 +39,13 @@ def main():
         execute(["sharemind-scripts/compile.sh", "simulated_import.sc"], stdout=PIPE, stdin=PIPE, stderr=STDOUT, verbose=args.verbose)
     except ProcessError as e:
         print(bad('Error in secrec compilation'))
-        return 1
+        sys.exit(-1)
 
     try:
         execute(["sharemind-scripts/run.sh", "simulated_import.sb"], stdout=PIPE, stdin=PIPE, stderr=STDOUT, verbose=args.verbose)
     except ProcessError as e:
         print(bad('Error in secrec execution'))
-        return 1
+        sys.exit(-1)
 
     print(good('Data successfully imported.'))
 
