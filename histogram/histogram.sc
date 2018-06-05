@@ -138,12 +138,16 @@ D uint64[[1]] histogram_categorical(string datasource, string table, uint64 attr
     uint64 N = tdbGetRowCount(datasource, table);                               // number of tuples
     D int64[[1]] positions(N);
     uint64 requested_attributes = size(Ps);                                     // amount of attributes wanted for this histogram
+    D int64[[1]] exclusion_mask(N);
     for (uint64 a = 0; a < requested_attributes; a++) {                         // for each attribute
         string attribute_name = tdbVmapGetString(attributes_vmap, "0", a);
         D int64[[1]] column = tdbReadColumn(datasource, table, attribute_name);
+        exclusion_mask += (int64)(column == -1);
         int64 prod = (int64)product(Ps[a+1:]);
         positions += column * prod;
     }
+    exclusion_mask = (int64)((bool)exclusion_mask);
+    positions = positions * (1 - exclusion_mask) + (-1) * exclusion_mask;
     uint64 length = product(Ps);
     D uint64[[1]] histogram(length);
     for (uint64 j = 0; j < length ; j++) {                      // for each cell of histogram h
