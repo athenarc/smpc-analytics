@@ -24,9 +24,9 @@ def main():
     mesh_mapping = json.load(open(args.mapping))
     mesh_dict_inverted = json.load(open(args.mtrees_inverted))
     configuration = json.load(open(args.configuration))
-    # attributes = configuration['attributes']
-    # possible_values = [mesh_mapping[attribute] for attribute in attributes]
-    # possible_values = [[str(mesh_dict_inverted[k]) for k,v in sorted(values.items(), key=operator.itemgetter(1))] for values in possible_values]
+    attributes = configuration['attributes']
+    possible_values = [mesh_mapping[attribute] for attribute in attributes]
+    possible_values = [[str(k) for k,v in sorted(values.items(), key=operator.itemgetter(1))] for values in possible_values]
     with open(args.count_output) as results:
         for line in results:
             if line.startswith('{') and 'Histogram' in line:
@@ -47,9 +47,46 @@ def main():
                             ),
                         )
                         figure = go.Figure(data=data, layout=layout)
-                        filename =  'visuals/1D_Count'+'_'+str(os.getpid())+'.html'
-                        plotly.offline.plot(figure, filename=filename, auto_open = False)
-                        print(filename)
+                    else:
+                        figure = go.Figure(data=data)
+                    filename =  'visuals/1D_Count'+'_'+str(os.getpid())+'.html'
+                    plotly.offline.plot(figure, filename=filename, auto_open = False)
+                    print(filename)
+                elif (len(dimensions) == 2 and 1 not in dimensions) or len(dimensions) == 3 and 1 in dimensions:
+                    y = dimensions[1]
+                    sublists = [histogram[i:i+y] for i in xrange(0, len(histogram), y)]
+                    trace = go.Heatmap(z=sublists)
+                    data = [trace]
+                    # print(sublists)
+                    if len(configuration['attributes']) == 2:
+                        attribute_ids = configuration['attributes']
+                        attribute_names = [mesh_dict_inverted[attribute_id] for attribute_id in attribute_ids]
+                        x_ticks = [str(mesh_dict_inverted[k]) for k in possible_values[0]]
+                        y_ticks = [str(mesh_dict_inverted[k]) for k in possible_values[1]]
+                        print(mesh_mapping[attribute_ids[1]] )
+                        print(y_ticks)
+                        layout = go.Layout(
+                            xaxis=dict(
+                                type = 'category',
+                                tickvals = list(range(len(y_ticks))),
+                                ticktext = y_ticks,
+                                title = attribute_names[0]
+                            ),
+                            yaxis=dict(
+                                type = 'category',
+                                tickangle = -45,
+                                tickvals = list(range(len(x_ticks))),
+                                ticktext = x_ticks,
+                                title = attribute_names[1]
+                            )
+                        )
+                        figure = go.Figure(data=data, layout=layout)
+                    else:
+                        figure = go.Figure(data=data)
+                    filename =  'visuals/2D_Count'+'_'+str(os.getpid())+'.html'
+                    plotly.offline.plot(figure, filename=filename, auto_open = False)
+                    print(filename)
+
                 break
 
 
