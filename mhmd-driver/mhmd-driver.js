@@ -53,17 +53,17 @@ app.post('/smpc/import', function(req, res) {
     var hospitalName = req.body.datasource;
     console.log('[NODE] Going to import dataset from /patients.json, /mesh_mapping.json, /m.json, /m_inv.json, for attributes ' + attributes + '\n');
     console.log('[NODE] Running CSV-preprocessor.');
-    console.log('\tpython /mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ')  + '\" /patients.json\n');
-    _exec('python /mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" /patients.json', {stdio:[0,1,2],cwd: parent})
+    console.log('\tpython /mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ')  + '\" /patients.json --output /' + hospitalName + '.csv\n');
+    _exec('python /mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" /patients.json --output /' + hospitalName + '.csv', {stdio:[0,1,2],cwd: parent})
       .then((buffer) => {
           console.log('[NODE] Running XML-Generator');
-          console.log('\tpython /mhmd-driver/xml_generator.py /data.csv --table ' + hospitalName + '\n');
-          return _exec('python /mhmd-driver/xml_generator.py /data.csv --table ' + hospitalName, {stdio:[0,1,2],cwd: parent});
+          console.log('\tpython /mhmd-driver/xml_generator.py /' + hospitalName + '.csv --table ' + hospitalName + '\n');
+          return _exec('python /mhmd-driver/xml_generator.py /' + hospitalName + '.csv --table ' + hospitalName, {stdio:[0,1,2],cwd: parent});
       })
       .then((buffer) => {
           console.log('[NODE] Running CSV-Importer');
-          console.log('\tsharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv /data.csv --model /data.xml --separator c --log data.log\n');
-          return _exec('sharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv /data.csv --model /data.xml --separator c --log data.log', {stdio:[0,1,2],cwd: parent});
+          console.log('\tsharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv /' + hospitalName + '.csv --model /' + hospitalName + '.xml --separator c --log /' + hospitalName + '.log\n');
+          return _exec('sharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv /' + hospitalName + '.csv --model /' + hospitalName + '.xml --separator c --log /' + hospitalName + '.log', {stdio:[0,1,2],cwd: parent});
       })
       .then((result) => {
           console.log('[NODE] Data importing Successful.\n');

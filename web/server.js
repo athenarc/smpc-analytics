@@ -90,14 +90,14 @@ function _unlinkIfExists(filename) {
 }
 
 // function to return a promise to send request for import
-function _sendRequest(datasrc, mhmdDNS, attributes) {
+function _sendRequest(datasrc, mhmdDNS, attributes, uid) {
     var uri = mhmdDNS[datasrc];
     var options = {                       // Configure the request
         method: 'POST',
         uri: 'http://' + uri + '/smpc/import',
         body: {
             "attributes": attributes,
-            "datasource": datasrc
+            "datasource": datasrc+'_'+uid
         },
         json: true                        // Automatically stringifies the body to JSON
     };
@@ -121,7 +121,7 @@ function import_from_servers(attributes, datasources, res, parent, uid) {
     // // send the requests for import
     var import_promises = [];
     for (let datasrc of datasources) {
-        import_promises.push(_sendRequest(datasrc, mhmdDNS, attributes));
+        import_promises.push(_sendRequest(datasrc, mhmdDNS, attributes, uid));
     }
     // return array of promises for import
     return import_promises;
@@ -142,9 +142,9 @@ function import_locally(attributes, datasources, res, parent, uid) {
     var import_promises = [];
     for (let datasrc of datasources) {
         var dataset = localDNS[datasrc];
-        console.log('[NODE SIMULATION] Request(' + uid + ') python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table ' + datasrc + '\n');
+        console.log('[NODE SIMULATION] Request(' + uid + ') python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table "' + datasrc+'_'+uid + '"\n');
 
-        import_promises.push( _exec('python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table ' + datasrc, {stdio:[0,1,2],cwd: parent}) );
+        import_promises.push( _exec('python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table "' + datasrc+'_'+uid +'"', {stdio:[0,1,2],cwd: parent}) );
     }
     // return array of promises for import
     return import_promises;
