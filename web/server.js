@@ -107,13 +107,7 @@ function _sendRequest(datasrc, mhmdDNS, attributes) {
 }
 
 // function to send requests for import and return array of promises
-function import_from_servers(req, res, req_counter, computation_type) {
-    var attributes = req.body.attributes;
-    var datasources = req.body.datasources;
-    if (computation_type == 'id3') {
-        var class_attribute = req.body.class_attribute;
-        attributes.push(class_attribute);
-    }
+function import_from_servers(attributes, datasources, res, parent, req_counter) {
     var mhmdDNS = JSON.parse(fs.readFileSync('MHMDdns.json', 'utf8'));
     for (let datasrc of datasources) {        // Check that all IPs exist
         if ((datasrc in mhmdDNS) == false) {  // If datasrc does not exist in DNS file, continue
@@ -421,7 +415,7 @@ app.post('/smpc/count', function(req, res) {
         //TODO: Generate csv from Json before importing.
         import_promises = import_locally(attributes, datasources, res, parent, req_counter);
     } else {
-        import_promises = import_from_servers(req, res, req_counter, 'count');
+        import_promises = import_from_servers(attributes, datasources, res, parent, req_counter);
     }
 
     var print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
@@ -520,7 +514,7 @@ app.post('/smpc/id3', function(req, res) {
         //TODO: Generate csv from Json before importing.
         import_promises = import_locally(attributes, datasources, res, parent, req_counter);
     } else {
-        import_promises = import_from_servers(req, res, req_counter, 'id3');
+        import_promises = import_from_servers(attributes, datasources, res, parent, req_counter);
     }
 
     // wait them all to finish
