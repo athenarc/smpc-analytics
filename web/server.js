@@ -307,10 +307,11 @@ app.post('/smpc/histogram', function(req, res) {
     var attributes = req.body.attributes;
     var datasources = req.body.datasources;
 
-    var plot = (typeof req.body.plot !== 'undefined' && req.body.plot); // if plot exists in req.body
+    var plot = ('plot' in req.body); // if plot exists in req.body
     if (!plot) {
         res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
     }
+
     var import_promises = [];
     if (SIMULATION_MODE) {
         // create list of attribute names from the POST request
@@ -507,7 +508,7 @@ app.post('/smpc/id3', function(req, res) {
     var content = JSON.stringify(req.body);
     console.log(content);
     req_counter++;
-    var plot = (typeof req.body.plot !== 'undefined' && req.body.plot); // if plot exists in req.body
+    var plot = ('plot' in req.body); // if plot exists in req.body
     var attributes = req.body.attributes;
     var datasources = req.body.datasources;
     var class_attribute = req.body.class_attribute;
