@@ -122,7 +122,6 @@ function import_from_servers(req, res, req_counter, computation_type) {
         }
     }
     // since no error occured in the above loop, we have all IPs
-    res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
     db.put(req_counter, JSON.stringify({'status':'running', 'step' : 'Securely importing data'}));
 
     // // send the requests for import
@@ -136,13 +135,7 @@ function import_from_servers(req, res, req_counter, computation_type) {
 
 
 // function to import local data and return promise
-function import_locally(req, res, parent, req_counter, computation_type) {
-    var attributes = req.body.attributes;
-    var datasources = req.body.datasources;
-    if (computation_type == 'id3') {
-        var class_attribute = req.body.class_attribute;
-        attributes.push(class_attribute);
-    }
+function import_locally(attributes, datasources, res, parent, req_counter) {
     var localDNS = JSON.parse(fs.readFileSync('localDNS.json', 'utf8'));
     for (let datasrc of datasources) {        // Check that all IPs exist
         if ((datasrc in localDNS) == false) {  // If datasrc does not exist in DNS file, continue
@@ -155,9 +148,9 @@ function import_locally(req, res, parent, req_counter, computation_type) {
     var import_promises = [];
     for (let datasrc of datasources) {
         var dataset = localDNS[datasrc];
-        console.log('[NODE SIMULATION] Request(' + req_counter + ') python simulated_import.py ' + dataset + ' --table ' + datasrc + ' --float \n');
+        console.log('[NODE SIMULATION] Request(' + req_counter + ') python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table ' + datasrc + '\n');
 
-        import_promises.push( _exec('python simulated_import.py ' + dataset + ' --table ' + datasrc + ' --float', {stdio:[0,1,2],cwd: parent}) );
+        import_promises.push( _exec('python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table ' + datasrc, {stdio:[0,1,2],cwd: parent}) );
     }
     // return array of promises for import
     return import_promises;
@@ -261,6 +254,7 @@ function pipeline_simulation(req_counter, content, parent, computation_type, plo
     }).then((msg) => {
         console.log("[NODE SIMULATION] Old .main_" + req_counter + ".sb.src deleted.\n");
         if (computation_type == 'count' || computation_type == 'histogram') {
+            return _exec('sharemind-scripts/compile.sh histogram/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
         } else if(computation_type == 'id3'){
             return _exec('sharemind-scripts/compile.sh ID3/main_' + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
         }
@@ -270,9 +264,9 @@ function pipeline_simulation(req_counter, content, parent, computation_type, plo
         });
         console.log('[NODE SIMULATION] Request(' + req_counter + ') Program compiled.\n');
         if (computation_type == 'count' || computation_type == 'histogram') {
-            return _exec('sharemind-scripts/run.sh histogram/main' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
+            return _exec('sharemind-scripts/run.sh histogram/main_' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
         } else if(computation_type == 'id3'){
-            return _exec('sharemind-scripts/run.sh ID3/main' + req_counter + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > id3_out_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
+            return _exec('sharemind-scripts/run.sh ID3/main_' + req_counter + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > id3_out_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
         }
     }).then((buffer) => {
         db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'})).catch((err) => {
@@ -310,21 +304,38 @@ app.post('/smpc/histogram', function(req, res) {
     var content = JSON.stringify(req.body);
     console.log(content);
     req_counter++;
-
-
-    // TODO: Importing !!
-
+    var attributes = req.body.attributes;
+    var datasources = req.body.datasources;
 
     var plot = (typeof req.body.plot !== 'undefined' && req.body.plot); // if plot exists in req.body
     if (!plot) {
         res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
     }
+    var import_promises = [];
+    if (SIMULATION_MODE) {
+        // create list of attribute names from the POST request
+        var attributes_lst = [];
+        for (var i = 0; i < attributes.length; i++) {
+            for (var j = 0; j < attributes[i].length; j++) {
+                attributes_lst.push(attributes[i][j].name);
+            }
+        }
+        // TODO: Change column indexes to column names.
+        import_promises = import_locally(attributes_lst, datasources, res, parent, req_counter);
+    } else {
+
+      // TODO: Importing with servers !!
+
+    }
     var print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
-    db.put(req_counter, JSON.stringify({'status':'running'}))
+
+    Promise.all(import_promises)
     .then((buffer) => {
+        console.log(FgGreen + 'Importing Finished ' + ResetColor);
+        return db.put(req_counter, JSON.stringify({'status':'running'}));
+    }).then((buffer) => {
         return _writeFile(parent+'/configuration_' + req_counter + '.json', content, 'utf8');
-      })
-    .then((buffer) => {
+    }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + req_counter + ') Configuration file was saved.\n');
         return _exec('python dataset-scripts/main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
     }).then((buffer) => {
@@ -396,28 +407,98 @@ app.post('/smpc/count', function(req, res) {
     var content = JSON.stringify(req.body);
     console.log(content);
     req_counter++;
-    var plot = (typeof req.body.plot !== 'undefined' && req.body.plot); // if plot exists in req.body
+    var attributes = req.body.attributes;
+    var datasources = req.body.datasources;
 
+    var plot = ('plot' in req.body); // if plot exists in req.body
+    if (!plot) {
+        res.status(202).json({"location" : "/smpc/queue?request="+req_counter});
+    }
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
-        import_promises = import_locally(req, res, parent, req_counter, 'count');
+        //TODO: Generate csv from Json before importing.
+        import_promises = import_locally(attributes, datasources, res, parent, req_counter);
     } else {
         import_promises = import_from_servers(req, res, req_counter, 'count');
     }
 
+    var print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
     // wait them all to finish
     Promise.all(import_promises)
     .then((buffer) => {
         console.log(FgGreen + 'Importing Finished ' + ResetColor);
+        return db.put(req_counter, JSON.stringify({'status':'running'}));
+    }).then((buffer) => {
+        return _writeFile(parent+'/configuration_' + req_counter + '.json', content, 'utf8');
+    }).then((buffer) => {
+        console.log('['+print_msg+'] Request(' + req_counter + ') Configuration file was saved.\n');
+        return _exec('python dataset-scripts/count_main_generator.py configuration_' + req_counter + '.json', {stdio:[0,1,2],cwd: parent});
+    }).then((buffer) => {
+        console.log('['+print_msg+'] Request(' + req_counter + ') Main generated.\n');
+        var db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
+        db.put(req_counter, JSON.stringify({'status':'running', 'step':db_msg})).catch((err) => {
+            console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+        });
+        return _unlinkIfExists(parent + '/histogram/.main_' + req_counter + '.sb.src');
+    }).then((msg) => {
+        console.log('['+print_msg+'] Old .main_' + req_counter + '.sb.src deleted.\n');
+        var exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh histogram/main_' : 'sharemind-scripts/sm_compile_and_run.sh histogram/main_';
+        return _exec(exec_arg + req_counter + '.sc', {stdio:[0,1,2],cwd: parent});
     }).then((buffer) => {
         if (SIMULATION_MODE) {
-            pipeline_simulation(req_counter, content, parent, 'count', plot);
+            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'})).catch((err) => {
+                console.log(FgRed + '[NODE] ' + ResetColor + err);
+            });
+            console.log('[NODE SIMULATION] Request(' + req_counter + ') Program compiled.\n');
+            return _exec('sharemind-scripts/run.sh histogram/main_' + req_counter + '.sb 2> out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
         } else {
-            pipeline(req_counter, content, parent, 'count', plot);
+            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'})).catch((err) => {
+                console.log(FgRed + '[NODE] ' + ResetColor + err);
+            });
+            console.log('[NODE] Request(' + req_counter + ') Program executed.\n');
+            return _exec('tail -n +`cut -d " "  -f "9-" /etc/sharemind/server.log  | grep -n "Starting process" | tail -n 1 | cut -d ":" -f 1` /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + req_counter + '.txt', {stdio:[0,1,2],cwd: parent});
         }
+    }).then((buffer) => {
+        if (SIMULATION_MODE) {
+            db.put(req_counter, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'})).catch((err) => {
+                console.log(FgRed + '[NODE] ' + ResetColor + err);
+            });
+            console.log('[NODE SIMULATION] Request(' + req_counter + ') Program executed.\n');
+        }
+
+        if (plot) {
+            // TODO: New plotting for count!! below is the one for histograms...
+
+            // return _exec('python plot.py ' + req_counter);
+        } else {
+            return _exec('python web/response.py out_' + req_counter + '.txt | python web/transform_response.py  configuration_' + req_counter + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json' , {cwd: parent});
+        }
+    }).then((result) => {
+        if (plot) {
+
+            // TODO: New plotting for count!! below is the one for histograms...
+
+            // console.log('['+print_msg+'] Request(' + req_counter + ') Plotting done.\n');
+            // var graph_name = result.toString();
+            // graph_name = graph_name.slice(0,-1);
+            // console.log('['+print_msg+']' + graph_name);
+            // res.send(graph_name);
+        } else {
+            console.log('['+print_msg+'] Request(' + req_counter + ') Response ready.\n');
+            var result_obj = {'status':'succeeded','result': ''};
+            result_obj.result = JSON.parse(result);
+            db.put(req_counter, JSON.stringify(result_obj)).catch((err) => {
+              console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+            });
+        }
+        return ;
     }).catch((err) => {
-        console.log(FgRed + '[NODE] ' + ResetColor + err);
+        db.put(req_counter, JSON.stringify({'status':'failed'}))
+        .catch((err) => {
+            console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+        });
+        console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
     });
 });
 
@@ -427,11 +508,16 @@ app.post('/smpc/id3', function(req, res) {
     console.log(content);
     req_counter++;
     var plot = (typeof req.body.plot !== 'undefined' && req.body.plot); // if plot exists in req.body
+    var attributes = req.body.attributes;
+    var datasources = req.body.datasources;
+    var class_attribute = req.body.class_attribute;
+    attributes.push(class_attribute);
 
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
-        import_promises = import_locally(req, res, parent, req_counter, 'id3');
+        //TODO: Generate csv from Json before importing.
+        import_promises = import_locally(attributes, datasources, res, parent, req_counter);
     } else {
         import_promises = import_from_servers(req, res, req_counter, 'id3');
     }
