@@ -44,6 +44,22 @@ function _exec(script, args) {
     });
 }
 
+// function to return a promise to unlink a file if exists
+function _unlinkIfExists(filename) {
+    return new Promise((resolve, reject) => {
+        fs.stat(filename, (err, stat) => {
+            if (err === null) {
+                fs.unlink(filename, err => {
+                    if (err) { return reject(err); }
+                    resolve(`Removing document at ${path}`);
+                });
+            } else if (err.code === 'ENOENT') {
+                resolve('File does not exist');
+            }
+        });
+    });
+}
+
 
 app.post('/smpc/import', function(req, res) {
     var parent = path.dirname(__basedir);
@@ -55,25 +71,31 @@ app.post('/smpc/import', function(req, res) {
     console.log('[NODE] Running CSV-preprocessor.');
     console.log('\tpython /mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ')  + '\" /patients.json --output /' + hospitalName + '.csv\n');
     _exec('python /mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" /patients.json --output /' + hospitalName + '.csv', {stdio:[0,1,2],cwd: parent})
-      .then((buffer) => {
-          console.log('[NODE] Running XML-Generator');
-          console.log('\tpython /mhmd-driver/xml_generator.py /' + hospitalName + '.csv --table ' + hospitalName + '\n');
-          return _exec('python /mhmd-driver/xml_generator.py /' + hospitalName + '.csv --table ' + hospitalName, {stdio:[0,1,2],cwd: parent});
-      })
-      .then((buffer) => {
-          console.log('[NODE] Running CSV-Importer');
-          console.log('\tsharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv /' + hospitalName + '.csv --model /' + hospitalName + '.xml --separator c --log /' + hospitalName + '.log\n');
-          return _exec('sharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv /' + hospitalName + '.csv --model /' + hospitalName + '.xml --separator c --log /' + hospitalName + '.log', {stdio:[0,1,2],cwd: parent});
-      })
-      .then((result) => {
-          console.log('[NODE] Data importing Successful.\n');
-          res.end();
-      })
-      .catch((err) => {
-          console.log('[NODE] Failure on data importing.\n');
-          console.log(err);
-          res.status(400).send('Failure on data importing');
-      });
+    .then((buffer) => {
+        console.log('[NODE] Running XML-Generator');
+        console.log('\tpython /mhmd-driver/xml_generator.py /' + hospitalName + '.csv --table ' + hospitalName + '\n');
+        return _exec('python /mhmd-driver/xml_generator.py /' + hospitalName + '.csv --table ' + hospitalName, {stdio:[0,1,2],cwd: parent});
+    }).then((buffer) => {
+        console.log('[NODE] Running CSV-Importer');
+        console.log('\tsharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv /' + hospitalName + '.csv --model /' + hospitalName + '.xml --separator c --log /' + hospitalName + '.log\n');
+        return _exec('sharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv /' + hospitalName + '.csv --model /' + hospitalName + '.xml --separator c --log /' + hospitalName + '.log', {stdio:[0,1,2],cwd: parent});
+    }).then((result) => {
+        console.log('[NODE] Now unlinking intermidiate files.\n');
+        // remove intermidiate files
+        var unlink_promises = [];
+        unlink_promises.push( _unlinkIfExists(parent + '/' + hospitalName + '.csv') );
+        unlink_promises.push( _unlinkIfExists(parent + '/' + hospitalName + '.xml') );
+        unlink_promises.push( _unlinkIfExists(parent + '/' + hospitalName + '.log') );
+        
+        return Promise.all(unlink_promises);
+    }).then((result) => {
+        console.log('[NODE] Data importing Successful.\n');
+        res.end();
+    }).catch((err) => {
+        console.log('[NODE] Failure on data importing.\n');
+        console.log(err);
+        res.status(400).send('Failure on data importing');
+    });
 
 });
 
