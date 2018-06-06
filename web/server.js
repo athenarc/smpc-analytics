@@ -151,6 +151,7 @@ function import_locally(attributes, datasources, res, parent, uid) {
 }
 
 
+
 app.get('/smpc/queue', function(req, res) {
     request = req.query.request;
     db.get(request)
@@ -161,135 +162,6 @@ app.get('/smpc/queue', function(req, res) {
         res.send(JSON.stringify({'status':'notstarted'}));
     });
 });
-
-
-function pipeline(uid, content, parent, computation_type, plot) {
-    _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8')
-    .then((buffer) => {
-        console.log('[NODE] Request(' + uid + ') Configuration file was saved.\n');
-        if (computation_type == 'count') {
-            return _exec('python dataset-scripts/count_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent});
-        } else if (computation_type == 'histogram') {
-            return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent});
-        } else if (computation_type == 'id3') {
-            return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent});
-        }
-    }).then((buffer) => {
-        console.log('[NODE] Request(' + uid + ') Main generated.\n');
-        db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code generated. Now compiling and running.'})).catch((err) => {
-            console.log(FgRed + '[NODE] ' + ResetColor + err);
-        });
-        if (computation_type == 'count' || computation_type == 'histogram') {
-            return _unlinkIfExists(parent + '/histogram/.main_' + uid + '.sb.src');
-        } else if (computation_type == 'id3'){
-            return _unlinkIfExists(parent + '/ID3/.main_' + uid + '.sb.src');
-        }
-    }).then((msg) => {
-        console.log("[NODE] Old .main_" + uid + ".sb.src deleted.\n");
-        if (computation_type == 'count' || computation_type == 'histogram') {
-            return _exec('sharemind-scripts/sm_compile_and_run.sh histogram/main_' + uid + '.sc', {stdio:[0,1,2],cwd: parent});
-        } else if(computation_type == 'id3'){
-            return _exec('sharemind-scripts/sm_compile_and_run.sh ID3/main_' + uid + '.sc', {stdio:[0,1,2],cwd: parent});
-        }
-    }).then((buffer) => {
-        db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'})).catch((err) => {
-            console.log(FgRed + '[NODE] ' + ResetColor + err);
-        });
-        console.log('[NODE] Request(' + uid + ') Program executed.\n');
-        return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent});
-    }).then((buffer) => {
-        console.log('[NODE] Request(' + uid + ') Program executed.\n');
-        if (computation_type == 'count') {
-            return _exec('python web/response.py out_' + uid + '.txt | python web/transform_response.py  configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json' , {cwd: parent});
-        } else if (computation_type == 'histogram') {
-            return _exec('python web/response.py out_' + uid + '.txt', {cwd: parent});
-        } else if (computation_type == 'id3') {
-            return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent});
-        }
-    }).then((result) => {
-        console.log('[NODE] Request(' + uid + ') Response ready.\n');
-        var result_obj = {'status':'succeeded','result': ''};
-        result_obj.result = JSON.parse(result);
-        db.put(uid, JSON.stringify(result_obj)).catch((err) => {
-            console.log(FgRed + '[NODE] ' + ResetColor + err);
-        });
-        return;
-    }).catch((err) => {
-        db.put(uid, JSON.stringify({'status':'failed'}))
-        .catch((err) => {
-            console.log(FgRed + '[NODE] ' + ResetColor + err);
-        });
-        console.log(FgRed + '[NODE] ' + ResetColor + err);
-    });
-}
-
-
-function pipeline_simulation(uid, content, parent, computation_type, plot) {
-    _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8')
-    .then((buffer) => {
-        console.log('[NODE SIMULATION] Request(' + uid + ') Configuration file was saved.\n');
-        if (computation_type == 'count') {
-            return _exec('python dataset-scripts/count_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent});
-        } else if (computation_type == 'histogram') {
-            return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent});
-        } else if (computation_type == 'id3') {
-            return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent});
-        }
-    }).then((buffer) => {
-        console.log('[NODE SIMULATION] Request(' + uid + ') Main generated.\n');
-        db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code generated. Now compiling.'})).catch((err) => {
-            console.log(FgRed + '[NODE] ' + ResetColor + err);
-        });
-        if (computation_type == 'count' || computation_type == 'histogram') {
-            return _unlinkIfExists(parent + '/histogram/.main_' + uid + '.sb.src');
-        } else if (computation_type == 'id3'){
-            return _unlinkIfExists(parent + '/ID3/.main_' + uid + '.sb.src');
-        }
-    }).then((msg) => {
-        console.log("[NODE SIMULATION] Old .main_" + uid + ".sb.src deleted.\n");
-        if (computation_type == 'count' || computation_type == 'histogram') {
-            return _exec('sharemind-scripts/compile.sh histogram/main_' + uid + '.sc', {stdio:[0,1,2],cwd: parent});
-        } else if(computation_type == 'id3'){
-            return _exec('sharemind-scripts/compile.sh ID3/main_' + uid + '.sc', {stdio:[0,1,2],cwd: parent});
-        }
-    }).then((buffer) => {
-        db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'})).catch((err) => {
-            console.log(FgRed + '[NODE] ' + ResetColor + err);
-        });
-        console.log('[NODE SIMULATION] Request(' + uid + ') Program compiled.\n');
-        if (computation_type == 'count' || computation_type == 'histogram') {
-            return _exec('sharemind-scripts/run.sh histogram/main_' + uid + '.sb 2> out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent});
-        } else if(computation_type == 'id3'){
-            return _exec('sharemind-scripts/run.sh ID3/main_' + uid + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > id3_out_' + uid + '.json', {stdio:[0,1,2],cwd: parent});
-        }
-    }).then((buffer) => {
-        db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'})).catch((err) => {
-            console.log(FgRed + '[NODE] ' + ResetColor + err);
-        });
-        console.log('[NODE SIMULATION] Request(' + uid + ') Program executed.\n');
-        if (computation_type == 'count') {
-            return _exec('python web/response.py out_' + uid + '.txt | python web/transform_response.py  configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json' , {cwd: parent});
-        } else if (computation_type == 'histogram') {
-            return _exec('python web/response.py out_' + uid + '.txt', {cwd: parent});
-        } else if (computation_type == 'id3') {
-            return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent});
-        }
-    }).then((result) => {
-        console.log('[NODE SIMULATION] Request(' + uid + ') Response ready.\n');
-        var result_obj = {'status':'succeeded','result': ''};
-        result_obj.result = JSON.parse(result);
-        db.put(uid, JSON.stringify(result_obj)).catch((err) => {
-            console.log(FgRed + '[NODE] ' + ResetColor + err);
-        });
-        return;
-    }).catch((err) => {
-        db.put(uid, JSON.stringify({'status':'failed'}))
-        .catch((err) => {
-            console.log(FgRed + '[NODE] ' + ResetColor + err);
-        });
-        console.log(FgRed + '[NODE] ' + ResetColor + err);
-    });
-}
 
 
 
@@ -397,6 +269,7 @@ app.post('/smpc/histogram', function(req, res) {
 });
 
 
+
 app.post('/smpc/count', function(req, res) {
     var parent = path.dirname(__basedir);
     var content = JSON.stringify(req.body);
@@ -492,17 +365,22 @@ app.post('/smpc/count', function(req, res) {
     });
 });
 
+
+
 app.post('/smpc/id3', function(req, res) {
     var parent = path.dirname(__basedir);
     var content = JSON.stringify(req.body);
     console.log(content);
     var uid = uuidv4();
-    var plot = ('plot' in req.body); // if plot exists in req.body
     var attributes = req.body.attributes;
     var datasources = req.body.datasources;
     var class_attribute = req.body.class_attribute;
     attributes.push(class_attribute);
 
+    var plot = ('plot' in req.body); // if plot exists in req.body
+    if (!plot) {
+        res.status(202).json({"location" : "/smpc/queue?request="+uid});
+    }
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
@@ -512,18 +390,81 @@ app.post('/smpc/id3', function(req, res) {
         import_promises = import_from_servers(attributes, datasources, res, parent, uid);
     }
 
+    var print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
     // wait them all to finish
     Promise.all(import_promises)
     .then((buffer) => {
         console.log(FgGreen + 'Importing Finished ' + ResetColor);
+        return db.put(uid, JSON.stringify({'status':'running'}));
+    }).then((buffer) => {
+        return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
+    }).then((buffer) => {
+        console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
+        return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent});
+    }).then((buffer) => {
+        console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
+        var db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
+        db.put(uid, JSON.stringify({'status':'running', 'step':db_msg})).catch((err) => {
+            console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+        });
+        return _unlinkIfExists(parent + '/ID3/.main_' + uid + '.sb.src');
+    }).then((msg) => {
+        console.log('['+print_msg+'] Old .main_' + uid + '.sb.src deleted.\n');
+        var exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh ID3/main_' : 'sharemind-scripts/sm_compile_and_run.sh ID3/main_';
+        return _exec(exec_arg + uid + '.sc', {stdio:[0,1,2],cwd: parent});
     }).then((buffer) => {
         if (SIMULATION_MODE) {
-            pipeline_simulation(uid, content, parent, 'id3', plot);
+            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'})).catch((err) => {
+                console.log(FgRed + '[NODE] ' + ResetColor + err);
+            });
+            console.log('[NODE SIMULATION] Request(' + uid + ') Program compiled.\n');
+            return _exec('sharemind-scripts/run.sh ID3/main_' + uid + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > id3_out_' + uid + '.json', {stdio:[0,1,2],cwd: parent});
         } else {
-            pipeline(uid, content, parent, 'id3', plot);
+            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'})).catch((err) => {
+                console.log(FgRed + '[NODE] ' + ResetColor + err);
+            });
+            console.log('[NODE] Request(' + uid + ') Program executed.\n');
+            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent});
         }
+    }).then((buffer) => {
+        if (SIMULATION_MODE) {
+            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'})).catch((err) => {
+                console.log(FgRed + '[NODE] ' + ResetColor + err);
+            });
+            console.log('[NODE SIMULATION] Request(' + uid + ') Program executed.\n');
+        }
+
+        if (plot) {
+            // TODO: call id3 plot
+            
+            // return _exec('python count_plot.py ../out_' + uid + '.txt ../configuration_' + uid + '.json');
+        } else {
+            return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent});
+        }
+    }).then((result) => {
+        if (plot) {
+            // TODO: call id3 plot
+          
+            // console.log('['+print_msg+'] Request(' + uid + ') Plotting done.\n');
+            // var graph_name = result.toString();
+            // graph_name = graph_name.slice(0,-1);
+            // console.log('['+print_msg+']' + graph_name);
+            // res.send(graph_name);
+        } else {
+            console.log('['+print_msg+'] Request(' + uid + ') Response ready.\n');
+            var result_obj = {'status':'succeeded','result': ''};
+            result_obj.result = JSON.parse(result);
+            db.put(uid, JSON.stringify(result_obj)).catch((err) => {
+              console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+            });
+        }
+        return ;
     }).catch((err) => {
-        console.log(FgRed + '[NODE] ' + ResetColor + err);
+        db.put(uid, JSON.stringify({'status':'failed'}))
+        .catch((err) => {
+            console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+        });
+        console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
     });
 });
 
