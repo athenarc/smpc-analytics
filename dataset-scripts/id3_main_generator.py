@@ -120,6 +120,16 @@ def main():
     print("Running ID3 ...");
     pd_shared3p xor_uint8[[1]] root = id3(original_example_indexes_vmap, original_attributes_without_class);
     print(bl_strDeclassify(root));
+
+    for (uint64 i = 0 ; i < data_providers_num ; i++) {
+        string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
+        // Check if a table exists
+        if (tdbTableExists(datasource, table)) {
+          // Delete existing table
+          print("Deleting table: ", table);
+          tdbTableDelete(datasource, table);
+        }
+    }
 }'''
 
     if os.path.isdir("./ID3/"):

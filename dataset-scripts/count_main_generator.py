@@ -94,6 +94,16 @@ def main():
     print("{'''+ str(', '.join(map(str,attribute_values))) +'''}", " Histogram");
     print(arrayToString(declassify(histogram)));
     print("\\n");
+
+    for (uint64 i = 0 ; i < data_providers_num ; i++) {
+        string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
+        // Check if a table exists
+        if (tdbTableExists(datasource, table)) {
+          // Delete existing table
+          print("Deleting table: ", table);
+          tdbTableDelete(datasource, table);
+        }
+    }
 }'''
 
     if os.path.isdir("./histogram/"):
