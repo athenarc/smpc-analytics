@@ -463,22 +463,17 @@ app.post('/smpc/count', function(req, res) {
         }
 
         if (plot) {
-            // TODO: New plotting for count!! below is the one for histograms...
-
-            // return _exec('python plot.py ' + req_counter);
+            return _exec('python count_plot.py ../out_' + req_counter + '.txt ../configuration_' + req_counter + '.json');
         } else {
             return _exec('python web/response.py out_' + req_counter + '.txt | python web/transform_response.py  configuration_' + req_counter + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json' , {cwd: parent});
         }
     }).then((result) => {
         if (plot) {
-
-            // TODO: New plotting for count!! below is the one for histograms...
-
-            // console.log('['+print_msg+'] Request(' + req_counter + ') Plotting done.\n');
-            // var graph_name = result.toString();
-            // graph_name = graph_name.slice(0,-1);
-            // console.log('['+print_msg+']' + graph_name);
-            // res.send(graph_name);
+            console.log('['+print_msg+'] Request(' + req_counter + ') Plotting done.\n');
+            var graph_name = result.toString();
+            graph_name = graph_name.slice(0,-1);
+            console.log('['+print_msg+']' + graph_name);
+            res.send(graph_name);
         } else {
             console.log('['+print_msg+'] Request(' + req_counter + ') Response ready.\n');
             var result_obj = {'status':'succeeded','result': ''};

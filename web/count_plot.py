@@ -7,7 +7,7 @@ import plotly
 import plotly.graph_objs as go
 
 parser = argparse.ArgumentParser()
-parser.add_argument('count_output', help= 'JSON file with the count computation output.')
+parser.add_argument('count_output', help= 'Text file with the count computation output.')
 parser.add_argument('configuration', help= 'Configuration file of the request.')
 parser.add_argument('--mapping', help = 'File with the mesh term mapping (values to integers).', default = '../mhmd-driver/mesh_mapping.json')
 parser.add_argument('--mtrees_inverted', help = 'File with the mesh term mapping (values to integers).', default = '../mhmd-driver/m_inv.json')
@@ -63,8 +63,6 @@ def main():
                         attribute_names = [mesh_dict_inverted[attribute_id] for attribute_id in attribute_ids]
                         x_ticks = [str(mesh_dict_inverted[k]) for k in possible_values[0]]
                         y_ticks = [str(mesh_dict_inverted[k]) for k in possible_values[1]]
-                        print(mesh_mapping[attribute_ids[1]] )
-                        print(y_ticks)
                         layout = go.Layout(
                             xaxis=dict(
                                 type = 'category',
