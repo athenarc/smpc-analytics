@@ -196,7 +196,7 @@ function pipeline(uid, content, parent, computation_type, plot) {
             console.log(FgRed + '[NODE] ' + ResetColor + err);
         });
         console.log('[NODE] Request(' + uid + ') Program executed.\n');
-        return _exec('tail -n +`cut -d " "  -f "9-" /etc/sharemind/server.log  | grep -n "Starting process" | tail -n 1 | cut -d ":" -f 1` /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent});
+        return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent});
     }).then((buffer) => {
         console.log('[NODE] Request(' + uid + ') Program executed.\n');
         if (computation_type == 'count') {
@@ -356,7 +356,7 @@ app.post('/smpc/histogram', function(req, res) {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE] Request(' + uid + ') Program executed.\n');
-            return _exec('tail -n +`cut -d " "  -f "9-" /etc/sharemind/server.log  | grep -n "Starting process" | tail -n 1 | cut -d ":" -f 1` /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent});
+            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent});
         }
     }).then((buffer) => {
         if (SIMULATION_MODE) {
@@ -452,7 +452,7 @@ app.post('/smpc/count', function(req, res) {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE] Request(' + uid + ') Program executed.\n');
-            return _exec('tail -n +`cut -d " "  -f "9-" /etc/sharemind/server.log  | grep -n "Starting process" | tail -n 1 | cut -d ":" -f 1` /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent});
+            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent});
         }
     }).then((buffer) => {
         if (SIMULATION_MODE) {
