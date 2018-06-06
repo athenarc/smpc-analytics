@@ -49,16 +49,16 @@ def main():
 
     print(run('Generating main..'))
 
-    main_counter = args.configuration.split('_')[-1].split('.')[0]
+    uid = args.configuration.split('_')[-1].split('.')[0]
     configuration = json.load(open(args.configuration))
     mapping = json.load(open(args.mapping))
 
     if 'datasources' in configuration:
         numberOfDatasets = len(configuration['datasources'])
-        data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(configuration['datasources'][i]) + ";" for i in range(len(configuration['datasources']))])
+        data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(configuration['datasources'][i] + '_' + uid) + ";" for i in range(len(configuration['datasources']))])
     else:
         numberOfDatasets = len(available_datasources)
-        data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(available_datasources[i]) + ";" for i in range(len(available_datasources))])
+        data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(available_datasources[i] + '_' + uid) + ";" for i in range(len(available_datasources))])
 
     main_f += '''
     quote = bl_str("\\"");
@@ -128,10 +128,10 @@ def main():
         OUTPUT_DIR = '../ID3/'
     else:
         OUTPUT_DIR = './'
-    with open(OUTPUT_DIR + 'main_' + main_counter + '.sc', 'w') as output:
+    with open(OUTPUT_DIR + 'main_' + uid + '.sc', 'w') as output:
         output.write(imports)
         output.write(main_f)
-    print(good('Main generated at ' + OUTPUT_DIR + 'main_' + main_counter + '.sc'))
+    print(good('Main generated at ' + OUTPUT_DIR + 'main_' + uid + '.sc'))
 
 
 

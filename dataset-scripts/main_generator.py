@@ -55,7 +55,7 @@ def main():
         print('No arguement provided')
         sys.exit(1)
 
-    main_counter = configuration.split('_')[-1].split('.')[0]
+    uid = configuration.split('_')[-1].split('.')[0]
 
     configuration = json.load(open(configuration))
     numberOfFilters = 0
@@ -121,10 +121,10 @@ def main():
 
     if 'datasources' in configuration:
         numberOfDatasets = len(configuration['datasources'])
-        data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(configuration['datasources'][i]) + ";" for i in range(len(configuration['datasources']))])
+        data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(configuration['datasources'][i] + '_' + uid ) + ";" for i in range(len(configuration['datasources']))])
     else:
         numberOfDatasets = len(available_datasources)
-        data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(available_datasources[i]) + ";" for i in range(len(available_datasources))])
+        data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(available_datasources[i] + '_' + uid ) + ";" for i in range(len(available_datasources))])
 
     main_f += '''
     string datasource = "DS1";
@@ -170,7 +170,7 @@ def main():
         OUTPUT_DIR = '../histogram/'
     else:
         OUTPUT_DIR = './'
-    with open(OUTPUT_DIR + 'main_' + main_counter + '.sc', 'w') as output:
+    with open(OUTPUT_DIR + 'main_' + uid + '.sc', 'w') as output:
         output.write(imports)
         output.write(main_f)
 
