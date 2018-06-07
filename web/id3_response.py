@@ -87,10 +87,11 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
     return new_tree, nodes, edges, leaves
 
 def plot(nodes, edges, leaves):
+    class_name = mesh_dict_inverted[configuration['class_attribute']]
     html = '''<!DOCTYPE>
     <html>
       <head>
-        <title>Labels demo</title>
+        <title>Decision Tree for class '''+class_name+'''</title>
         <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
         <link href="style.css" rel="stylesheet" />
 
@@ -100,7 +101,7 @@ def plot(nodes, edges, leaves):
 
       </head>
       <body>
-        <h1>Labels demo</h1>
+        <h1>Decision Tree for class '''+class_name+'''</h1>
         <div id="cy"></div>
         <script>
           var cy = window.cy = cytoscape({
