@@ -441,21 +441,17 @@ app.post('/smpc/id3', function(req, res) {
         }
 
         if (plot) {
-            // TODO: call id3 plot
-
-            // return _exec('python count_plot.py ../out_' + uid + '.txt ../configuration_' + uid + '.json');
+            return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --plot --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent});
         } else {
             return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent});
         }
     }).then((result) => {
         if (plot) {
-            // TODO: call id3 plot
-
-            // console.log('['+print_msg+'] Request(' + uid + ') Plotting done.\n');
-            // var graph_name = result.toString();
-            // graph_name = graph_name.slice(0,-1);
-            // console.log('['+print_msg+']' + graph_name);
-            // res.send(graph_name);
+            console.log('['+print_msg+'] Request(' + uid + ') Plotting done.\n');
+            var graph_name = result.toString();
+            graph_name = graph_name.slice(0,-1);
+            console.log('['+print_msg+']' + graph_name);
+            res.send(graph_name);
         } else {
             console.log('['+print_msg+'] Request(' + uid + ') Response ready.\n');
             var result_obj = {'status':'succeeded','result': ''};

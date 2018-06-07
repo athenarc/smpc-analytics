@@ -168,8 +168,8 @@ def plot(nodes, edges, leaves):
           </body>
         </html>
     '''
-    filename = 'web/graphs/id3'+'_'+str(os.getpid())+'.html'
-    with open(filename, 'w') as output:
+    filename = 'graphs/id3'+'_'+str(os.getpid())+'.html'
+    with open('web/' + filename, 'w') as output:
         output.write(html)
     return filename
 
