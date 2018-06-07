@@ -1,7 +1,9 @@
 import ast
 import sys
 import json
+import argparse
 import pandas as pd
+from huepy import *
 
 import os.path
 
@@ -22,7 +24,6 @@ import histogram;
 main_f = '''void main(){
 '''
 
-available_datasources = ['HospitalA', 'HospitalB', 'HospitalC']
 
 def is_number(s):
     try:
@@ -39,29 +40,22 @@ def quote(x):
 
 def main():
     global main_f
-    print('Generating main..')
+    print(run('Generating main..'))
 
-    if len(sys.argv) > 1:
-        configuration = sys.argv[1]
-        if len(sys.argv) > 2:
-            COLUMNS = sys.argv[2]
-        else:
-            COLUMNS = 'datasets/analysis_test_data/columns.csv'
-        if len(sys.argv) > 3:
-            SUMMARY = sys.argv[3]
-        else:
-            SUMMARY = 'datasets/analysis_test_data/cvi_summary.csv'
-    else:
-        print('No arguement provided')
-        sys.exit(1)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('configuration', help = 'Configuration file of the request')
+    parser.add_argument('--columns', help = 'CSV File with the columns of the global schema.', default = 'datasets/analysis_test_data/columns.csv')
+    parser.add_argument('--summary', help = 'CSV file with the summary of the dataset.', default = 'datasets/analysis_test_data/cvi_summary.csv')
+    parser.add_argument('--DNS', help = 'File with the Hospitals names and IPS.', default = 'web/MHMDdns.json')
+    args = parser.parse_args()
 
-    uid = configuration.split('_')[-1].split('.')[0]
+    uid = args.configuration.split('_')[-1].split('.')[0]
 
-    configuration = json.load(open(configuration))
+    configuration = json.load(open(args.configuration))
     numberOfFilters = 0
     if 'filters' in configuration:
         numberOfFilters = len(configuration['filters']['conditions'])
-    df=pd.read_csv(COLUMNS,sep=',')
+    df=pd.read_csv(args.columns,sep=',')
     numberOfHistograms = len(configuration['attributes'])
     histograms = [{} for x in range(numberOfHistograms)]
     for i in range(numberOfHistograms):
@@ -75,7 +69,7 @@ def main():
     cells_vmaps = ['{'+ ', '.join([str(x) for x in histograms[i]['cells']]) +'}' for i in range(numberOfHistograms)]
     mins = []
     maxs = []
-    summary = pd.read_csv(SUMMARY, sep = ',')
+    summary = pd.read_csv(args.summary, sep = ',')
     for attribute in df.columns:
         if attribute in summary['Field'].values:
             mins.append(summary[summary['Field']==attribute][' Min'].item())
@@ -123,6 +117,8 @@ def main():
         numberOfDatasets = len(configuration['datasources'])
         data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(configuration['datasources'][i] + '_' + uid ) + ";" for i in range(len(configuration['datasources']))])
     else:
+        dns = json.load(open(args.DNS))
+        available_datasources = dns.keys()
         numberOfDatasets = len(available_datasources)
         data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(available_datasources[i] + '_' + uid ) + ";" for i in range(len(available_datasources))])
 
@@ -183,6 +179,7 @@ def main():
     with open(OUTPUT_DIR + 'main_' + uid + '.sc', 'w') as output:
         output.write(imports)
         output.write(main_f)
+    print(good('Main generated at ' + OUTPUT_DIR + 'main_' + uid + '.sc'))
 
 if __name__ == '__main__':
     main()

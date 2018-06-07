@@ -24,7 +24,6 @@ import histogram;
 main_f = '''void main(){
 '''
 
-available_datasources = ['HospitalA', 'HospitalB', 'HospitalC']
 
 def is_number(s):
     try:
@@ -45,6 +44,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('configuration', help = 'Configuration file of the request')
     parser.add_argument('--mapping', help = 'File with the mesh term mapping (values to integers).', default = 'mhmd-driver/mesh_mapping.json')
+    parser.add_argument('--DNS', help = 'File with the Hospitals names and IPS.', default = 'web/MHMDdns.json')
     args = parser.parse_args()
 
 
@@ -60,6 +60,8 @@ def main():
         numberOfDatasets = len(configuration['datasources'])
         data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(configuration['datasources'][i] + '_' + uid) + ";" for i in range(len(configuration['datasources']))])
     else:
+        dns = json.load(open(args.DNS))
+        available_datasources = dns.keys()
         numberOfDatasets = len(available_datasources)
         data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(available_datasources[i] + '_' + uid) + ";" for i in range(len(available_datasources))])
 
