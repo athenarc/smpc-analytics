@@ -13,7 +13,7 @@ parser.add_argument('--mtrees_inverted', help = 'File with the mesh term mapping
 args = parser.parse_args()
 
 with open (args.configuration) as configuration:
-    configuration = json.loads(configuration.readline())
+    configuration = json.load(configuration)
     line = json.loads(sys.stdin.readline())
     mesh_mapping = json.load(open(args.mapping))
     m_trees_inverted = json.load(open(args.mtrees_inverted))
