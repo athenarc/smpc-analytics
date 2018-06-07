@@ -109,6 +109,9 @@ function _sendRequest(datasrc, mhmdDNS, attributes, uid) {
 // function to send requests for import and return array of promises
 function import_from_servers(attributes, datasources, res, parent, uid) {
     var mhmdDNS = JSON.parse(fs.readFileSync('MHMDdns.json', 'utf8'));
+    if (typeof datasources == 'undefined'){
+        datasources = Object.keys(mhmdDNS);
+    }
     for (let datasrc of datasources) {        // Check that all IPs exist
         if ((datasrc in mhmdDNS) == false) {  // If datasrc does not exist in DNS file, continue
             console.log(FgRed + 'Error: ' + ResetColor + 'Unable to find IP for ' + datasrc + ', it does not exist in MHMDdns.json file.');
@@ -131,6 +134,9 @@ function import_from_servers(attributes, datasources, res, parent, uid) {
 // function to import local data and return promise
 function import_locally(attributes, datasources, res, parent, uid) {
     var localDNS = JSON.parse(fs.readFileSync('localDNS.json', 'utf8'));
+    if (typeof datasources == 'undefined'){
+        datasources = Object.keys(localDNS);
+    }
     for (let datasrc of datasources) {        // Check that all IPs exist
         if ((datasrc in localDNS) == false) {  // If datasrc does not exist in DNS file, continue
             console.log(FgRed + 'Error: ' + ResetColor + 'Unable to find path for ' + datasrc + ', it does not exist in localDNS.json file.');
@@ -436,7 +442,7 @@ app.post('/smpc/id3', function(req, res) {
 
         if (plot) {
             // TODO: call id3 plot
-            
+
             // return _exec('python count_plot.py ../out_' + uid + '.txt ../configuration_' + uid + '.json');
         } else {
             return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent});
@@ -444,7 +450,7 @@ app.post('/smpc/id3', function(req, res) {
     }).then((result) => {
         if (plot) {
             // TODO: call id3 plot
-          
+
             // console.log('['+print_msg+'] Request(' + uid + ') Plotting done.\n');
             // var graph_name = result.toString();
             // graph_name = graph_name.slice(0,-1);
