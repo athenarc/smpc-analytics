@@ -91,11 +91,11 @@ function _unlinkIfExists(filename) {
 }
 
 // function to return a promise to send request for import
-function _sendRequest(datasrc, mhmdDNS, attributes, uid) {
+function _sendRequest(datasrc, mhmdDNS, attributes, uid, action) {
     var uri = mhmdDNS[datasrc];
     var options = {                       // Configure the request
         method: 'POST',
-        uri: 'http://' + uri + '/smpc/import',
+        uri: 'http://' + uri + action,
         body: {
             "attributes": attributes,
             "datasource": datasrc+'_'+uid
@@ -108,8 +108,8 @@ function _sendRequest(datasrc, mhmdDNS, attributes, uid) {
 }
 
 // function to send requests for import and return array of promises
-function import_from_servers(attributes, datasources, res, parent, uid) {
-    var mhmdDNS = JSON.parse(fs.readFileSync('MHMDdns.json', 'utf8'));
+function import_from_servers(attributes, datasources, res, parent, uid, action, DNSfile) {
+    var mhmdDNS = JSON.parse(fs.readFileSync(DNSfile, 'utf8'));
     if (typeof datasources == 'undefined'){
         datasources = Object.keys(mhmdDNS);
     }
@@ -125,7 +125,7 @@ function import_from_servers(attributes, datasources, res, parent, uid) {
     // // send the requests for import
     var import_promises = [];
     for (let datasrc of datasources) {
-        import_promises.push(_sendRequest(datasrc, mhmdDNS, attributes, uid));
+        import_promises.push(_sendRequest(datasrc, mhmdDNS, attributes, uid, action));
     }
     // return array of promises for import
     return import_promises;
@@ -203,22 +203,19 @@ app.post('/smpc/histogram', function(req, res) {
     if (!plot) {
         res.status(202).json({"location" : "/smpc/queue?request="+uid});
     }
-
+    // create list of attribute names from the POST request
+    var attributes_lst = [];
+    for (var i = 0; i < attributes.length; i++) {
+        for (var j = 0; j < attributes[i].length; j++) {
+            attributes_lst.push(attributes[i][j].name);
+        }
+    }
     var import_promises = [];
     if (SIMULATION_MODE) {
-        // create list of attribute names from the POST request
-        var attributes_lst = [];
-        for (var i = 0; i < attributes.length; i++) {
-            for (var j = 0; j < attributes[i].length; j++) {
-                attributes_lst.push(attributes[i][j].name);
-            }
-        }
         // TODO: Change column indexes to column names.
         import_promises = import_locally(attributes_lst, datasources, res, parent, uid, 'cvi');
     } else {
-
-      // TODO: Importing with servers !!
-
+        import_promises = import_from_servers(attributes_lst, datasources, res, parent, uid, '/smpc/import/cvi', 'MHMDdns_cvi.json');
     }
     var print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
 
@@ -312,7 +309,7 @@ app.post('/smpc/count', function(req, res) {
     if (SIMULATION_MODE) {
         import_promises = import_locally(attributes, datasources, res, parent, uid, 'mesh');
     } else {
-        import_promises = import_from_servers(attributes, datasources, res, parent, uid);
+        import_promises = import_from_servers(attributes, datasources, res, parent, uid, '/smpc/import', 'MHMDdns.json');
     }
 
     var print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
@@ -399,7 +396,7 @@ app.post('/smpc/id3', function(req, res) {
     var class_attribute = req.body.class_attribute;
     attributes.push(class_attribute);
 
-    db.put(uid, JSON.stringify({'status':'running'}));
+    return db.put(uid, JSON.stringify({'status':'running'}));
     var plot = ('plot' in req.body); // if plot exists in req.body
     if (!plot) {
         res.status(202).json({"location" : "/smpc/queue?request="+uid});
@@ -407,9 +404,10 @@ app.post('/smpc/id3', function(req, res) {
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
+        //TODO: Generate csv from Json before importing.
         import_promises = import_locally(attributes, datasources, res, parent, uid, 'mesh');
     } else {
-        import_promises = import_from_servers(attributes, datasources, res, parent, uid);
+        import_promises = import_from_servers(attributes, datasources, res, parent, uid, '/smpc/import', 'MHMDdns.json');
     }
 
     var print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';

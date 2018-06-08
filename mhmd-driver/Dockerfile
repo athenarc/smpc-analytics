@@ -94,6 +94,9 @@ WORKDIR /mhmd-driver
 COPY xml_generator.py xml_generator.py
 COPY mesh_json_to_csv.py mesh_json_to_csv.py
 
+COPY csv_filter.py csv_filter.py
+COPY csv_preprocessor.py csv_preprocessor.py
+
 COPY package.json package.json
 RUN npm install
 COPY mhmd-driver.js mhmd-driver.js
