@@ -446,7 +446,7 @@ app.post('/smpc/id3', function(req, res) {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE] Request(' + uid + ') Program executed.\n');
-            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent});
+            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" | sed --expression="s/,  }/ }/g" >  out_' + uid + '.json', {stdio:[0,1,2],cwd: parent});
         }
     }).then((buffer) => {
         if (SIMULATION_MODE) {
