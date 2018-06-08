@@ -172,7 +172,7 @@ function addHistogramNumericalTab() {
           </ul>
         </p>
         <p>
-          <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-primary" value="Compute Histogram">
+          <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/histogram')" class="btn btn-primary" value="Compute Histogram">
         </p>
         </form>`+
     '</div>').appendTo('.tab-content');
@@ -200,24 +200,24 @@ function addHistogramCategoricalTab() {
 
   // create the tab content
   $('<div class="tab-pane fade" id="tab'+nextTab+'">' +
-      `<div style="display: none;" id="loading-wrapper_tree_`+nextTab+`">
+      `<div style="display: none;" id="loading-wrapper_hist_`+nextTab+`">
         <div id="loading-text">LOADING</div>
         <div id="loading-content"></div>
       </div>` +
-      `<form action="/smpc/histogram" method="post" id="hist_` + nextTab + `">
+      `<form action="/smpc/count" method="post" id="hist_` + nextTab + `">
           </br>
           <div id="attribute_container_`+nextTab+`">
             Attributes for Aggregation
 
             </br>
             <div class="btn-group">
-              <input type="text" class="form-control" id="usr">
+              <input type="text" name="count_attributes" class="form-control" id="usr">
             </div>
           </div>
 
           </br>
           <p>
-            <input type="button" id="filter_button_` + nextTab + `"" onclick="addAttributeToFormWithId(this.id)" class="btn btn-default" value="Add Attribute">
+            <input type="button" id="filter_button_` + nextTab + `"" onclick="addAttributeToFormWithId(this.id, 'count_attributes')" class="btn btn-default" value="Add Attribute">
           </p>
 
           </br>
@@ -235,7 +235,7 @@ function addHistogramCategoricalTab() {
             </ul>
           </p>
           <p>
-            <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-primary" value="Compute Histogram">
+            <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/count')" class="btn btn-primary" value="Compute Histogram">
           </p>
 
         </form>`+
@@ -400,7 +400,7 @@ function addDecisionTreeNumericalTab() {
           </ul>
         </p>
         <p>
-          <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-success" value="Compute Histogram">
+          <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/decisionTree')" class="btn btn-success" value="Compute Histogram">
         </p>
         </form>`+
     '</div>').appendTo('.tab-content');
@@ -451,7 +451,7 @@ function addDecisionTreeCategoricalTab() {
 
           </br>
           <p>
-            <input type="button" id="filter_button_` + nextTab + `"" onclick="addAttributeToFormWithId(this.id)" class="btn btn-default" value="Add Attribute">
+            <input type="button" id="filter_button_` + nextTab + `"" onclick="addAttributeToFormWithId(this.id,'attributes')" class="btn btn-default" value="Add Attribute">
           </p>
 
           </br>
@@ -469,7 +469,7 @@ function addDecisionTreeCategoricalTab() {
             </ul>
           </p>
           <p>
-            <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id)" class="btn btn-success" value="Compute Decision Tree">
+            <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/decisionTree')" class="btn btn-success" value="Compute Decision Tree">
           </p>
 
         </form>`+
@@ -601,8 +601,8 @@ function objectifyForm(formArray) {//serialize data function
       finalJson = {'plot': 'yeshhh', 'attributes' : [[]]};
       var form  = formArray[i];
       for (var j = 0; j < form.length; j++){
-          var element = form[j];
-          if (element.name == 'attributes' && element.checked == true) {
+          var element = form[j];          
+          if ((element.name == 'attributes' && element.checked == true) || element.name == 'count_attributes') {
               formJSON.attribute_names.push(element.value);
           }
           if (element.name == 'cells' && element.value != "") {
@@ -661,17 +661,22 @@ function objectifyForm(formArray) {//serialize data function
   return returnArray[0];
 }
 
-function sendFormWithId(id) {
+function sendFormWithId(id, computation_t) {
   var formId = id.substring(7); // get the hist id from the button id
   var tabId = "tab" + formId.substring(5); // get the tab id
   var jsonReq = objectifyForm($('#'+formId));
+  
+  console.log("\n going to post to "+ computation_t +"\n");
   $.ajax({
       type: 'POST',
-      url: '/smpc/histogram',
+      url: computation_t,
       data : jsonReq,
       beforeSend : function() {
+        console.log("\nlog 1");
         document.getElementById(formId).style.display = "none"; // hide the attribute list
+        console.log("\nlog 2" + formId);
         document.getElementById('loading-wrapper_'+formId).style.display = "block"; // show the loading sign
+        console.log("\nlog 3");
       },
       success : function (response) {
         document.getElementById('loading-wrapper_'+formId).style.display = "none"; // hide the loading sign
@@ -680,7 +685,7 @@ function sendFormWithId(id) {
   });
 }
 
-function addAttributeToFormWithId(formId) {
+function addAttributeToFormWithId(formId, attribute_t) {
     var id = formId.substring(14);
     var container = document.getElementById('attribute_container_'+id);
     var children = container.childElementCount;
@@ -693,7 +698,7 @@ function addAttributeToFormWithId(formId) {
     var input_div = document.createElement('div');
     input_div.className = "btn-group";
     var input = document.createElement('input');
-    input.name = "attribute_" + "values";
+    input.name = attribute_t;
     input.type = "text";
     input.required = true;
     input.className = "form-control";

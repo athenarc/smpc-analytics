@@ -54,20 +54,20 @@
             </div>
 
             
-            <form action="/histogram" method="post" id="hist_1">
+            <form action="/smpc/count" method="post" id="hist_1">
               </br>
               <div id="attribute_container_1">
                 Attributes for Aggregation
                 
                 </br>
                 <div class="btn-group">
-                  <input type="text" class="form-control" id="usr">
+                  <input type="text" name="count_attributes" class="form-control" id="usr">
                 </div>
               </div>
               
               </br>
               <p>
-                <input type="button" id="filter_button_1" onclick="addAttributeToFormWithId(this.id)" class="btn btn-default" value="Add Attribute">
+                <input type="button" id="filter_button_1" onclick="addAttributeToFormWithId(this.id, 'count_attributes')" class="btn btn-default" value="Add Attribute">
               </p>
               <br>
               <p>
@@ -84,7 +84,7 @@
                 </ul>
               </p>
               <p>
-                <input type="button" id="button_hist_1" onclick="sendFormWithId(this.id)" class="btn btn-primary" value="Compute Histogram">
+                <input type="button" id="button_hist_1" onclick="sendFormWithId(this.id, '\/smpc\/count')" class="btn btn-primary" value="Compute Histogram">
               </p>
             </form>
           </div>
