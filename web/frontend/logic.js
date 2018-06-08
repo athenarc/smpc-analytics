@@ -267,7 +267,7 @@ function addDecisionTreeNumericalTab() {
         <div id="loading-text">LOADING</div>
         <div id="loading-content"></div>
       </div>` +
-      `<form action="/decisionTree" method="post" id="tree_`+nextTab+`">
+      `<form action="/smpc/id3" method="post" id="tree_`+nextTab+`">
         </br>
         <p>
           <select class="selectpicker">
@@ -304,85 +304,112 @@ function addDecisionTreeNumericalTab() {
         <p>
           <ul class="list-group">
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="Patient Age"> Patient Age
+              <input type="checkbox" name="attributes" value="Patient Age"> Patient Age
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="Heart rate"> Heart rate
+              <input type="checkbox" name="attributes" value="Heart rate"> Heart rate
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="Height (cm)"> Height (cm)
+              <input type="checkbox" name="attributes" value="Height (cm)"> Height (cm)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="Weight (kg)"> Weight (kg)
+              <input type="checkbox" name="attributes" value="Weight (kg)"> Weight (kg)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="LVEDV (ml)"> LVEDV (ml)
+              <input type="checkbox" name="attributes" value="LVEDV (ml)"> LVEDV (ml)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="LVESV (ml)"> LVESV (ml)
+              <input type="checkbox" name="attributes" value="LVESV (ml)"> LVESV (ml)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="LVSV (ml)"> LVSV (ml)
+              <input type="checkbox" name="attributes" value="LVSV (ml)"> LVSV (ml)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="LVEF (%)"> LVEF (%)
+              <input type="checkbox" name="attributes" value="LVEF (%)"> LVEF (%)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="LV Mass (g)"> LV Mass (g)
+              <input type="checkbox" name="attributes" value="LV Mass (g)"> LV Mass (g)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="RVEDV (ml)"> RVEDV (ml)
+              <input type="checkbox" name="attributes" value="RVEDV (ml)"> RVEDV (ml)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="RVESV (ml)"> RVESV (ml)
+              <input type="checkbox" name="attributes" value="RVESV (ml)"> RVESV (ml)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="RVSV (ml)"> RVSV (ml)
+              <input type="checkbox" name="attributes" value="RVSV (ml)"> RVSV (ml)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="RVEF (%)"> RVEF (%)
+              <input type="checkbox" name="attributes" value="RVEF (%)"> RVEF (%)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="RV Mass (g)"> RV Mass (g)
+              <input type="checkbox" name="attributes" value="RV Mass (g)"> RV Mass (g)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="BMI (kg/msq)"> BMI (kg/msq)
+              <input type="checkbox" name="attributes" value="BMI (kg/msq)"> BMI (kg/msq)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="BSA"> BSA
+              <input type="checkbox" name="attributes" value="BSA"> BSA
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="BSA (msq)"> BSA (msq)
+              <input type="checkbox" name="attributes" value="BSA (msq)"> BSA (msq)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="CO (L/min)"> CO (L/min)
+              <input type="checkbox" name="attributes" value="CO (L/min)"> CO (L/min)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="Central PP(mmHg)"> Central PP(mmHg)
+              <input type="checkbox" name="attributes" value="Central PP(mmHg)"> Central PP(mmHg)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="DBP (mmHg)"> DBP (mmHg)
+              <input type="checkbox" name="attributes" value="DBP (mmHg)"> DBP (mmHg)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="LVEF (ratio)"> LVEF (ratio)
+              <input type="checkbox" name="attributes" value="LVEF (ratio)"> LVEF (ratio)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="MAP"> MAP
+              <input type="checkbox" name="attributes" value="MAP"> MAP
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="PAP (mmHg)"> PAP (mmHg)
+              <input type="checkbox" name="attributes" value="PAP (mmHg)"> PAP (mmHg)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="PP (mmHg)"> PP (mmHg)
+              <input type="checkbox" name="attributes" value="PP (mmHg)"> PP (mmHg)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="RVEF (ratio)"> RVEF (ratio)
+              <input type="checkbox" name="attributes" value="RVEF (ratio)"> RVEF (ratio)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="SBP (mmHg)"> SBP (mmHg)
+              <input type="checkbox" name="attributes" value="SBP (mmHg)"> SBP (mmHg)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" checked="true" value="SVR (mmHg/L/min)"> SVR (mmHg/L/min)
+              <input type="checkbox" name="attributes" value="SVR (mmHg/L/min)"> SVR (mmHg/L/min)
+              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
           </ul>
         </p>
@@ -400,13 +427,14 @@ function addDecisionTreeNumericalTab() {
           </ul>
         </p>
         <p>
-          <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/decisionTree')" class="btn btn-success" value="Compute Histogram">
+          <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/id3')" class="btn btn-success" value="Compute Decision Tree">
         </p>
         </form>`+
     '</div>').appendTo('.tab-content');
 
   // make the new tab active
   $('#tabs a:last').tab('show');
+  assignButtons();
 
   // add the button to the end
   $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addDecisionTreeNumericalTab()" class="btn btn-success btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
@@ -469,7 +497,7 @@ function addDecisionTreeCategoricalTab() {
             </ul>
           </p>
           <p>
-            <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/decisionTree')" class="btn btn-success" value="Compute Decision Tree">
+            <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/id3')" class="btn btn-success" value="Compute Decision Tree">
           </p>
 
         </form>`+
@@ -601,7 +629,12 @@ function objectifyForm(formArray) {//serialize data function
       finalJson = {'plot': 'yeshhh', 'attributes' : [[]]};
       var form  = formArray[i];
       for (var j = 0; j < form.length; j++){
-          var element = form[j];          
+          var element = form[j];      
+
+          if (element.name == 'class_attribute') {
+              finalJson.class_attribute = element.value;
+              console.log(finalJson.class_attribute);
+          }
           if ((element.name == 'attributes' && element.checked == true) || element.name == 'count_attributes') {
               formJSON.attribute_names.push(element.value);
           }
@@ -645,16 +678,17 @@ function objectifyForm(formArray) {//serialize data function
           var cells = formJSON.attribute_cells[a];
           finalJson.attributes[0].push({'name':name, 'cells':cells});
       }
-       if ('filter_attributes' in formJSON) {
-           var boolean_opreator = formJSON.boolean_opreator;
-           finalJson.filters = {'operator' : boolean_opreator, 'conditions' : []};
-           for (var f = 0; f < formJSON.filter_attributes.length; f++){
-               var attribute_name = formJSON.filter_attributes[f];
-               var attribute_operator = formJSON.filter_operators[f];
-               var attribute_value = formJSON.filter_values[f];
-               finalJson.filters.conditions.push({'attribute' : attribute_name, 'operator' : attribute_operator, 'value' : attribute_value});
-           }
-       }
+      if ('filter_attributes' in formJSON) {
+         var boolean_opreator = formJSON.boolean_opreator;
+         finalJson.filters = {'operator' : boolean_opreator, 'conditions' : []};
+         for (var f = 0; f < formJSON.filter_attributes.length; f++){
+             var attribute_name = formJSON.filter_attributes[f];
+             var attribute_operator = formJSON.filter_operators[f];
+             var attribute_value = formJSON.filter_values[f];
+             finalJson.filters.conditions.push({'attribute' : attribute_name, 'operator' : attribute_operator, 'value' : attribute_value});
+         }
+      }
+
     returnArray[i] = finalJson;
   }
   // console.log(returnArray[0]);
@@ -666,17 +700,13 @@ function sendFormWithId(id, computation_t) {
   var tabId = "tab" + formId.substring(5); // get the tab id
   var jsonReq = objectifyForm($('#'+formId));
   
-  console.log("\n going to post to "+ computation_t +"\n");
   $.ajax({
       type: 'POST',
       url: computation_t,
       data : jsonReq,
       beforeSend : function() {
-        console.log("\nlog 1");
         document.getElementById(formId).style.display = "none"; // hide the attribute list
-        console.log("\nlog 2" + formId);
         document.getElementById('loading-wrapper_'+formId).style.display = "block"; // show the loading sign
-        console.log("\nlog 3");
       },
       success : function (response) {
         document.getElementById('loading-wrapper_'+formId).style.display = "none"; // hide the loading sign

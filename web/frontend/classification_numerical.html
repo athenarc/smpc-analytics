@@ -45,10 +45,10 @@
 
 
 
-            <form action="/decisionTree" method="post" id="tree_1">
+            <form action="/smpc/id3" method="post" id="tree_1">
               </br>
               <p>
-                <select class="selectpicker">
+                <select class="selectpicker" name="class_attribute">
                   <option value="" selected disabled>Class Attribute</option>
                   <option>Patient Age</option>
                   <option>Heart rate</option>
@@ -83,85 +83,112 @@
               <p>
                 <ul class="list-group">
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="Patient Age"> Patient Age
+                      <input type="checkbox" name="attributes" value="Patient Age"> Patient Age
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="Heart rate"> Heart rate
+                      <input type="checkbox" name="attributes" value="Heart rate"> Heart rate
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="Height (cm)"> Height (cm)
+                      <input type="checkbox" name="attributes" value="Height (cm)"> Height (cm)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="Weight (kg)"> Weight (kg)
+                      <input type="checkbox" name="attributes" value="Weight (kg)"> Weight (kg)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="LVEDV (ml)"> LVEDV (ml)
+                      <input type="checkbox" name="attributes" value="LVEDV (ml)"> LVEDV (ml)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="LVESV (ml)"> LVESV (ml)
+                      <input type="checkbox" name="attributes" value="LVESV (ml)"> LVESV (ml)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="LVSV (ml)"> LVSV (ml)
+                      <input type="checkbox" name="attributes" value="LVSV (ml)"> LVSV (ml)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="LVEF (%)"> LVEF (%)
+                      <input type="checkbox" name="attributes" value="LVEF (%)"> LVEF (%)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="LV Mass (g)"> LV Mass (g)
+                      <input type="checkbox" name="attributes" value="LV Mass (g)"> LV Mass (g)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="RVEDV (ml)"> RVEDV (ml)
+                      <input type="checkbox" name="attributes" value="RVEDV (ml)"> RVEDV (ml)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="RVESV (ml)"> RVESV (ml)
+                      <input type="checkbox" name="attributes" value="RVESV (ml)"> RVESV (ml)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="RVSV (ml)"> RVSV (ml)
+                      <input type="checkbox" name="attributes" value="RVSV (ml)"> RVSV (ml)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="RVEF (%)"> RVEF (%)
+                      <input type="checkbox" name="attributes" value="RVEF (%)"> RVEF (%)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="RV Mass (g)"> RV Mass (g)
+                      <input type="checkbox" name="attributes" value="RV Mass (g)"> RV Mass (g)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="BMI (kg/msq)"> BMI (kg/msq)
+                      <input type="checkbox" name="attributes" value="BMI (kg/msq)"> BMI (kg/msq)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="BSA"> BSA
+                      <input type="checkbox" name="attributes" value="BSA"> BSA
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="BSA (msq)"> BSA (msq)
+                      <input type="checkbox" name="attributes" value="BSA (msq)"> BSA (msq)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="CO (L/min)"> CO (L/min)
+                      <input type="checkbox" name="attributes" value="CO (L/min)"> CO (L/min)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="Central PP(mmHg)"> Central PP(mmHg)
+                      <input type="checkbox" name="attributes" value="Central PP(mmHg)"> Central PP(mmHg)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="DBP (mmHg)"> DBP (mmHg)
+                      <input type="checkbox" name="attributes" value="DBP (mmHg)"> DBP (mmHg)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="LVEF (ratio)"> LVEF (ratio)
+                      <input type="checkbox" name="attributes" value="LVEF (ratio)"> LVEF (ratio)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="MAP"> MAP
+                      <input type="checkbox" name="attributes" value="MAP"> MAP
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="PAP (mmHg)"> PAP (mmHg)
+                      <input type="checkbox" name="attributes" value="PAP (mmHg)"> PAP (mmHg)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="PP (mmHg)"> PP (mmHg)
+                      <input type="checkbox" name="attributes" value="PP (mmHg)"> PP (mmHg)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="RVEF (ratio)"> RVEF (ratio)
+                      <input type="checkbox" name="attributes" value="RVEF (ratio)"> RVEF (ratio)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="SBP (mmHg)"> SBP (mmHg)
+                      <input type="checkbox" name="attributes" value="SBP (mmHg)"> SBP (mmHg)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="attributes" checked="true" value="SVR (mmHg/L/min)"> SVR (mmHg/L/min)
+                      <input type="checkbox" name="attributes" value="SVR (mmHg/L/min)"> SVR (mmHg/L/min)
+                      <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
                     </li>
                 </ul>
               </p>
@@ -180,7 +207,7 @@
                 </ul>
               </p>
               <p>
-                <input type="button" id="button_tree_1" onclick="sendFormWithId(this.id, '\/decisionTree')" class="btn btn-success" value="Compute Decision Tree">
+                <input type="button" id="button_tree_1" onclick="sendFormWithId(this.id, '\/smpc\/id3')" class="btn btn-success" value="Compute Decision Tree">
               </p>
             </form>
           </div>
