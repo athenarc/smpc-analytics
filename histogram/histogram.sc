@@ -70,7 +70,7 @@ template <domain D, type T>
 D uint64[[1]] histogram_categorical(D T[[1]] arr, uint64 P) {
     D uint64[[1]] output(P);
     for (uint64 i = 0; i < P; i++) {
-        D uint64[[1]] eq = (uint64)(arr == (int64)i);
+        D uint64[[1]] eq = (uint64)(arr == (float64)i);
         output[i] = sum(eq);
     }
     return output;
@@ -84,7 +84,7 @@ D uint64[[1]] histogram_categorical(D T[[1]] arr, uint64 P) {
 **/
 template <domain D>
 D uint64[[1]] histogram_categorical(string datasource, string table, uint64 index, uint64 P) {
-    D int64[[1]] column = tdbReadColumn(datasource, table, index);
+    D float64[[1]] column = tdbReadColumn(datasource, table, index);
     return(histogram_categorical(column, P));
 }
 
@@ -101,7 +101,7 @@ D uint64[[1]] histogram_categorical(string datasource, uint64 providers_vmap, ui
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
         string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
         print("Computing aggregates for data-provider " + table);
-        D int64[[1]] column = tdbReadColumn(datasource, table, index);
+        D float64[[1]] column = tdbReadColumn(datasource, table, index);
         result += histogram_categorical(column, P);
     }
     return result;
@@ -120,7 +120,7 @@ D uint64[[1]] histogram_categorical(string datasource, uint64 providers_vmap, ui
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
         string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
         print("Computing aggregates for data-provider " + table);
-        D int64[[1]] column = tdbReadColumn(datasource, table, column_name);
+        D float64[[1]] column = tdbReadColumn(datasource, table, column_name);
         result += histogram_categorical(column, P);
     }
     return result;
@@ -141,10 +141,10 @@ D uint64[[1]] histogram_categorical(string datasource, string table, uint64 attr
     D int64[[1]] exclusion_mask(N);
     for (uint64 a = 0; a < requested_attributes; a++) {                         // for each attribute
         string attribute_name = tdbVmapGetString(attributes_vmap, "0", a);
-        D int64[[1]] column = tdbReadColumn(datasource, table, attribute_name);
+        D float64[[1]] column = tdbReadColumn(datasource, table, attribute_name);
         exclusion_mask += (int64)(column == -1);
         int64 prod = (int64)product(Ps[a+1:]);
-        positions += column * prod;
+        positions += (int64)column * prod;
     }
     exclusion_mask = (int64)((bool)exclusion_mask);
     positions = positions * (1 - exclusion_mask) + (-1) * exclusion_mask;

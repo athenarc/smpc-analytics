@@ -14,6 +14,7 @@ if (SIMULATION_MODE) {
 const express = require('express');
 const app = express();
 const { exec } = require('child_process');
+const { execSync } = require('child_process');
 const fs = require('fs');
 const uuidv4 = require('uuid/v4');
 var path = require('path');
@@ -132,29 +133,47 @@ function import_from_servers(attributes, datasources, res, parent, uid) {
 
 
 // function to import local data and return promise
-function import_locally(attributes, datasources, res, parent, uid) {
+function import_locally(attributes, datasources, res, parent, uid, type) {
     var localDNS = JSON.parse(fs.readFileSync('localDNS.json', 'utf8'));
     if (typeof datasources == 'undefined'){
         datasources = Object.keys(localDNS);
     }
-    for (let datasrc of datasources) {        // Check that all IPs exist
+    for (let datasrc of datasources) {         // Check that all IPs exist
         if ((datasrc in localDNS) == false) {  // If datasrc does not exist in DNS file, continue
             console.log(FgRed + 'Error: ' + ResetColor + 'Unable to find path for ' + datasrc + ', it does not exist in localDNS.json file.');
             return res.status(400).send('Failure on data importing from ' + datasrc);
         }
     }
 
-    // exec asynch python simulated imports
-    var import_promises = [];
-    for (let datasrc of datasources) {
-        var dataset = localDNS[datasrc];
-        console.log('[NODE SIMULATION] Request(' + uid + ') python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table "' + datasrc+'_'+uid + '"\n');
+    if (type == 'mesh') {
+        // var json_to_csv_promises = [];
+        for (let datasrc of datasources) {
+            var patient_file = localDNS[datasrc][type];
+            var csv_file = './datasets/' + datasrc + '_' + uid + '.csv';
+            localDNS[datasrc][type] = csv_file;
+            console.log('NODE SIMULATION] python mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" '+ patient_file + ' --output ' + csv_file + ' --mtrees ./mhmd-driver/m.json --mtrees_inverted ./mhmd-driver/m_inv.json --mapping ./mhmd-driver/mesh_mapping.json\n');
+            execSync('python mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" '+ patient_file + ' --output ' + csv_file + ' --mtrees ./mhmd-driver/m.json --mtrees_inverted ./mhmd-driver/m_inv.json --mapping ./mhmd-driver/mesh_mapping.json', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
+                if (err) {
+                    console.log(FgRed + '[NODE SIMULATION] ' + ResetColor + err);
+                    return;
+                }
+            });
+        }
+        console.log(FgGreen + 'Json succesfully converted to CSV ' + ResetColor);
+    }
 
+
+    var import_promises = [];
+    // exec asynch python simulated imports
+    for (let datasrc of datasources) {
+        var dataset = localDNS[datasrc][type];
+        console.log('[NODE SIMULATION] Request(' + uid + ') python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table "' + datasrc+'_'+uid + '"\n');
         import_promises.push( _exec('python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table "' + datasrc+'_'+uid +'"', {stdio:[0,1,2],cwd: parent}) );
     }
     // return array of promises for import
     return import_promises;
 }
+
 
 
 
@@ -179,6 +198,7 @@ app.post('/smpc/histogram', function(req, res) {
     var attributes = req.body.attributes;
     var datasources = req.body.datasources;
 
+    db.put(uid, JSON.stringify({'status':'running'}));
     var plot = ('plot' in req.body); // if plot exists in req.body
     if (!plot) {
         res.status(202).json({"location" : "/smpc/queue?request="+uid});
@@ -194,7 +214,7 @@ app.post('/smpc/histogram', function(req, res) {
             }
         }
         // TODO: Change column indexes to column names.
-        import_promises = import_locally(attributes_lst, datasources, res, parent, uid);
+        import_promises = import_locally(attributes_lst, datasources, res, parent, uid, 'cvi');
     } else {
 
       // TODO: Importing with servers !!
@@ -205,8 +225,6 @@ app.post('/smpc/histogram', function(req, res) {
     Promise.all(import_promises)
     .then((buffer) => {
         console.log(FgGreen + 'Importing Finished ' + ResetColor);
-        return db.put(uid, JSON.stringify({'status':'running'}));
-    }).then((buffer) => {
         return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
@@ -285,6 +303,7 @@ app.post('/smpc/count', function(req, res) {
     var datasources = req.body.datasources;
 
     var plot = ('plot' in req.body); // if plot exists in req.body
+    db.put(uid, JSON.stringify({'status':'running'}));
     if (!plot) {
         res.status(202).json({"location" : "/smpc/queue?request="+uid});
     }
@@ -292,7 +311,7 @@ app.post('/smpc/count', function(req, res) {
     var import_promises = [];
     if (SIMULATION_MODE) {
         //TODO: Generate csv from Json before importing.
-        import_promises = import_locally(attributes, datasources, res, parent, uid);
+        import_promises = import_locally(attributes, datasources, res, parent, uid, 'mesh');
     } else {
         import_promises = import_from_servers(attributes, datasources, res, parent, uid);
     }
@@ -302,8 +321,6 @@ app.post('/smpc/count', function(req, res) {
     Promise.all(import_promises)
     .then((buffer) => {
         console.log(FgGreen + 'Importing Finished ' + ResetColor);
-        return db.put(uid, JSON.stringify({'status':'running'}));
-    }).then((buffer) => {
         return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
@@ -383,6 +400,7 @@ app.post('/smpc/id3', function(req, res) {
     var class_attribute = req.body.class_attribute;
     attributes.push(class_attribute);
 
+    return db.put(uid, JSON.stringify({'status':'running'}));
     var plot = ('plot' in req.body); // if plot exists in req.body
     if (!plot) {
         res.status(202).json({"location" : "/smpc/queue?request="+uid});
@@ -391,7 +409,7 @@ app.post('/smpc/id3', function(req, res) {
     var import_promises = [];
     if (SIMULATION_MODE) {
         //TODO: Generate csv from Json before importing.
-        import_promises = import_locally(attributes, datasources, res, parent, uid);
+        import_promises = import_locally(attributes, datasources, res, parent, uid, 'mesh');
     } else {
         import_promises = import_from_servers(attributes, datasources, res, parent, uid);
     }
@@ -401,8 +419,6 @@ app.post('/smpc/id3', function(req, res) {
     Promise.all(import_promises)
     .then((buffer) => {
         console.log(FgGreen + 'Importing Finished ' + ResetColor);
-        return db.put(uid, JSON.stringify({'status':'running'}));
-    }).then((buffer) => {
         return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
