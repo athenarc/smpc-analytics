@@ -307,7 +307,6 @@ app.post('/smpc/count', function(req, res) {
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
-        //TODO: Generate csv from Json before importing.
         import_promises = import_locally(attributes, datasources, res, parent, uid, 'mesh');
     } else {
         import_promises = import_from_servers(attributes, datasources, res, parent, uid, '/smpc/import', 'MHMDdns.json');
