@@ -224,13 +224,13 @@ function addHistogramCategoricalTab() {
           <p>
             <ul class="list-group">
                 <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="data_provider_0" checked="true"> Dataset 1
+                  <input type="checkbox" name="datasources" value="t0" checked="true"> Dataset 1
                 </li>
                 <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="data_provider_1" checked="true"> Dataset 2
+                  <input type="checkbox" name="datasources" value="t1" checked="true"> Dataset 2
                 </li>
                 <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="data_provider_2" checked="true"> Dataset 3
+                  <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 3
                 </li>
             </ul>
           </p>
@@ -621,8 +621,7 @@ function addFilterToFormWithId(formId) {
     $('.selectpicker').selectpicker();
 }
 
-function objectifyForm(formArray) {//serialize data function
-
+function objectifyForm(formArray, computation_t) { // serialize data function
   var returnArray = {};
   for (var i = 0; i < formArray.length; i++){
       formJSON = {'attribute_names' : [], 'attribute_cells' : []};
@@ -673,20 +672,27 @@ function objectifyForm(formArray) {//serialize data function
               formJSON.boolean_opreator = element.value;
           }
       }
-      for (var a = 0; a < formJSON.attribute_names.length; a++){
-          var name = formJSON.attribute_names[a];
-          var cells = formJSON.attribute_cells[a];
-          finalJson.attributes[0].push({'name':name, 'cells':cells});
-      }
-      if ('filter_attributes' in formJSON) {
-         var boolean_opreator = formJSON.boolean_opreator;
-         finalJson.filters = {'operator' : boolean_opreator, 'conditions' : []};
-         for (var f = 0; f < formJSON.filter_attributes.length; f++){
-             var attribute_name = formJSON.filter_attributes[f];
-             var attribute_operator = formJSON.filter_operators[f];
-             var attribute_value = formJSON.filter_values[f];
-             finalJson.filters.conditions.push({'attribute' : attribute_name, 'operator' : attribute_operator, 'value' : attribute_value});
-         }
+      
+      if (computation_t == '/smpc/count') {
+          for (var k = 0; k < formJSON.attribute_names.length; k++) {
+              finalJson.attributes.push(formJSON.attribute_names[k]);
+          }
+      } else {
+          for (var a = 0; a < formJSON.attribute_names.length; a++){
+              var name = formJSON.attribute_names[a];
+              var cells = formJSON.attribute_cells[a];
+              finalJson.attributes[0].push({'name':name, 'cells':cells});
+          }
+          if ('filter_attributes' in formJSON) {
+              var boolean_opreator = formJSON.boolean_opreator;
+              finalJson.filters = {'operator' : boolean_opreator, 'conditions' : []};
+              for (var f = 0; f < formJSON.filter_attributes.length; f++){
+                  var attribute_name = formJSON.filter_attributes[f];
+                  var attribute_operator = formJSON.filter_operators[f];
+                  var attribute_value = formJSON.filter_values[f];
+                  finalJson.filters.conditions.push({'attribute' : attribute_name, 'operator' : attribute_operator, 'value' : attribute_value});
+              }
+          }
       }
 
     returnArray[i] = finalJson;
@@ -698,7 +704,7 @@ function objectifyForm(formArray) {//serialize data function
 function sendFormWithId(id, computation_t) {
   var formId = id.substring(7); // get the hist id from the button id
   var tabId = "tab" + formId.substring(5); // get the tab id
-  var jsonReq = objectifyForm($('#'+formId));
+  var jsonReq = objectifyForm($('#'+formId), computation_t);
   
   $.ajax({
       type: 'POST',
