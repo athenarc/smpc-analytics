@@ -310,7 +310,6 @@ app.post('/smpc/count', function(req, res) {
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
-        //TODO: Generate csv from Json before importing.
         import_promises = import_locally(attributes, datasources, res, parent, uid, 'mesh');
     } else {
         import_promises = import_from_servers(attributes, datasources, res, parent, uid);
@@ -400,7 +399,7 @@ app.post('/smpc/id3', function(req, res) {
     var class_attribute = req.body.class_attribute;
     attributes.push(class_attribute);
 
-    return db.put(uid, JSON.stringify({'status':'running'}));
+    db.put(uid, JSON.stringify({'status':'running'}));
     var plot = ('plot' in req.body); // if plot exists in req.body
     if (!plot) {
         res.status(202).json({"location" : "/smpc/queue?request="+uid});
@@ -408,7 +407,6 @@ app.post('/smpc/id3', function(req, res) {
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
-        //TODO: Generate csv from Json before importing.
         import_promises = import_locally(attributes, datasources, res, parent, uid, 'mesh');
     } else {
         import_promises = import_from_servers(attributes, datasources, res, parent, uid);
