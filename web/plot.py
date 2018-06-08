@@ -3,24 +3,20 @@ import sys
 import plotly
 import plotly.graph_objs as go
 import json
+import argparse
 import pandas as pd
 import numpy as np
 
-req_counter = sys.argv[1]
-configuration = json.load(open('../configuration_' + req_counter + '.json'))
 
 mins = []
 maxs = []
 
 
-if len(sys.argv) > 2:
-    COLUMNS = sys.argv[2]
-else:
-    COLUMNS = '../datasets/analysis_test_data/columns.csv'
-if len(sys.argv) > 3:
-    SUMMARY = sys.argv[3]
-else:
-    SUMMARY = '../datasets/analysis_test_data/cvi_summary.csv'
+parser = argparse.ArgumentParser()
+parser.add_argument('configuration', help = 'Configuration file of the request')
+parser.add_argument('--columns', help = 'CSV File with the columns of the global schema.', default = '../datasets/analysis_test_data/columns.csv')
+parser.add_argument('--summary', help = 'CSV file with the summary of the dataset.', default = '../datasets/analysis_test_data/cvi_summary.csv')
+args = parser.parse_args()
 
 def compute_axis_labels(min, max, width, cells):
     start = min
@@ -33,11 +29,13 @@ def compute_axis_labels(min, max, width, cells):
     ticks.append('['+"{0:.2f}".format(start)+', '+"{0:.2f}".format(end)+']')
     return ticks
 
+uid = args.configuration.split('_')[-1].split('.')[0]
+configuration = json.load(open(args.configuration))
 
-df = pd.read_csv(COLUMNS,sep=',')
+df = pd.read_csv(args.columns,sep=',')
 mins = []
 maxs = []
-summary = pd.read_csv(SUMMARY, sep = ',')
+summary = pd.read_csv(args.summary, sep = ',')
 for attribute in df.columns:
     if attribute in summary['Field'].values:
         mins.append(summary[summary['Field']==attribute][' Min'].item())
@@ -46,7 +44,7 @@ for attribute in df.columns:
         mins.append(0.0)
         maxs.append(0.0)
 
-with open('../out_' + req_counter + '.txt', 'r') as results:
+with open('../out_' + uid + '.txt', 'r') as results:
     ai = 1
     for line in results:
         if line.startswith('{') and 'Histogram' in line:
