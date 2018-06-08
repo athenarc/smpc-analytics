@@ -166,9 +166,9 @@ function addHistogramNumericalTab() {
               <li class="list-group-item">
                 <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2 &ensp;
               </li>
-              <li class="list-group-item">
+              <!-- <li class="list-group-item">
                 <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3 &ensp;
-              </li>
+              </li> -->
           </ul>
         </p>
         <p>
