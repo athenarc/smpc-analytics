@@ -459,11 +459,11 @@ function addDecisionTreeCategoricalTab() {
         <div id="loading-text">LOADING</div>
         <div id="loading-content"></div>
       </div>` +
-      `<form action="/decisionTree" method="post" id="tree_` + nextTab + `">
+      `<form action="/smpc/id3" method="post" id="tree_` + nextTab + `">
           </br>
           <div class="btn-group">
             Class Attribute
-            <input type="text" class="form-control" id="usr">
+            <input type="text" name="class_attribute" class="form-control" id="usr">
           </div>
           </br>
           </br>
@@ -473,13 +473,13 @@ function addDecisionTreeCategoricalTab() {
 
             </br>
             <div class="btn-group">
-              <input type="text" class="form-control" id="usr">
+              <input type="text" name="count_attributes" class="form-control" id="usr">
             </div>
           </div>
 
           </br>
           <p>
-            <input type="button" id="filter_button_` + nextTab + `"" onclick="addAttributeToFormWithId(this.id,'attributes')" class="btn btn-default" value="Add Attribute">
+            <input type="button" id="filter_button_` + nextTab + `"" onclick="addAttributeToFormWithId(this.id,'count_attributes')" class="btn btn-default" value="Add Attribute">
           </p>
 
           </br>
