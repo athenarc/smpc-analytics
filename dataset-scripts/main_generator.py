@@ -56,27 +56,34 @@ def main():
     if 'filters' in configuration:
         numberOfFilters = len(configuration['filters']['conditions'])
     df=pd.read_csv(args.columns,sep=',')
+
+    total_attribute_number = 0
+    total_attributes = []
+
     numberOfHistograms = len(configuration['attributes'])
     histograms = [{} for x in range(numberOfHistograms)]
     for i in range(numberOfHistograms):
         histogram = histograms[i]
         histograms[i] = {}
         histograms[i]['attributes'] = [x['name'] for x in configuration['attributes'][i]]
-        histograms[i]['attribute_indexes'] =  [df.columns.get_loc(attribute) for attribute in histograms[i]['attributes'] ]
+        histograms[i]['attribute_indexes'] =  list(range(total_attribute_number, total_attribute_number + len(histograms[i]['attributes'])))
         histograms[i]['cells'] = [x['cells'] for x in configuration['attributes'][i]]
+        total_attribute_number += len(histograms[i]['attributes'])
+        total_attributes += histograms[i]['attributes']
 
     attributes_vmaps = ['{'+ ', '.join([str(x) for x in histograms[i]['attribute_indexes']]) +'}' for i in range(numberOfHistograms)]
     cells_vmaps = ['{'+ ', '.join([str(x) for x in histograms[i]['cells']]) +'}' for i in range(numberOfHistograms)]
     mins = []
     maxs = []
     summary = pd.read_csv(args.summary, sep = ',')
-    for attribute in df.columns:
+    for attribute in total_attributes:
         if attribute in summary['Field'].values:
             mins.append(summary[summary['Field']==attribute][' Min'].item())
             maxs.append(summary[summary['Field']==attribute][' Max'].item())
         else:
             mins.append(0.0)
             maxs.append(0.0)
+    print(mins, maxs)
     main_f += '''
     pd_shared3p float64[[1]] imported_mins('''+ str(len(mins)) +''') =''' + '{'+ ', '.join([str(x) for x in mins]) +'}' + ''';
     pd_shared3p float64[[1]] imported_maxs('''+ str(len(maxs)) +''') =''' + '{'+ ', '.join([str(x) for x in maxs]) +'}' + ''';
@@ -86,7 +93,7 @@ def main():
         main_f += '''
     string bool_op = ''' + bool_op + ''';
         '''
-        filter_attributes_indexes = [df.columns.get_loc(attribute) for attribute in [x['attribute'] for x in configuration['filters']['conditions']] ]
+        filter_attributes_indexes = list(range(total_attribute_number, total_attribute_number + len(configuration['filters']['conditions'])))
         constraint_attributes = '{'+ ', '.join([str(x) for x in filter_attributes_indexes]) +'}'
         main_f += '''
     uint64[[1]] constraint_attributes = '''+ constraint_attributes + ';'
