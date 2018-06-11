@@ -183,6 +183,67 @@ D uint64[[1]] histogram_categorical(string datasource, uint64 providers_vmap, ui
     return histogram;
 }
 
+
+
+/**
+ * public datasource: name of the datasource
+ * public table: name of the table
+ * public uint64 data_providers_num: the number of data-providers
+ * public attributes_vmap: list(vmap) of attributes of the table, for which we compute their histograms (column names)
+ * public Ps: array of P values for each attribute
+**/
+template <domain D>
+D uint64[[1]] histogram_categorical(string datasource, string table, uint64 attributes_vmap, uint64[[1]] Ps, string bool_op, uint64 constraint_number, uint64 constraint_attributes_vmap, uint64 constraint_values_vmap) {
+    uint64 N = tdbGetRowCount(datasource, table);                               // number of tuples
+    D int64[[1]] positions(N);
+    uint64 requested_attributes = size(Ps);                                     // amount of attributes wanted for this histogram
+    D uint64[[1]] constraint_map(N) = constraint_map(datasource, table, bool_op, constraint_number, constraint_attributes_vmap, constraint_values_vmap);
+    D int64[[1]] exclusion_mask(N);
+    for (uint64 a = 0; a < requested_attributes; a++) {                         // for each attribute
+        string attribute_name = tdbVmapGetString(attributes_vmap, "0", a);
+        D float64[[1]] column = tdbReadColumn(datasource, table, attribute_name);
+        exclusion_mask += (int64)(column == -1);
+        int64 prod = (int64)product(Ps[a+1:]);
+        positions += (int64)column * prod;
+    }
+    exclusion_mask = (int64)((bool)exclusion_mask);
+    positions = positions * (1 - exclusion_mask) + (-1) * exclusion_mask;
+    uint64 length = product(Ps);
+    D uint64[[1]] histogram(length);
+    for (uint64 j = 0; j < length ; j++) {                      // for each cell of histogram h
+        D bool[[1]] eq = (bool)((uint64)(positions == (int64)j) * constraint_map);
+        histogram[j] = sum(eq);
+    }
+    return histogram;
+}
+
+
+/**
+ * public datasource: name of the datasource
+ * public uint64 providers_vmap: A tdb-Vmap with key 0 and value an array of the data-provider names
+ * public uint64 data_providers_num: the number of data-providers
+ * public attributes_vmap: list(vmap) of attributes of the table, for which we compute their histograms (column names)
+ * public Ps: array of P values for each attribute
+**/
+template <domain D>
+D uint64[[1]] histogram_categorical(string datasource, uint64 providers_vmap, uint64 data_providers_num, uint64 attributes_vmap, uint64[[1]] Ps, string bool_op, uint64 constraint_number, uint64 constraint_attributes_vmap, uint64 constraint_values_vmap) {
+    uint64 length = product(Ps);
+    D uint64[[2]] results(data_providers_num, length);
+    for (uint64 j = 0 ; j < data_providers_num ; j++) {
+        string table = tdbVmapGetString(providers_vmap, "0", j);
+        print("Computing aggregates for data-provider " + table);
+        D uint64[[1]] res = histogram_categorical(datasource, table, attributes_vmap, Ps, bool_op, constraint_number, constraint_attributes_vmap, constraint_values_vmap);
+        results[j,:] = res;
+    }
+
+    D uint64[[1]] histogram = results[0,:];
+    for (uint64 j = 1 ; j < data_providers_num ; j++) {
+        D uint64[[1]] res_hist = results[j,:];
+        histogram += res_hist;
+    }
+    return histogram;
+}
+
 /**
  * private arr: 2D array of all data tuples. size M x N, where M: #attributes, N: #tuples
  * public cells_list: list of numbers of cells for each histogram
@@ -448,6 +509,34 @@ uint64 multiple_histograms(string datasource, uint64 providers_vmap, uint64 data
         tdbVmapAddValue(histograms, arrayToString(h), hist);
     }
     return histograms;
+}
+
+template<domain D>
+D uint64[[1]] constraint_map(string datasource, string table, string bool_op, uint64 constraint_number, uint64 constraint_attributes_vmap, uint64 constraint_values_vmap){
+    uint64 N = tdbGetRowCount(datasource, table);                               // number of tuples
+    D uint64[[1]] constraint_map(N);
+    if (bool_op == "AND"){
+        constraint_map = 1;
+    } else if(bool_op == "OR") {
+        constraint_map = 0;
+    } else if(bool_op == "XOR") {
+        constraint_map = 0;
+    }
+
+    for (uint64 c = 0; c < constraint_number; c++) {
+        string column_name = tdbVmapGetString(constraint_attributes_vmap, "0", c);
+        pd_shared3p float64[[1]] constraint_attribute = tdbReadColumn(datasource, table, column_name);
+        float64 constraint_value = tdbVmapGetValue(constraint_values_vmap, "0", c)[0];
+        pd_shared3p uint64[[1]] eq = (uint64)(constraint_attribute == constraint_value);
+        if (bool_op == "AND"){
+            constraint_map *= eq;
+        } else if(bool_op == "OR") {
+            constraint_map += eq;
+        } else if(bool_op == "XOR") {
+            constraint_map = constraint_map * (1 - eq) + (1 - constraint_map) * eq;
+        }
+    }
+    return constraint_map;
 }
 
 template<domain D>

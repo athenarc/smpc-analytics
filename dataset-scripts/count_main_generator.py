@@ -65,6 +65,10 @@ def main():
         numberOfDatasets = len(available_datasources)
         data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(available_datasources[i] + '_' + uid) + ";" for i in range(len(available_datasources))])
 
+    numberOfFilters = 0
+    if 'filters' in configuration:
+        numberOfFilters = len(configuration['filters']['conditions'])
+
     attributes = configuration['attributes']
     attribute_values = [len(mapping[attribute]) for attribute in attributes]
     main_f += '''
@@ -77,6 +81,22 @@ def main():
         main_f += '''
     tdbVmapAddString(attributes_vmap, "0", ''' + quote(attribute) + ''');
 '''
+    if numberOfFilters > 0:
+        bool_op = quote(configuration['filters']['operator'])
+        main_f += '''
+    uint64 constraint_attributes_vmap = tdbVmapNew();
+    uint64 constraint_values_vmap = tdbVmapNew();
+    uint64 constraint_number = ''' + quote(numberOfFilters) + ''';
+    string bool_op = ''' + bool_op + ''';
+'''
+        for condition in configuration['filters']['conditions']:
+            name = condition['attribute']
+            value = condition['value']
+            main_f += '''
+    tdbVmapAddString(constraint_attributes_vmap, "0", ''' + quote(name) + ''');
+    tdbVmapAddValue(constraint_values_vmap, "0", ''' + quote(mapping[name][value]) + '''::float64);
+'''
+
     main_f += data_providers
     main_f += '''
     // Create the data-providers list
@@ -91,8 +111,15 @@ def main():
     tdbOpenConnection(datasource);
     print("Computing histogram");
 '''
-    main_f += '''
+    if numberOfFilters > 0:
+        main_f += '''
+    pd_shared3p uint64[[1]] histogram = histogram_categorical(datasource, providers_vmap, data_providers_num, attributes_vmap, Ps, bool_op, constraint_number, constraint_attributes_vmap, constraint_values_vmap);
+'''
+    else:
+        main_f += '''
     pd_shared3p uint64[[1]] histogram = histogram_categorical(datasource, providers_vmap, data_providers_num, attributes_vmap, Ps);
+'''
+    main_f += '''
     print("{'''+ str(', '.join(map(str,attribute_values))) +'''}", " Histogram");
     print(arrayToString(declassify(histogram)));
     print("\\n");
