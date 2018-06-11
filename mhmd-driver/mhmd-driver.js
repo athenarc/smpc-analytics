@@ -111,8 +111,8 @@ app.post('/smpc/import/cvi', function(req, res) {
     _exec('\tpython /mhmd-driver/csv_filter.py \"' + attributes.join(';')  + '\" --path /cvi_identified.csv --output /cvi_identified_' + hospitalName + '_filtered.csv', {stdio:[0,1,2],cwd: parent})
     .then((buffer) => {
         console.log('[NODE] Running XML-Generator');
-        console.log('\tpython /mhmd-driver/xml_generator.py /cvi_identified_' + hospitalName + '_filtered.csv --table ' + hospitalName + '\n');
-        return _exec('python /mhmd-driver/xml_generator.py /cvi_identified_' + hospitalName + '_filtered.csv --table ' + hospitalName, {stdio:[0,1,2],cwd: parent});
+        console.log('\tpython /mhmd-driver/xml_generator.py /cvi_identified_' + hospitalName + '_filtered.csv --float --table ' + hospitalName + '\n');
+        return _exec('python /mhmd-driver/xml_generator.py /cvi_identified_' + hospitalName + '_filtered.csv --float --table ' + hospitalName, {stdio:[0,1,2],cwd: parent});
     }).then((buffer) => {
         console.log('[NODE] Running CSV-Importer');
         console.log('\tsharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv /cvi_identified_' + hospitalName + '_filtered.csv --model /cvi_identified_' + hospitalName + '_filtered.xml --separator c --log /cvi_identified_' + hospitalName + '_filtered.log\n');
