@@ -198,6 +198,7 @@ app.post('/smpc/histogram', function(req, res) {
     var uid = uuidv4();
     var attributes = req.body.attributes;
     var datasources = req.body.datasources;
+    var filters = req.body.filters;
 
     db.put(uid, JSON.stringify({'status':'running'}));
     var plot = ('plot' in req.body); // if plot exists in req.body
@@ -205,17 +206,22 @@ app.post('/smpc/histogram', function(req, res) {
         res.status(202).json({"location" : "/smpc/queue?request="+uid});
     }
     // create list of attribute names from the POST request
-    var attributes_lst = [];
+    var attributes_to_import = [];
     for (var i = 0; i < attributes.length; i++) {
         for (var j = 0; j < attributes[i].length; j++) {
-            attributes_lst.push(attributes[i][j].name);
+            attributes_to_import.push(attributes[i][j].name);
         }
     }
+    // Add filter attributes for importing to list
+    for (i = 0; i < filters.conditions.length; i++) {
+        attributes_to_import.push(filters.conditions[i].attribute);
+    }
+    
     var import_promises = [];
     if (SIMULATION_MODE) {
-        import_promises = import_locally(attributes_lst, datasources, res, parent, uid, 'cvi');
+        import_promises = import_locally(attributes_to_import, datasources, res, parent, uid, 'cvi');
     } else {
-        import_promises = import_from_servers(attributes_lst, datasources, res, parent, uid, '/smpc/import/cvi', 'MHMDdns_cvi.json');
+        import_promises = import_from_servers(attributes_to_import, datasources, res, parent, uid, '/smpc/import/cvi', 'MHMDdns_cvi.json');
     }
     var print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
 
