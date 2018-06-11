@@ -220,7 +220,13 @@ function addHistogramCategoricalTab() {
             <input type="button" id="filter_button_` + nextTab + `"" onclick="addAttributeToFormWithId(this.id, 'count_attributes')" class="btn btn-default" value="Add Attribute">
           </p>
 
-          </br>
+          <div id="filter_container_`+nextTab+`">
+          </div>
+          <br>
+          <p>
+            <input type="button" id="filter_button_`+nextTab+`" onclick="addFilterToFormWithIdCategorical(this.id)" class="btn btn-default" value="Add Filter">
+          </p>
+          
           <p>
             <ul class="list-group">
                 <li class="list-group-item">
@@ -621,6 +627,59 @@ function addFilterToFormWithId(formId) {
     $('.selectpicker').selectpicker();
 }
 
+function addFilterToFormWithIdCategorical(formId) {
+  var id = formId.substring(14);
+  var container = document.getElementById('filter_container_'+id);
+  var children = container.childElementCount;
+  if (children == 0) {
+      var br = document.createElement('br');
+      container.appendChild(br);
+  }
+  var outer_div = document.createElement('div');
+
+  var input_div = document.createElement('div');
+  input_div.className = "btn-group";
+  var input = document.createElement('input');
+  input.name = "filter_attributes";
+  input.type = "text";
+  input.required = true;
+  input.className = "form-control";
+  input_div.appendChild(input);
+  outer_div.appendChild(input_div);
+  
+  space_span = document.createElement('span');
+  space_span.innerHTML = " Equals ";
+  outer_div.appendChild(space_span);
+  
+  var value_div = document.createElement('div');
+  value_div.className = "btn-group";
+  var value = document.createElement('input');
+  value.name = "filter_values";
+  value.type = "text";
+  value.required = true;
+  value.className = "form-control";
+  value_div.appendChild(value);
+  outer_div.appendChild(value_div);
+
+  if (children == 0) {
+      var bool_operators = ["AND", "OR", "XOR"];
+      select_op = document.createElement('select');
+      select_op.text = "Boolean Operator";
+      select_op.name = "boolean_opreator";
+      select_op.className = "selectpicker";
+      for (i = 0; i < bool_operators.length; i++){
+          option = document.createElement('option');
+          option.value = bool_operators[i];
+          option.text = bool_operators[i];
+          select_op.appendChild(option);
+      }
+      outer_div.appendChild(select_op);
+  }
+  container.appendChild(outer_div);
+  $('.selectpicker').selectpicker();
+  container.appendChild(outer_div);
+}
+
 function objectifyForm(formArray, computation_t) { // serialize data function
   var returnArray = {};
   for (var i = 0; i < formArray.length; i++){
@@ -682,20 +741,23 @@ function objectifyForm(formArray, computation_t) { // serialize data function
               var cells = formJSON.attribute_cells[a];
               finalJson.attributes[0].push({'name':name, 'cells':cells});
           }
-          if ('filter_attributes' in formJSON) {
-              var boolean_opreator = formJSON.boolean_opreator;
-              finalJson.filters = {'operator' : boolean_opreator, 'conditions' : []};
-              for (var f = 0; f < formJSON.filter_attributes.length; f++){
-                  var attribute_name = formJSON.filter_attributes[f];
+      }
+      if ('filter_attributes' in formJSON) {
+          var boolean_opreator = formJSON.boolean_opreator;
+          finalJson.filters = {'operator' : boolean_opreator, 'conditions' : []};
+          for (var f = 0; f < formJSON.filter_attributes.length; f++){
+              var attribute_name = formJSON.filter_attributes[f];
+              var attribute_value = formJSON.filter_values[f];
+              if (computation_t == '/smpc/histogram') {
                   var attribute_operator = formJSON.filter_operators[f];
-                  var attribute_value = formJSON.filter_values[f];
-                  finalJson.filters.conditions.push({'attribute' : attribute_name, 'operator' : attribute_operator, 'value' : attribute_value});
+              } else {
+                  finalJson.filters.conditions.push({'attribute' : attribute_name, 'value' : attribute_value});
               }
           }
       }
       returnArray[i] = finalJson;
   }
-  // console.log(returnArray[0]);
+  // console.log(finalJson);
   return returnArray[0];
 }
 
