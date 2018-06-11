@@ -632,7 +632,6 @@ function objectifyForm(formArray, computation_t) { // serialize data function
 
           if (element.name == 'class_attribute') {
               finalJson.class_attribute = element.value;
-              console.log(finalJson.class_attribute);
           }
           if ((element.name == 'attributes' && element.checked == true) || element.name == 'count_attributes') {
               formJSON.attribute_names.push(element.value);
