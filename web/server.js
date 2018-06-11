@@ -206,15 +206,24 @@ app.post('/smpc/histogram', function(req, res) {
         res.status(202).json({"location" : "/smpc/queue?request="+uid});
     }
     // create list of attribute names from the POST request
+    var attrib;
     var attributes_to_import = [];
     for (var i = 0; i < attributes.length; i++) {
         for (var j = 0; j < attributes[i].length; j++) {
-            attributes_to_import.push(attributes[i][j].name);
+            attrib = attributes[i][j].name;
+            // if attribute does not exist in list (avoid duplicate imports)
+            if (attributes_to_import.indexOf(attrib) == -1) { 
+                attributes_to_import.push(attrib);
+            }
         }
     }
     // Add filter attributes for importing to list
     for (i = 0; i < filters.conditions.length; i++) {
-        attributes_to_import.push(filters.conditions[i].attribute);
+        attrib = filters.conditions[i].attribute;
+        // if attribute does not exist in list (avoid duplicate imports)
+        if (attributes_to_import.indexOf(attrib) == -1) {
+            attributes_to_import.push(attrib);
+        }
     }
     
     var import_promises = [];
