@@ -321,6 +321,19 @@ app.post('/smpc/count', function(req, res) {
     if (!plot) {
         res.status(202).json({"location" : "/smpc/queue?request="+uid});
     }
+
+    // if filters are defined
+    if ('filters' in req.body) {
+        var filters = req.body.filters;
+        // Add filter attributes for importing to list
+        for (i = 0; i < filters.conditions.length; i++) {
+            attrib = filters.conditions[i].attribute;
+            if (attributes.indexOf(attrib) == -1) { // if attribute does not exist in list (avoid duplicate imports)
+                attributes.push(attrib);
+            }
+        }
+    }
+    
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
