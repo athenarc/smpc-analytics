@@ -211,19 +211,17 @@ app.post('/smpc/histogram', function(req, res) {
     for (var i = 0; i < attributes.length; i++) {
         for (var j = 0; j < attributes[i].length; j++) {
             attrib = attributes[i][j].name;
-            // if attribute does not exist in list (avoid duplicate imports)
-            if (attributes_to_import.indexOf(attrib) == -1) { 
-                attributes_to_import.push(attrib);
-            }
+            // if (attributes_to_import.indexOf(attrib) == -1) { // if attribute does not exist in list (avoid duplicate imports)
+            attributes_to_import.push(attrib);
+            // }
         }
     }
     // Add filter attributes for importing to list
     for (i = 0; i < filters.conditions.length; i++) {
         attrib = filters.conditions[i].attribute;
-        // if attribute does not exist in list (avoid duplicate imports)
-        if (attributes_to_import.indexOf(attrib) == -1) {
-            attributes_to_import.push(attrib);
-        }
+        // if (attributes_to_import.indexOf(attrib) == -1) { // if attribute does not exist in list (avoid duplicate imports)
+        attributes_to_import.push(attrib);
+        // }
     }
     
     var import_promises = [];
