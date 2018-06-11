@@ -416,13 +416,13 @@ function addDecisionTreeNumericalTab() {
         <p>
           <ul class="list-group">
               <li class="list-group-item">
-                <input type="checkbox" name="datasources" value="data_provider_0" checked="true"> Dataset 1 &ensp;
+                <input type="checkbox" name="datasources" value="t1" checked="true"> Dataset 1 &ensp;
               </li>
               <li class="list-group-item">
-                <input type="checkbox" name="datasources" value="data_provider_1" checked="true"> Dataset 2 &ensp;
+                <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2 &ensp;
               </li>
               <li class="list-group-item">
-                <input type="checkbox" name="datasources" value="data_provider_2" checked="true"> Dataset 3 &ensp;
+                <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3 &ensp;
               </li>
           </ul>
         </p>
@@ -486,13 +486,13 @@ function addDecisionTreeCategoricalTab() {
           <p>
             <ul class="list-group">
                 <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="data_provider_0" checked="true"> Dataset 1
+                  <input type="checkbox" name="datasources" value="t1" checked="true"> Dataset 1
                 </li>
                 <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="data_provider_1" checked="true"> Dataset 2
+                  <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2
                 </li>
                 <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="data_provider_2" checked="true"> Dataset 3
+                  <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3
                 </li>
             </ul>
           </p>
@@ -673,7 +673,7 @@ function objectifyForm(formArray, computation_t) { // serialize data function
           }
       }
       
-      if (computation_t == '/smpc/count') {
+      if (computation_t == '/smpc/count' || computation_t == '/smpc/id3') {
           for (var k = 0; k < formJSON.attribute_names.length; k++) {
               finalJson.attributes.push(formJSON.attribute_names[k]);
           }
@@ -694,8 +694,7 @@ function objectifyForm(formArray, computation_t) { // serialize data function
               }
           }
       }
-
-    returnArray[i] = finalJson;
+      returnArray[i] = finalJson;
   }
   // console.log(returnArray[0]);
   return returnArray[0];
