@@ -38,6 +38,7 @@ app.get('/', function (req, res) {
 
 app.use(express.static(path.join(__dirname, 'frontend'))); // public/static files
 app.use("/visuals", express.static(__dirname + '/visuals'));
+app.use("/graphs", express.static(__dirname + '/graphs'));
 
 
 // function to return a promise to write to file
@@ -152,7 +153,7 @@ function import_locally(attributes, datasources, res, parent, uid, type) {
             var csv_file = './datasets/' + datasrc + '_' + uid + '.csv';
             localDNS[datasrc][type] = csv_file;
             console.log('NODE SIMULATION] python mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" '+ patient_file + ' --output ' + csv_file + ' --mtrees ./mhmd-driver/m.json --mtrees_inverted ./mhmd-driver/m_inv.json --mapping ./mhmd-driver/mesh_mapping.json\n');
-            execSync('python mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" '+ patient_file + ' --output ' + csv_file + ' --mtrees ./mhmd-driver/m.json --mtrees_inverted ./mhmd-driver/m_inv.json --mapping ./mhmd-driver/mesh_mapping.json', {stdio:[0,1,2],cwd: parent}, (err, stdout, stderr) => {
+            execSync('python mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" '+ patient_file + ' --output ' + csv_file + ' --mtrees ./mhmd-driver/m.json --mtrees_inverted ./mhmd-driver/m_inv.json --mapping ./mhmd-driver/mesh_mapping.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'}, (err, stdout, stderr) => {
                 if (err) {
                     console.log(FgRed + '[NODE SIMULATION] ' + ResetColor + err);
                     return;
@@ -168,7 +169,7 @@ function import_locally(attributes, datasources, res, parent, uid, type) {
     for (let datasrc of datasources) {
         var dataset = localDNS[datasrc][type];
         console.log('[NODE SIMULATION] Request(' + uid + ') python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table "' + datasrc+'_'+uid + '"\n');
-        import_promises.push( _exec('python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table "' + datasrc+'_'+uid +'"', {stdio:[0,1,2],cwd: parent}) );
+        import_promises.push( _exec('python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table "' + datasrc+'_'+uid +'"', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'}) );
     }
     // return array of promises for import
     return import_promises;
@@ -224,7 +225,7 @@ app.post('/smpc/histogram', function(req, res) {
         return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
-        return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent});
+        return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
         var db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
@@ -235,20 +236,20 @@ app.post('/smpc/histogram', function(req, res) {
     }).then((msg) => {
         console.log('['+print_msg+'] Old .main_' + uid + '.sb.src deleted.\n');
         var exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh histogram/main_' : 'sharemind-scripts/sm_compile_and_run.sh histogram/main_';
-        return _exec(exec_arg + uid + '.sc', {stdio:[0,1,2],cwd: parent});
+        return _exec(exec_arg + uid + '.sc', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
     }).then((buffer) => {
         if (SIMULATION_MODE) {
             db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'})).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE SIMULATION] Request(' + uid + ') Program compiled.\n');
-            return _exec('sharemind-scripts/run.sh histogram/main_' + uid + '.sb 2> out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent});
+            return _exec('sharemind-scripts/run.sh histogram/main_' + uid + '.sb 2> out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
         } else {
             db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'})).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE] Request(' + uid + ') Program executed.\n');
-            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent});
+            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
         }
     }).then((buffer) => {
         if (SIMULATION_MODE) {
@@ -261,7 +262,7 @@ app.post('/smpc/histogram', function(req, res) {
         if (plot) {
             return _exec('python plot.py ../configuration_' + uid + '.json');
         } else {
-            return _exec('python web/response.py out_' + uid + '.txt', {cwd: parent});
+            return _exec('python web/response.py out_' + uid + '.txt', {cwd: parent, shell: '/bin/bash'});
         }
     }).then((result) => {
         if (plot) {
@@ -319,7 +320,7 @@ app.post('/smpc/count', function(req, res) {
         return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
-        return _exec('python dataset-scripts/count_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent});
+        return _exec('python dataset-scripts/count_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
         var db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
@@ -330,20 +331,20 @@ app.post('/smpc/count', function(req, res) {
     }).then((msg) => {
         console.log('['+print_msg+'] Old .main_' + uid + '.sb.src deleted.\n');
         var exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh histogram/main_' : 'sharemind-scripts/sm_compile_and_run.sh histogram/main_';
-        return _exec(exec_arg + uid + '.sc', {stdio:[0,1,2],cwd: parent});
+        return _exec(exec_arg + uid + '.sc', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
     }).then((buffer) => {
         if (SIMULATION_MODE) {
             db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'})).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE SIMULATION] Request(' + uid + ') Program compiled.\n');
-            return _exec('sharemind-scripts/run.sh histogram/main_' + uid + '.sb 2> out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent});
+            return _exec('sharemind-scripts/run.sh histogram/main_' + uid + '.sb 2> out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
         } else {
             db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'})).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE] Request(' + uid + ') Program executed.\n');
-            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent});
+            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
         }
     }).then((buffer) => {
         if (SIMULATION_MODE) {
@@ -356,7 +357,7 @@ app.post('/smpc/count', function(req, res) {
         if (plot) {
             return _exec('python count_plot.py ../out_' + uid + '.txt ../configuration_' + uid + '.json');
         } else {
-            return _exec('python web/response.py out_' + uid + '.txt | python web/transform_response.py  configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json' , {cwd: parent});
+            return _exec('python web/response.py out_' + uid + '.txt | python web/transform_response.py  configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json' , {cwd: parent, shell: '/bin/bash'});
         }
     }).then((result) => {
         if (plot) {
@@ -416,7 +417,7 @@ app.post('/smpc/id3', function(req, res) {
         return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
-        return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent});
+        return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
         var db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
@@ -427,20 +428,20 @@ app.post('/smpc/id3', function(req, res) {
     }).then((msg) => {
         console.log('['+print_msg+'] Old .main_' + uid + '.sb.src deleted.\n');
         var exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh ID3/main_' : 'sharemind-scripts/sm_compile_and_run.sh ID3/main_';
-        return _exec(exec_arg + uid + '.sc', {stdio:[0,1,2],cwd: parent});
+        return _exec(exec_arg + uid + '.sc', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
     }).then((buffer) => {
         if (SIMULATION_MODE) {
             db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'})).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE SIMULATION] Request(' + uid + ') Program compiled.\n');
-            return _exec('sharemind-scripts/run.sh ID3/main_' + uid + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > id3_out_' + uid + '.json', {stdio:[0,1,2],cwd: parent});
+            return _exec('set -o pipefail && sharemind-scripts/run.sh ID3/main_' + uid + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > out_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
         } else {
             db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'})).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE] Request(' + uid + ') Program executed.\n');
-            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" | sed --expression="s/,  }/ }/g" >  out_' + uid + '.json', {stdio:[0,1,2],cwd: parent});
+            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" | sed --expression="s/,  }/ }/g" >  out_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
         }
     }).then((buffer) => {
         if (SIMULATION_MODE) {
@@ -451,9 +452,9 @@ app.post('/smpc/id3', function(req, res) {
         }
 
         if (plot) {
-            return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --plot --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent});
+            return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --plot --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
         } else {
-            return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent});
+            return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
         }
     }).then((result) => {
         if (plot) {
