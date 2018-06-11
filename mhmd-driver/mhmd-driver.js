@@ -73,8 +73,8 @@ app.post('/smpc/import', function(req, res) {
     _exec('python /mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" /patients.json --output /' + hospitalName + '.csv', {stdio:[0,1,2],cwd: parent})
     .then((buffer) => {
         console.log('[NODE] Running XML-Generator');
-        console.log('\tpython /mhmd-driver/xml_generator.py /' + hospitalName + '.csv --table ' + hospitalName + '\n');
-        return _exec('python /mhmd-driver/xml_generator.py /' + hospitalName + '.csv --table ' + hospitalName, {stdio:[0,1,2],cwd: parent});
+        console.log('\tpython /mhmd-driver/xml_generator.py /' + hospitalName + '.csv --float --table ' + hospitalName + '\n');
+        return _exec('python /mhmd-driver/xml_generator.py /' + hospitalName + '.csv --float --table ' + hospitalName, {stdio:[0,1,2],cwd: parent});
     }).then((buffer) => {
         console.log('[NODE] Running CSV-Importer');
         console.log('\tsharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv /' + hospitalName + '.csv --model /' + hospitalName + '.xml --separator c --log /' + hospitalName + '.log\n');
@@ -86,7 +86,7 @@ app.post('/smpc/import', function(req, res) {
         unlink_promises.push( _unlinkIfExists(parent + '/' + hospitalName + '.csv') );
         unlink_promises.push( _unlinkIfExists(parent + '/' + hospitalName + '.xml') );
         unlink_promises.push( _unlinkIfExists(parent + '/' + hospitalName + '.log') );
-        
+
         return Promise.all(unlink_promises);
     }).then((result) => {
         console.log('[NODE] Data importing Successful.\n');
@@ -124,7 +124,7 @@ app.post('/smpc/import/cvi', function(req, res) {
         unlink_promises.push( _unlinkIfExists(parent + '/cvi_identified_' + hospitalName + '_filtered.csv') );
         unlink_promises.push( _unlinkIfExists(parent + '/cvi_identified_' + hospitalName + '_filtered.xml') );
         unlink_promises.push( _unlinkIfExists(parent + '/cvi_identified_' + hospitalName + '_filtered.log') );
-        
+
         return Promise.all(unlink_promises);
     }).then((result) => {
         console.log('[NODE] Data importing Successful.\n');
@@ -168,7 +168,7 @@ app.post('/smpc/import/cvi', function(req, res) {
 //         unlink_promises.push( _unlinkIfExists(parent + '/cvi_identified_' + hospitalName + '_filtered_edited.csv') );
 //         unlink_promises.push( _unlinkIfExists(parent + '/cvi_identified_' + hospitalName + '_filtered_edited.xml') );
 //         unlink_promises.push( _unlinkIfExists(parent + '/cvi_identified_' + hospitalName + '_filtered_edited.log') );
-// 
+//
 //         return Promise.all(unlink_promises);
 //     }).then((result) => {
 //         console.log('[NODE] Data importing Successful.\n');
