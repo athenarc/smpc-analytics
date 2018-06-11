@@ -212,10 +212,8 @@ app.post('/smpc/histogram', function(req, res) {
     }
     var import_promises = [];
     if (SIMULATION_MODE) {
-        // TODO: Change column indexes to column names.
         import_promises = import_locally(attributes_lst, datasources, res, parent, uid, 'cvi');
     } else {
-        // TODO: Add --float to XML Generator????
         import_promises = import_from_servers(attributes_lst, datasources, res, parent, uid, '/smpc/import/cvi', 'MHMDdns_cvi.json');
     }
     var print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
@@ -405,7 +403,6 @@ app.post('/smpc/id3', function(req, res) {
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
-        //TODO: Generate csv from Json before importing.
         import_promises = import_locally(attributes, datasources, res, parent, uid, 'mesh');
     } else {
         import_promises = import_from_servers(attributes, datasources, res, parent, uid, '/smpc/import', 'MHMDdns.json');
