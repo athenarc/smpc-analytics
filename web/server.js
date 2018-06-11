@@ -260,7 +260,7 @@ app.post('/smpc/histogram', function(req, res) {
         }
 
         if (plot) {
-            return _exec('python plot.py ' + uid);
+            return _exec('python plot.py ../configuration_' + uid + '.json');
         } else {
             return _exec('python web/response.py out_' + uid + '.txt', {cwd: parent});
         }
@@ -396,7 +396,7 @@ app.post('/smpc/id3', function(req, res) {
     var class_attribute = req.body.class_attribute;
     attributes.push(class_attribute);
 
-    return db.put(uid, JSON.stringify({'status':'running'}));
+    db.put(uid, JSON.stringify({'status':'running'}));
     var plot = ('plot' in req.body); // if plot exists in req.body
     if (!plot) {
         res.status(202).json({"location" : "/smpc/queue?request="+uid});
