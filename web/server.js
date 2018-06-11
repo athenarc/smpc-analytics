@@ -210,24 +210,24 @@ app.post('/smpc/histogram', function(req, res) {
     for (var i = 0; i < attributes.length; i++) {
         for (var j = 0; j < attributes[i].length; j++) {
             attrib = attributes[i][j].name;
-            // if (attributes_to_import.indexOf(attrib) == -1) { // if attribute does not exist in list (avoid duplicate imports)
-            attributes_to_import.push(attrib);
-            // }
+            if (attributes_to_import.indexOf(attrib) == -1) { // if attribute does not exist in list (avoid duplicate imports)
+                attributes_to_import.push(attrib);
+            }
         }
     }
-    
+
     // if filters are defined
     if ('filters' in req.body) {
         var filters = req.body.filters;
         // Add filter attributes for importing to list
         for (i = 0; i < filters.conditions.length; i++) {
             attrib = filters.conditions[i].attribute;
-            // if (attributes_to_import.indexOf(attrib) == -1) { // if attribute does not exist in list (avoid duplicate imports)
-            attributes_to_import.push(attrib);
-            // }
+            if (attributes_to_import.indexOf(attrib) == -1) { // if attribute does not exist in list (avoid duplicate imports)
+                attributes_to_import.push(attrib);
+            }
         }
     }
-    
+
     var import_promises = [];
     if (SIMULATION_MODE) {
         import_promises = import_locally(attributes_to_import, datasources, res, parent, uid, 'cvi');

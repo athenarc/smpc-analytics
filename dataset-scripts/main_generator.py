@@ -57,8 +57,9 @@ def main():
         numberOfFilters = len(configuration['filters']['conditions'])
     df=pd.read_csv(args.columns,sep=',')
 
-    total_attribute_number = 0
     total_attributes = []
+    attribute_indexes_map = {}
+    total_index_counter = 0
 
     numberOfHistograms = len(configuration['attributes'])
     histograms = [{} for x in range(numberOfHistograms)]
@@ -66,10 +67,13 @@ def main():
         histogram = histograms[i]
         histograms[i] = {}
         histograms[i]['attributes'] = [x['name'] for x in configuration['attributes'][i]]
-        histograms[i]['attribute_indexes'] =  list(range(total_attribute_number, total_attribute_number + len(histograms[i]['attributes'])))
+        for attribute in histograms[i]['attributes']:
+            if attribute not in attribute_indexes_map:
+                attribute_indexes_map[attribute] = total_index_counter
+                total_index_counter += 1
+                total_attributes.append(attribute)
+        histograms[i]['attribute_indexes'] =  [attribute_indexes_map[attribute] for attribute in histograms[i]['attributes']]
         histograms[i]['cells'] = [x['cells'] for x in configuration['attributes'][i]]
-        total_attribute_number += len(histograms[i]['attributes'])
-        total_attributes += histograms[i]['attributes']
 
     attributes_vmaps = ['{'+ ', '.join([str(x) for x in histograms[i]['attribute_indexes']]) +'}' for i in range(numberOfHistograms)]
     cells_vmaps = ['{'+ ', '.join([str(x) for x in histograms[i]['cells']]) +'}' for i in range(numberOfHistograms)]
@@ -83,7 +87,6 @@ def main():
         else:
             mins.append(0.0)
             maxs.append(0.0)
-    print(mins, maxs)
     main_f += '''
     pd_shared3p float64[[1]] imported_mins('''+ str(len(mins)) +''') =''' + '{'+ ', '.join([str(x) for x in mins]) +'}' + ''';
     pd_shared3p float64[[1]] imported_maxs('''+ str(len(maxs)) +''') =''' + '{'+ ', '.join([str(x) for x in maxs]) +'}' + ''';
@@ -93,7 +96,12 @@ def main():
         main_f += '''
     string bool_op = ''' + bool_op + ''';
         '''
-        filter_attributes_indexes = list(range(total_attribute_number, total_attribute_number + len(configuration['filters']['conditions'])))
+        filter_attributes = [c['attribute'] for c in configuration['filters']['conditions']]
+        for attribute in filter_attributes:
+            if attribute not in attribute_indexes_map:
+                attribute_indexes_map[attribute] = total_index_counter
+                total_index_counter += 1
+        filter_attributes_indexes = [attribute_indexes_map[attribute] for attribute in filter_attributes]
         constraint_attributes = '{'+ ', '.join([str(x) for x in filter_attributes_indexes]) +'}'
         main_f += '''
     uint64[[1]] constraint_attributes = '''+ constraint_attributes + ';'
