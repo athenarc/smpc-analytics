@@ -9,7 +9,11 @@ with open(OUTFILE) as results:
     for line in results:
         if line.startswith('{') and 'Histogram' in line:
             dimensions = [int(x) for x in (line[1:-(len('Histogram')+3)]).split(', ')]
-            histogram = [int(x) for x in (next(results)[1:-2]).split(', ')]
+            histogram = (next(results)[1:-2]).split(', ')
+            if histogram != ['']:
+                histogram = [int(x) for x in histogram]
+            else:
+                histogram = []
             res = {'cellsPerDimension' : dimensions, 'histogram' : histogram}
             response.append(res)
 json_data = json.dumps(response)
