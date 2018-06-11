@@ -215,6 +215,7 @@ app.post('/smpc/histogram', function(req, res) {
         // TODO: Change column indexes to column names.
         import_promises = import_locally(attributes_lst, datasources, res, parent, uid, 'cvi');
     } else {
+        // TODO: Add --float to XML Generator????
         import_promises = import_from_servers(attributes_lst, datasources, res, parent, uid, '/smpc/import/cvi', 'MHMDdns_cvi.json');
     }
     var print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
