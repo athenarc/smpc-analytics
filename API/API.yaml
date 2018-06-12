@@ -88,7 +88,7 @@ paths:
         - in: query
           name: request
           schema:
-            type: integer
+            type: string
           description: The request id.
       responses:
         '200':
@@ -109,7 +109,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        
+
   /amnesia/session:
     get:
       tags:
@@ -367,7 +367,7 @@ components:
               items:
                 type: object
                 properties:
-                  label: 
+                  label:
                     type: string
                   value:
                     type: integer

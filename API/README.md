@@ -32,7 +32,7 @@ The request is a JSON string consisting of the following parameters.
 The secure count computation is a potentially long running operation. For that reason the server's response to such a request is always `HTTP/1.1 202 Accepted`, along with a location in which one should periodically poll for the computation's status and/or result. An example response can be found below.
 ```json
 {
-  "location": "/smpc/queue?request=1"
+  "location": "/smpc/queue?request=d491977f-88e7-4993-aaeb-c8244b320faf"
 }
 ```
 In order to check for the secure count computation's status, and/or retrieve the result you should periodically poll the above location using the `/smpc/queue` GET request, which is described below.
@@ -43,7 +43,7 @@ In order to check for the secure count computation's status, and/or retrieve the
 The status of an ongoing computation request can be accessed through the `/smpc/queue` GET request by specifying its id.
 
 The only parameter this GET request accepts is the id of the desired computation request, as shown below.
-* `request` <span style="color:red">_required_</span> An integer identifying the computation request as it was provided by the response of `/smpc/count` POST request.
+* `request` <span style="color:red">_required_</span> A string id identifying the computation request as it was provided by the response of `/smpc/count` POST request.
 
 ##### Server's response
 
