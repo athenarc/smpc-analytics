@@ -68,14 +68,14 @@ def main():
                                 type = 'category',
                                 tickvals = list(range(len(y_ticks))),
                                 ticktext = y_ticks,
-                                title = attribute_names[0]
+                                title = attribute_names[1]
                             ),
                             yaxis=dict(
                                 type = 'category',
                                 tickangle = -45,
                                 tickvals = list(range(len(x_ticks))),
                                 ticktext = x_ticks,
-                                title = attribute_names[1]
+                                title = attribute_names[0]
                             )
                         )
                         figure = go.Figure(data=data, layout=layout)
