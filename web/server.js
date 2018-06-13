@@ -152,17 +152,10 @@ function import_locally(attributes, datasources, res, parent, uid, type) {
             var patient_file = localDNS[datasrc][type];
             var csv_file = './datasets/' + datasrc + '_' + uid + '.csv';
             localDNS[datasrc][type] = csv_file;
-            console.log('NODE SIMULATION] python mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" '+ patient_file + ' --output ' + csv_file + ' --mtrees ./mhmd-driver/m.json --mtrees_inverted ./mhmd-driver/m_inv.json --mapping ./mhmd-driver/mesh_mapping.json\n');
-            execSync('python mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" '+ patient_file + ' --output ' + csv_file + ' --mtrees ./mhmd-driver/m.json --mtrees_inverted ./mhmd-driver/m_inv.json --mapping ./mhmd-driver/mesh_mapping.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'}, (err, stdout, stderr) => {
-                if (err) {
-                    console.log(FgRed + '[NODE SIMULATION] ' + ResetColor + err);
-                    return;
-                }
-            });
+            console.log('[NODE SIMULATION] python mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" '+ patient_file + ' --output ' + csv_file + ' --mtrees ./mhmd-driver/m.json --mtrees_inverted ./mhmd-driver/m_inv.json --mapping ./mhmd-driver/mesh_mapping.json\n');
+            execSync('python mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" '+ patient_file + ' --output ' + csv_file + ' --mtrees ./mhmd-driver/m.json --mtrees_inverted ./mhmd-driver/m_inv.json --mapping ./mhmd-driver/mesh_mapping.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
         }
-        console.log(FgGreen + 'Json succesfully converted to CSV ' + ResetColor);
     }
-
 
     var import_promises = [];
     // exec asynch python simulated imports
