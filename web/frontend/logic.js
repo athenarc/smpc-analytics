@@ -467,7 +467,7 @@ function addDecisionTreeCategoricalTab() {
         <div id="loading-text">LOADING</div>
         <div id="loading-content"></div>
       </div>` +
-      `<form action="/smpc/id3" method="post" id="tree_` + nextTab + `">
+      `<form action="/smpc/id3/categorical" method="post" id="tree_` + nextTab + `">
           </br>
           <div class="btn-group">
             Class Attribute
@@ -505,7 +505,7 @@ function addDecisionTreeCategoricalTab() {
             </ul>
           </p>
           <p>
-            <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/id3')" class="btn btn-success" value="Compute Decision Tree">
+            <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/id3\/categorical')" class="btn btn-success" value="Compute Decision Tree">
           </p>
 
         </form>`+
@@ -691,7 +691,7 @@ function objectifyForm(formArray, computation_t) { // serialize data function
       for (var j = 0; j < form.length; j++){
           var element = form[j];      
 
-          if (computation_t == '/smpc/id3') {
+          if (computation_t == '/smpc/id3/categorical') {
               if (element.name == 'class_attribute') {
                   finalJson.class_attribute = element.value;
               }
@@ -743,7 +743,7 @@ function objectifyForm(formArray, computation_t) { // serialize data function
           }
       }
       
-      if (computation_t == '/smpc/count' || computation_t == '/smpc/id3') {
+      if (computation_t == '/smpc/count' || computation_t == '/smpc/id3/categorical') {
           for (var k = 0; k < formJSON.attribute_names.length; k++) {
               finalJson.attributes.push(formJSON.attribute_names[k]);
           }
