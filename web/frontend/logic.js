@@ -751,7 +751,11 @@ function objectifyForm(formArray, computation_t) { // serialize data function
           for (var a = 0; a < formJSON.attribute_names.length; a++){
               var name = formJSON.attribute_names[a];
               var cells = formJSON.attribute_cells[a];
-              finalJson.attributes[0].push({'name':name, 'cells':cells});
+              if (computation_t == '/smpc/id3/numerical') {
+                  finalJson.attributes.push({'name':name, 'cells':cells});
+              } else {
+                  finalJson.attributes[0].push({'name':name, 'cells':cells});
+              }
           }
       }
       if ('filter_attributes' in formJSON) {
