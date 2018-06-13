@@ -22,10 +22,12 @@
   left: -18px;
   top: 20px;
   -webkit-transform: rotateY(0deg);
+  opacity: 0.7;
+  
 }
 
 .lock:hover .unlocker{
-  border: 6px solid #525252;
+  border: 6px solid #3e8e3e;
   border-bottom: 0;
   border-radius: 15px 15px 0 0;
   -webkit-transform: rotateY(-180deg);
@@ -34,7 +36,10 @@
 
 
 .lock:hover {
-  background: #525252;
+  /* background: #000000; */
+  background: linear-gradient(to bottom left, #3e8e3e, #2b80d4);
+  opacity: 0.8;
+
 }
   
 *, *:before, *:after {
