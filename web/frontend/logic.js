@@ -273,10 +273,10 @@ function addDecisionTreeNumericalTab() {
         <div id="loading-text">LOADING</div>
         <div id="loading-content"></div>
       </div>` +
-      `<form action="/smpc/id3" method="post" id="tree_`+nextTab+`">
+      `<form action="/smpc/id3/numerical" method="post" id="tree_`+nextTab+`">
         </br>
         <p>
-          <select class="selectpicker">
+          <select class="selectpicker" name="class_attribute">
             <option value="" selected disabled>Class Attribute</option>
             <option>Patient Age</option>
             <option>Heart rate</option>
@@ -306,6 +306,8 @@ function addDecisionTreeNumericalTab() {
             <option>SBP (mmHg)</option>
             <option>SVR (mmHg/L/min)</option>
           </select>
+          
+          <span style="float:right;"> Class Attribute Cells : <input type="number" name="class_cells" min="1" max="15" placeholder="3"></span>
         </p>
         <p>
           <ul class="list-group">
@@ -433,7 +435,7 @@ function addDecisionTreeNumericalTab() {
           </ul>
         </p>
         <p>
-          <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/id3')" class="btn btn-success" value="Compute Decision Tree">
+          <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/id3\/numerical')" class="btn btn-success" value="Compute Decision Tree">
         </p>
         </form>`+
     '</div>').appendTo('.tab-content');
@@ -689,9 +691,19 @@ function objectifyForm(formArray, computation_t) { // serialize data function
       for (var j = 0; j < form.length; j++){
           var element = form[j];      
 
-          if (element.name == 'class_attribute') {
-              finalJson.class_attribute = element.value;
+          if (computation_t == '/smpc/id3') {
+              if (element.name == 'class_attribute') {
+                  finalJson.class_attribute = element.value;
+              }
+          } else if (computation_t == '/smpc/id3/numerical') {
+              if (element.name == 'class_attribute') {
+                  finalJson.class_attribute = {'name':element.value, 'cells':-1};
+              }
+              if (element.name == 'class_cells') {
+                  finalJson.class_attribute.cells = element.value;
+              }
           }
+          
           if ((element.name == 'attributes' && element.checked == true) || element.name == 'count_attributes') {
               formJSON.attribute_names.push(element.value);
           }

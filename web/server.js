@@ -416,6 +416,116 @@ app.post('/smpc/count', function(req, res) {
 
 
 
+app.post('/smpc/id3/numerical', function(req, res) {
+    var parent = path.dirname(__basedir);
+    var content = JSON.stringify(req.body);
+    console.log(content);
+    var uid = uuidv4();
+    var attributes = req.body.attributes;
+    var datasources = req.body.datasources;
+    var class_attribute = req.body.class_attribute;
+
+    db.put(uid, JSON.stringify({'status':'running'}));
+    var plot = ('plot' in req.body); // if plot exists in req.body
+    if (!plot) {
+        res.status(202).json({"location" : "/smpc/queue?request="+uid});
+    }
+    
+    // create list of attribute names from the POST request
+    var attrib;
+    var attributes_to_import = [];
+    for (var i = 0; i < attributes.length; i++) {
+        for (var j = 0; j < attributes[i].length; j++) {
+            attrib = attributes[i][j].name;
+            if (attributes_to_import.indexOf(attrib) == -1) { // if attribute does not exist in list (avoid duplicate imports)
+                attributes_to_import.push(attrib);
+            }
+        }
+    }
+    attributes_to_import.push(class_attribute);
+    
+    // create array of requests for import
+    var import_promises = [];
+    if (SIMULATION_MODE) {
+        import_promises = import_locally(attributes_to_import, datasources, res, parent, uid, 'mesh');
+    } else {
+        import_promises = import_from_servers(attributes_to_import, datasources, res, parent, uid, '/smpc/import', 'MHMDdns.json');
+    }
+
+    var print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
+    // wait them all to finish
+    Promise.all(import_promises)
+    .then((buffer) => {
+        console.log(FgGreen + 'Importing Finished ' + ResetColor);
+        return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
+    }).then((buffer) => {
+        console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
+        return _exec('python dataset-scripts/id3_numerical_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+    }).then((buffer) => {
+        console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
+        var db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
+        db.put(uid, JSON.stringify({'status':'running', 'step':db_msg})).catch((err) => {
+            console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+        });
+        return _unlinkIfExists(parent + '/ID3/.main_' + uid + '.sb.src');
+    }).then((msg) => {
+        console.log('['+print_msg+'] Old .main_' + uid + '.sb.src deleted.\n');
+        var exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh ID3/main_' : 'sharemind-scripts/sm_compile_and_run.sh ID3/main_';
+        return _exec(exec_arg + uid + '.sc', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+    }).then((buffer) => {
+        if (SIMULATION_MODE) {
+            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'})).catch((err) => {
+                console.log(FgRed + '[NODE] ' + ResetColor + err);
+            });
+            console.log('[NODE SIMULATION] Request(' + uid + ') Program compiled.\n');
+            return _exec('set -o pipefail && sharemind-scripts/run.sh ID3/main_' + uid + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > out_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        } else {
+            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'})).catch((err) => {
+                console.log(FgRed + '[NODE] ' + ResetColor + err);
+            });
+            console.log('[NODE] Request(' + uid + ') Program executed.\n');
+            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" | sed --expression="s/,  }/ }/g" >  out_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        }
+    }).then((buffer) => {
+        if (SIMULATION_MODE) {
+            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'})).catch((err) => {
+                console.log(FgRed + '[NODE] ' + ResetColor + err);
+            });
+            console.log('[NODE SIMULATION] Request(' + uid + ') Program executed.\n');
+        }
+
+        if (plot) {
+            return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --plot --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
+        } else {
+            return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
+        }
+    }).then((result) => {
+        if (plot) {
+            console.log('['+print_msg+'] Request(' + uid + ') Plotting done.\n');
+            var graph_name = result.toString();
+            graph_name = graph_name.slice(0,-1);
+            console.log('['+print_msg+']' + graph_name);
+            res.send(graph_name);
+        } else {
+            console.log('['+print_msg+'] Request(' + uid + ') Response ready.\n');
+            var result_obj = {'status':'succeeded','result': ''};
+            result_obj.result = JSON.parse(result);
+            db.put(uid, JSON.stringify(result_obj)).catch((err) => {
+              console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+            });
+        }
+        return ;
+    }).catch((err) => {
+        db.put(uid, JSON.stringify({'status':'failed'}))
+        .catch((err) => {
+            console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+        });
+        console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+    });
+});
+
+
+
 app.post('/smpc/id3', function(req, res) {
     var parent = path.dirname(__basedir);
     var content = JSON.stringify(req.body);
@@ -510,7 +620,6 @@ app.post('/smpc/id3', function(req, res) {
         console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
     });
 });
-
 
 
 const port = 3000;

@@ -45,7 +45,7 @@
 
 
 
-            <form action="/smpc/id3" method="post" id="tree_1">
+            <form action="/smpc/id3/categorical" method="post" id="tree_1">
               </br>
               <p>
                 <select class="selectpicker" name="class_attribute">
@@ -78,6 +78,8 @@
                   <option>SBP (mmHg)</option>
                   <option>SVR (mmHg/L/min)</option>
                 </select>
+                
+                <span style="float:right;"> Class Attribute Cells : <input type="number" name="class_cells" min="1" max="15" placeholder="3"></span>
               </p>
                     
               <p>
@@ -196,18 +198,18 @@
               <p>
                 <ul class="list-group">
                     <li class="list-group-item">
-                      <input type="checkbox" name="datasources" value="data_provider_0" checked="true"> Dataset 1
+                      <input type="checkbox" name="datasources" value="t1" checked="true"> Dataset 1
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="datasources" value="data_provider_1" checked="true"> Dataset 2
+                      <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2
                     </li>
                     <li class="list-group-item">
-                      <input type="checkbox" name="datasources" value="data_provider_2" checked="true"> Dataset 3
+                      <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3
                     </li>
                 </ul>
               </p>
               <p>
-                <input type="button" id="button_tree_1" onclick="sendFormWithId(this.id, '\/smpc\/id3')" class="btn btn-success" value="Compute Decision Tree">
+                <input type="button" id="button_tree_1" onclick="sendFormWithId(this.id, '\/smpc\/id3\/numerical')" class="btn btn-success" value="Compute Decision Tree">
               </p>
             </form>
           </div>
