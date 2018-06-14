@@ -416,7 +416,7 @@ app.post('/smpc/id3/numerical', function(req, res) {
     var uid = uuidv4();
     var attributes = req.body.attributes;
     var datasources = req.body.datasources;
-    var class_attribute = req.body.class_attribute;
+    var class_attribute = req.body.class_attribute.name;
 
     db.put(uid, JSON.stringify({'status':'running'}));
     var plot = ('plot' in req.body); // if plot exists in req.body
@@ -428,15 +428,14 @@ app.post('/smpc/id3/numerical', function(req, res) {
     var attrib;
     var attributes_to_import = [];
     for (var i = 0; i < attributes.length; i++) {
-        for (var j = 0; j < attributes[i].length; j++) {
-            attrib = attributes[i][j].name;
-            if (attributes_to_import.indexOf(attrib) == -1) { // if attribute does not exist in list (avoid duplicate imports)
-                attributes_to_import.push(attrib);
-            }
+        attrib = attributes[i].name;
+        if (attributes_to_import.indexOf(attrib) == -1) { // if attribute does not exist in list (avoid duplicate imports)
+            attributes_to_import.push(attrib);
         }
     }
     attributes_to_import.push(class_attribute);
 
+    console.log("\n\n\n"+attributes_to_import+"\n\n");
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
