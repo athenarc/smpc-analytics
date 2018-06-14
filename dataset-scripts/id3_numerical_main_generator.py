@@ -122,8 +122,8 @@ def main():
             mins.append(0.0)
             maxs.append(0.0)
     main_f += '''
-    pd_shared3p float64[[1]] imported_mins('''+ str(len(mins)) +''') =''' + '{'+ ', '.join([str(x) for x in mins]) +'}' + ''';
-    pd_shared3p float64[[1]] imported_maxs('''+ str(len(maxs)) +''') =''' + '{'+ ', '.join([str(x) for x in maxs]) +'}' + ''';
+    imported_mins =''' + '{'+ ', '.join([str(x) for x in mins]) +'}' + ''';
+    imported_maxs =''' + '{'+ ', '.join([str(x) for x in maxs]) +'}' + ''';
 
     imported_cells =  {'''+','.join(map(str,imported_cells))+'''};
     print("Opening connection to db: ", datasource);
