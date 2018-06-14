@@ -326,7 +326,7 @@ app.post('/smpc/count', function(req, res) {
             }
         }
     }
-    
+
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
@@ -423,7 +423,7 @@ app.post('/smpc/id3/numerical', function(req, res) {
     if (!plot) {
         res.status(202).json({"location" : "/smpc/queue?request="+uid});
     }
-    
+
     // create list of attribute names from the POST request
     var attrib;
     var attributes_to_import = [];
@@ -436,7 +436,7 @@ app.post('/smpc/id3/numerical', function(req, res) {
         }
     }
     attributes_to_import.push(class_attribute);
-    
+
     // create array of requests for import
     var import_promises = [];
     if (SIMULATION_MODE) {
@@ -488,9 +488,9 @@ app.post('/smpc/id3/numerical', function(req, res) {
         }
 
         if (plot) {
-            return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --plot --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
+            return _exec('python web/id3_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json --plot --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
         } else {
-            return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
+            return _exec('python web/id3_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
         }
     }).then((result) => {
         if (plot) {
