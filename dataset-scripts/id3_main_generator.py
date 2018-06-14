@@ -92,11 +92,11 @@ def main():
 '''
 
     attribute_values = [len(mapping[attribute]) for attribute in attributes]
-    max_attribute_values = max(attribute_values)
+    possible_classes = list(range(len(mapping[class_attribute])))
+    max_attribute_values = max(max(attribute_values), len(possible_classes))
     columns = len(attributes) + 1
     # possible_values = [list(range(p)) for p in attribute_values]
     possible_values = [possible_value + [-1]*(max_attribute_values-len(possible_value)) for possible_value in [list(range(p)) for p in attribute_values]]
-    possible_classes = list(range(len(mapping[class_attribute])))
     possible_values.append(possible_classes + [-1]*(max_attribute_values-len(possible_classes))  )
     main_f += '''
     columns = ''' + str(columns) + ''';
