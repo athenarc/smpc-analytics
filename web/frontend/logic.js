@@ -307,7 +307,7 @@ function addDecisionTreeNumericalTab() {
             <option>SVR (mmHg/L/min)</option>
           </select>
           
-          <span style="float:right;"> Class Attribute Cells : <input type="number" name="class_cells" min="1" max="15" placeholder="3"></span>
+          <span style="float:right;"> Class Attribute Cells : <input type="number" name="class_cells" min="1" max="15" value="5"></span>
         </p>
         <p>
           <ul class="list-group">
