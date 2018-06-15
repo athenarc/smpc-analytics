@@ -161,7 +161,7 @@ pd_shared3p bool all_examples_same(uint64 example_indexes_vmap) {
             pd_shared3p float64 max = imported_maxs[class_index];
             int64 number_of_cells = imported_cells[class_index];
             pd_shared3p float64 width = (max - min) / (float64) number_of_cells;
-            label_column = (label_column - min) / width;
+            label_column = (float64)((int64)((label_column - min) / width));
         }
         for (uint64 a = 0; a < max_attribute_values; a++) {
             pd_shared3p float64 label = possible_values[class_index, a];
@@ -194,7 +194,7 @@ pd_shared3p float64 entropy(uint64 example_indexes_vmap) {
                 pd_shared3p float64 max = imported_maxs[class_index];
                 int64 number_of_cells = imported_cells[class_index];
                 pd_shared3p float64 width = (max - min) / (float64) number_of_cells;
-                label_column = (label_column - min) / width;
+                label_column = (float64)((int64)((label_column - min) / width));
             }
             pd_shared3p float64 label = possible_values[class_index, c];
             pd_shared3p uint64[[1]] eq = (uint64)(label_column == label) * (uint64)(example_indexes != 0) * (uint64)(label != -1);
@@ -241,7 +241,7 @@ pd_shared3p float64 information_gain(uint64 example_indexes_vmap, pd_shared3p ui
                 width = (max - min) / (float64) number_of_cells;
             }
             pd_shared3p bool categorical = exists(categorical_attributes, attribute);
-            attribute_column = (attribute_column * (float64)categorical) + ((attribute_column - min) / width) * (1-(float64)categorical); // If attribute is NOT categorical, change the column.
+            attribute_column = (attribute_column * (float64)categorical) + (float64)((int64)((attribute_column - min) / width)) * (1-(float64)categorical); // If attribute is NOT categorical, change the column.
             pd_shared3p int64[[1]] partial_subset(rows) = (int64)(attribute_column == value) * (int64)(example_indexes != 0);
             tdbVmapAddValue(subset, "0", partial_subset);
             subset_count += sum(partial_subset);
@@ -280,7 +280,7 @@ pd_shared3p int64 most_common_label(uint64 example_indexes_vmap) {
             pd_shared3p float64 max = imported_maxs[class_index];
             int64 number_of_cells = imported_cells[class_index];
             pd_shared3p float64 width = (max - min) / (float64) number_of_cells;
-            label_column = (label_column - min) / width;
+            label_column = (float64)((int64)((label_column - min) / width));
         }
         for (uint64 a = 0; a < max_attribute_values; a++) {
             pd_shared3p uint64[[1]] eq = (uint64)((int64)label_column == (int64) a)* (uint64)(example_indexes != 0);
@@ -304,7 +304,7 @@ pd_shared3p xor_uint8[[1]] id3(uint64 example_indexes_vmap, pd_shared3p uint64[[
                 pd_shared3p float64 max = imported_maxs[class_index];
                 int64 number_of_cells = imported_cells[class_index];
                 pd_shared3p float64 width = (max - min) / (float64) number_of_cells;
-                label_column = (label_column - min) / width;
+                label_column = (float64)((int64)((label_column - min) / width));
             }
             pd_shared3p float64[[1]] true_labels = (float64)example_indexes * label_column;
             label_count += (int64)sum(true_labels);
@@ -350,7 +350,7 @@ pd_shared3p xor_uint8[[1]] id3(uint64 example_indexes_vmap, pd_shared3p uint64[[
                 width = (max - min) / (float64) number_of_cells;
             }
             pd_shared3p bool categorical = exists(categorical_attributes, best_attribute);
-            best_attribute_column = (best_attribute_column * (float64)categorical) + ((best_attribute_column - min) / width) * (1-(float64)categorical); // If attribute is NOT categorical, change the column.
+            best_attribute_column = (best_attribute_column * (float64)categorical) + ((float64)((int64)((best_attribute_column - min) / width))) * (1-(float64)categorical); // If attribute is NOT categorical, change the column.
 
             pd_shared3p int64[[1]] partial_subset(rows) = (int64)(best_attribute_column == value) * (int64)(example_indexes != 0);
             tdbVmapAddValue(subset, "0", partial_subset);

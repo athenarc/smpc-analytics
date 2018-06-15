@@ -26,7 +26,7 @@ def main():
     global maxs
     configuration = json.load(open(args.configuration))
     attributes = [a['name'] for a in configuration['attributes']]
-    cells = [int(a['cells']) for a in configuration['attributes']]
+    cells = [int(a['cells']) for a in configuration['attributes']] + [int(configuration['class_attribute']['cells'])]
     class_attribute = configuration['class_attribute']['name']
     total_attributes = attributes + [class_attribute]
     summary = pd.read_csv(args.summary, sep = ',')
