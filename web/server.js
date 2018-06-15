@@ -175,10 +175,12 @@ app.get('/smpc/queue', function(req, res) {
     request = req.query.request;
     db.get(request)
     .then((value) => {
-        res.send(value);
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.status(200).json(JSON.parse(value));
     }).catch((err) => {
         console.log(FgRed + '[NODE] ' + ResetColor + err);
-        res.send(JSON.stringify({'status':'notstarted'}));
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.status(200).json({'status':'notstarted'});
     });
 });
 
@@ -195,6 +197,7 @@ app.post('/smpc/histogram', function(req, res) {
     db.put(uid, JSON.stringify({'status':'running'}));
     var plot = ('plot' in req.body); // if plot exists in req.body
     if (!plot) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(202).json({"location" : "/smpc/queue?request="+uid});
     }
     // create list of attribute names from the POST request
@@ -312,6 +315,7 @@ app.post('/smpc/count', function(req, res) {
     var plot = ('plot' in req.body); // if plot exists in req.body
     db.put(uid, JSON.stringify({'status':'running'}));
     if (!plot) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(202).json({"location" : "/smpc/queue?request="+uid});
     }
 
@@ -421,6 +425,7 @@ app.post('/smpc/id3/numerical', function(req, res) {
     db.put(uid, JSON.stringify({'status':'running'}));
     var plot = ('plot' in req.body); // if plot exists in req.body
     if (!plot) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(202).json({"location" : "/smpc/queue?request="+uid});
     }
 
@@ -531,6 +536,7 @@ app.post('/smpc/id3/categorical', function(req, res) {
     db.put(uid, JSON.stringify({'status':'running'}));
     var plot = ('plot' in req.body); // if plot exists in req.body
     if (!plot) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(202).json({"location" : "/smpc/queue?request="+uid});
     }
     // create array of requests for import
