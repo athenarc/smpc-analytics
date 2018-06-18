@@ -146,6 +146,7 @@ def plot(nodes, edges, leaves):
                 selector: 'node',
                 style: {
                   'content': 'data(label)',
+                  'font-size': 9,
                   'text-opacity': 0.7,
                   'text-valign': 'center',
                   'text-halign': 'center',
@@ -156,7 +157,7 @@ def plot(nodes, edges, leaves):
                 selector: 'edge',
                 style: {
                   'curve-style': 'bezier',
-                  'width': 2,
+                  'width': 1,
                   'target-arrow-shape': 'triangle',
                   'line-color': '#d7efd7',
                   'target-arrow-color': '#d7efd7'
@@ -165,6 +166,14 @@ def plot(nodes, edges, leaves):
               {
                 selector: 'edge',
                 style: {
+                  'label': '',
+                  'text-opacity': 0.5
+                }
+              },
+              {
+                selector: '.edge_with_label',
+                style: {
+                  "font-size": 9,
                   'label': 'data(label)',
                   'text-opacity': 0.5
                 }
@@ -185,13 +194,22 @@ def plot(nodes, edges, leaves):
     html += str(',\n'.join(map(str,nodes)))
     html += '''],
                 edges: ['''
-    html += str(',\n'.join(map(str,edges)))
+    html += str(',\n'.join(map(str,edges))
     html += ''']
                     },
                 });
     '''
     for leaf, id in leaves.items():
         html += ''' cy.$("[id=\'''' + id + '''\']").classes('leafClass');
+    '''
+    html += '''
+    cy.on('tap', 'edge', function(evt) {
+        if (cy.$("[id='" + String(evt.target.id()) + "']").hasClass('edge_with_label')) {
+            cy.$("[id='" + String(evt.target.id()) + "']").classes('edge');
+        } else {
+            cy.$("[id='" + String(evt.target.id()) + "']").classes('edge_with_label');
+        }
+    });
     '''
     html += '''</script>
           </body>
