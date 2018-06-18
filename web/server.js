@@ -11,8 +11,10 @@ if (SIMULATION_MODE) {
     console.log('\n[NODE] Running in Secure Multiparty Computation mode with 3 servers\n');
 }
 
+const https = require('https');
 const express = require('express');
 const app = express();
+app.use(require('helmet')());
 const { exec } = require('child_process');
 const { execSync } = require('child_process');
 const fs = require('fs');
@@ -39,6 +41,22 @@ app.get('/', function (req, res) {
 app.use(express.static(path.join(__dirname, 'frontend'))); // public/static files
 app.use("/visuals", express.static(__dirname + '/visuals'));
 app.use("/graphs", express.static(__dirname + '/graphs'));
+
+
+
+if (fs.existsSync('./sslcert/fullchain.pem')) {
+    const port = 80;
+    const options = {
+        cert: fs.readFileSync('./sslcert/fullchain.pem'),
+        key: fs.readFileSync('./sslcert/privkey.pem')
+    };
+
+    app.listen(port, () => console.log('Example app listening on port ' + port + '!'));
+    https.createServer(options, app).listen(443);
+} else {
+    const port = 3000;
+    app.listen(port, () => console.log('Example app listening on port ' + port + '!'));
+}
 
 
 // function to return a promise to write to file
@@ -620,8 +638,6 @@ app.post('/smpc/id3/categorical', function(req, res) {
 });
 
 
-const port = 3000;
-app.listen(port, () => console.log('Example app listening on port ' + port + '!'));
 
 const FgRed = "\x1b[31m";
 const FgGreen = "\x1b[32m";
