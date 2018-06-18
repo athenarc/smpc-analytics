@@ -194,7 +194,7 @@ def plot(nodes, edges, leaves):
     html += str(',\n'.join(map(str,nodes)))
     html += '''],
                 edges: ['''
-    html += str(',\n'.join(map(str,edges))
+    html += str(',\n'.join(map(str,edges)))
     html += ''']
                     },
                 });
