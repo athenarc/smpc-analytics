@@ -11,7 +11,7 @@ function addHistogramNumericalTab() {
   // create the tab content
   $('<div class="tab-pane fade" id="tab'+nextTab+'">' +
       `<div style="display: none;" id="loading-wrapper_hist_`+nextTab+`">
-        <div id="loading-text">LOADING</div>
+        <div id="loading-text">Loading</div>
         <div id="loading-content"></div>
       </div>` +
       `<form action="/smpc/histogram" method="post" id="hist_`+nextTab+`">
@@ -201,7 +201,7 @@ function addHistogramCategoricalTab() {
   // create the tab content
   $('<div class="tab-pane fade" id="tab'+nextTab+'">' +
       `<div style="display: none;" id="loading-wrapper_hist_`+nextTab+`">
-        <div id="loading-text">LOADING</div>
+        <div id="loading-text">Loading</div>
         <div id="loading-content"></div>
       </div>` +
       `<form action="/smpc/count" method="post" id="hist_` + nextTab + `">
@@ -270,7 +270,7 @@ function addDecisionTreeNumericalTab() {
   // create the tab content
   $('<div class="tab-pane fade" id="tab'+nextTab+'">' +
       `<div style="display: none;" id="loading-wrapper_tree_`+nextTab+`">
-        <div id="loading-text">LOADING</div>
+        <div id="loading-text">Loading</div>
         <div id="loading-content"></div>
       </div>` +
       `<form action="/smpc/id3/numerical" method="post" id="tree_`+nextTab+`">
@@ -464,7 +464,7 @@ function addDecisionTreeCategoricalTab() {
   // create the tab content
   $('<div class="tab-pane fade" id="tab'+nextTab+'">' +
       `<div style="display: none;" id="loading-wrapper_tree_`+nextTab+`">
-        <div id="loading-text">LOADING</div>
+        <div id="loading-text">Loading</div>
         <div id="loading-content"></div>
       </div>` +
       `<form action="/smpc/id3/categorical" method="post" id="tree_` + nextTab + `">
