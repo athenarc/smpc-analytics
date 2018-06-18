@@ -146,7 +146,6 @@ def plot(nodes, edges, leaves):
                 selector: 'node',
                 style: {
                   'content': 'data(label)',
-                  'font-size': 9,
                   'text-opacity': 0.7,
                   'text-valign': 'center',
                   'text-halign': 'center',
@@ -173,7 +172,6 @@ def plot(nodes, edges, leaves):
               {
                 selector: '.edge_with_label',
                 style: {
-                  "font-size": 9,
                   'label': 'data(label)',
                   'text-opacity': 0.5
                 }
