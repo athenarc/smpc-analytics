@@ -31,14 +31,14 @@ with open (args.configuration) as configuration:
     i = 0
     if len(possible_values) == 1:
         for p in possible_values[0]:
-            p = str(m_trees_inverted[p])
-            tuple = {'label' : p, 'value' : histogram[i]}
+            p_name = str(m_trees_inverted[p])
+            tuple = {'mesh': p, 'label' : p_name, 'value' : histogram[i]}
             output['data'].append(tuple)
             i += 1
     else:
         for p in itertools.product(*possible_values):
-            p = [str(m_trees_inverted[a]) for a in p]
-            tuple = {'label' : p, 'value' : histogram[i]}
+            p_name = [str(m_trees_inverted[a]) for a in p]
+            tuple = {'mesh': p, 'label' : p_name, 'value' : histogram[i]}
             output['data'].append(tuple)
             i += 1
     print(json.dumps(output))
