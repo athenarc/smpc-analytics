@@ -149,3 +149,8 @@ web/mydb/*
 
 # Auto-generated SecreC files
 simulated_import_*.sc
+
+
+# HTTPS configuration files
+web/static/*
+
