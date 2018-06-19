@@ -14,7 +14,6 @@ if (SIMULATION_MODE) {
 const https = require('https');
 const express = require('express');
 const app = express();
-app.use(require('helmet')());
 const { exec } = require('child_process');
 const { execSync } = require('child_process');
 const fs = require('fs');
@@ -42,7 +41,12 @@ app.use(express.static(path.join(__dirname, 'frontend'))); // public/static file
 app.use("/visuals", express.static(__dirname + '/visuals'));
 app.use("/graphs", express.static(__dirname + '/graphs'));
 
-
+function ensureSecure(req, res, next){
+  if(req.secure){
+    return next();
+  }
+  res.redirect('https://' + req.hostname + req.url); // express 4.x
+}
 
 if (fs.existsSync('./sslcert/fullchain.pem')) {
     const port = 80;
@@ -51,6 +55,7 @@ if (fs.existsSync('./sslcert/fullchain.pem')) {
         key: fs.readFileSync('./sslcert/privkey.pem')
     };
 
+    app.all('*', ensureSecure);
     app.listen(port, () => console.log('Example app listening on port ' + port + '!'));
     https.createServer(options, app).listen(443);
 } else {
