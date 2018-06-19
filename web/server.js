@@ -195,7 +195,12 @@ function import_locally(attributes, datasources, res, parent, uid, type) {
 }
 
 
-
+app.options('/*', function(req, res, next){
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.sendStatus(200);
+});
 
 app.get('/smpc/queue', function(req, res) {
     request = req.query.request;
