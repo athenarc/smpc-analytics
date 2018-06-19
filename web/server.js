@@ -60,7 +60,7 @@ if (fs.existsSync('./sslcert/fullchain.pem')) {
     }).listen(http_port);
 
     // app.listen(port, () => console.log('Example app listening on port ' + port + '!'));
-    https.createServer(options, app).listen(443);
+    https.createServer(options, app).listen(https_port, () => console.log('Example app listening on port ' + port + '!'));
 } else {
     const port = 3000;
     app.listen(port, () => console.log('Example app listening on port ' + port + '!'));
