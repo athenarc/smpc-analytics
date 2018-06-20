@@ -18,6 +18,8 @@
     "fs": "0.0.1-security",
     "helmet": "^3.12.1",
     "level": "^3.0.0",
+    "morgan": "^1.9.0",
+    "morgan-body": "^2.4.0",
     "path": "^0.12.7",
     "request": "^2.87.0",
     "request-promise": "^4.2.2",
