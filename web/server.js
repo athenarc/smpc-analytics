@@ -44,7 +44,6 @@ app.use("/graphs", express.static(__dirname + '/graphs'));
 
 
 if (fs.existsSync('./sslcert/fullchain.pem')) {
-    const port = 80;
     const options = {
         cert: fs.readFileSync('./sslcert/fullchain.pem'),
         key: fs.readFileSync('./sslcert/privkey.pem')
@@ -53,14 +52,16 @@ if (fs.existsSync('./sslcert/fullchain.pem')) {
     var http_port = 80;
     var https_port = 443;
     http.createServer(function (req, res) {
-       res.writeHead(307, { "Location": "https://" + req.headers.host.replace(http_port,https_port) + req.url });
-       console.log("http request, will go to >> ");
-       console.log("https://" + req.headers.host.replace(http_port,https_port) + req.url );
-       res.end();
+        if ('headers' in req && 'host' in req.headers){
+            res.writeHead(307, { "Location": "https://" + req.headers.host.replace(http_port,https_port) + req.url });
+            console.log("http request, will go to >> ");
+            console.log("https://" + req.headers.host.replace(http_port,https_port) + req.url );
+            res.end();
+        }
     }).listen(http_port);
 
     // app.listen(port, () => console.log('Example app listening on port ' + port + '!'));
-    https.createServer(options, app).listen(https_port, () => console.log('Example app listening on port ' + port + '!'));
+    https.createServer(options, app).listen(https_port, () => console.log('Example app listening on port ' + http_port + '!'));
 } else {
     const port = 3000;
     app.listen(port, () => console.log('Example app listening on port ' + port + '!'));
