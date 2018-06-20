@@ -29,8 +29,14 @@ var frontend = __dirname + "/frontend/";
 var visuals = __dirname + "/visuals/";
 global.__basedir = __dirname;
 
-var level = require('level');
+// Log Requests
+var morgan = require('morgan');
+var log_stream = fs.createWriteStream(path.join(__dirname, 'requests.log'), {flags: 'a'});
+var morganBody = require('morgan-body');
+morganBody(app, {stream: log_stream}); // log request body
+app.use(morgan(':remote-addr \\n\\n', {stream: log_stream})); // log request IP
 
+var level = require('level');
 var db = level('./mydb');
 
 
