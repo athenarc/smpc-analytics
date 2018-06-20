@@ -276,7 +276,11 @@ app.post('/smpc/histogram', function(req, res) {
         return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
-        return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        if (SIMULATION_MODE) {
+            return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        } else {
+            return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        }
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
         var db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
@@ -385,7 +389,11 @@ app.post('/smpc/count', function(req, res) {
         return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
-        return _exec('python dataset-scripts/count_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        if (SIMULATION_MODE) {
+            return _exec('python dataset-scripts/count_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        } else {
+            return _exec('python dataset-scripts/count_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        }
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
         var db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
@@ -484,7 +492,7 @@ app.post('/smpc/id3/numerical', function(req, res) {
     if (SIMULATION_MODE) {
         import_promises = import_locally(attributes_to_import, datasources, res, parent, uid, 'cvi');
     } else {
-        import_promises = import_from_servers(attributes_to_import, datasources, res, parent, uid, '/smpc/import', 'MHMDdns.json');
+        import_promises = import_from_servers(attributes_to_import, datasources, res, parent, uid, '/smpc/import/cvi', 'MHMDdns.json');
     }
 
     var print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
@@ -495,7 +503,11 @@ app.post('/smpc/id3/numerical', function(req, res) {
         return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
-        return _exec('python dataset-scripts/id3_numerical_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        if (SIMULATION_MODE) {
+            return _exec('python dataset-scripts/id3_numerical_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        } else {
+            return _exec('python dataset-scripts/id3_numerical_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        }
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
         var db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
@@ -593,7 +605,11 @@ app.post('/smpc/id3/categorical', function(req, res) {
         return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
-        return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        if (SIMULATION_MODE) {
+            return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        } else {
+            return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        }
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
         var db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
