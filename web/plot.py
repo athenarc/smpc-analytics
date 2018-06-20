@@ -78,7 +78,7 @@ with open('../out_' + uid + '.txt', 'r') as results:
             elif (len(dimensions) == 2 and 1 not in dimensions) or len(dimensions) == 3 and 1 in dimensions:
                 y = dimensions[1]
                 sublists = [histogram[i:i+y] for i in xrange(0, len(histogram), y)]
-                trace = go.Heatmap(z=sublists)
+                trace = go.Heatmap(z=sublists, colorscale="YlOrRd", zsmooth='best', opacity=0.85, reversescale=True)
                 data = [trace]
                 if len(configuration['attributes'][0]) == 2:
                     attribute_names = [x['name'] for x in configuration['attributes'][0]]

@@ -17,6 +17,9 @@ mesh_mapping = {}
 mesh_dict_inverted = {}
 configuration = {}
 
+colorscale=[[1.0, 'rgb(165,0,38)'], [0.8,'rgb(215,48,39)'], [0.7, 'rgb(244,109,67)'], [0.6, 'rgb(253,174,97)'], [0.5, 'rgb(254,224,144)'], [0.4, 'rgb(224,243,248)'], [0.3, 'rgb(171,217,233)'],  [0.2, 'rgb(116,173,209)'], [0.1, 'rgb(69,117,180)'], [0.0, 'rgb(49,54,149)']]
+
+
 def main():
     global mesh_mapping
     global mesh_dict_inverted
@@ -55,7 +58,7 @@ def main():
                 elif (len(dimensions) == 2 and 1 not in dimensions) or len(dimensions) == 3 and 1 in dimensions:
                     y = dimensions[1]
                     sublists = [histogram[i:i+y] for i in xrange(0, len(histogram), y)]
-                    trace = go.Heatmap(z=sublists)
+                    trace = go.Heatmap(z=sublists, colorscale="YlOrRd", zsmooth='best', opacity=0.85, reversescale=True)
                     data = [trace]
                     # print(sublists)
                     if len(configuration['attributes']) == 2:
