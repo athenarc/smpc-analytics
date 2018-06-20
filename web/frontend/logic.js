@@ -226,20 +226,7 @@ function addHistogramCategoricalTab() {
           <p>
             <input type="button" id="filter_button_`+nextTab+`" onclick="addFilterToFormWithIdCategorical(this.id)" class="btn btn-default" value="Add Filter">
           </p>
-          
-          <p>
-            <ul class="list-group">
-                <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="t1" checked="true"> Dataset 1
-                </li>
-                <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2
-                </li>
-                <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3
-                </li>
-            </ul>
-          </p>
+
           <p>
             <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/count')" class="btn btn-primary" value="Compute Histogram">
           </p>

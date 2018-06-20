@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Secure Analytics over Patients Data</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js" integrity="sha384-FzT3vTVGXqf7wRfy8k4BiyzvbNfeYjK+frTVqZeNDFl8woCbF0CYG6g2fMEFFo/i" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="lock.css">
+  <link rel="stylesheet" type="text/css" href="buttons.css">
+</head>
+<body>
+  <div class="container">
+    <div class="jumbotron">
+      <a style="float: right;" href="https://github.com/Athena-MHMD/smpc-analytics" target="_blank"><img src="images/github.png" title="GitHub repository" width="40" height="40"/></a>
+      <h2>Secure Analytics over Patient Data</h2>
+
+      <p>
+        A secure computation analytics platform over patient encrypted data.
+        The patient data are being encrypted before leaving the data providers (hospitals) and imported to the secure multi-party computation (SMPC) platform/servers.
+        The privacy preserving algorithms have no access to plain-text data, since no plaintext value leaves data owner's premises unencrypted.
+        Our algorithms have been developed over the <a href="https://sharemind.cyber.ee">Sharemind</a> platform, which employs secure multi-party computation, leveraging additive secret sharing techniques that have homomorphic encryption properties.
+        Thus, our application servers process data without removing the protection.
+        Our platform solely decrypts and publishes the final results of the query, which leaks no information.
+      </p>
+    </div>
+
+    <div>
+      <div class="center-div">
+        <div class="lock">
+          <div class="unlocker"></div>
+        </div>
+      </div>
+
+      <a class="btn btn-default btn-lg btn-hover-info" style="width:49%; padding: 17px" href="histogram_datasets.html" role="button">Secure Data Aggregation</a>
+      <a class="btn btn-default btn-lg btn-hover-success" style="width:49%; padding: 17px" href="classification_datasets.html" role="button">Secure Data Classification</a>
+    </div>
+
+    <table style="width:100%">
+      <col width="45%"/>
+      <col width="45%"/>
+      <tr>
+        <th>
+          Perform analytics using privacy-preserving data aggregation algorithms for computing and visualizing multi-dimemsional histograms.
+        </th>
+
+        <th>
+          Generate decision trees from patient data using the privacy-preserving ID3 classifier.
+        </th>
+      </tr>
+    </table>
+
+    <br>
+    <br>
+    <br>
+    <div>
+      <h2>Architecture Overview: An End-To-End Use Case</h2>
+      <br>
+      <p style="text-align:center;">
+        <img src="images/overview.gif" style="width:800px; height:600px;"/>
+      </p>
+
+    </div>
+
+  </div>
+</body>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</html>
