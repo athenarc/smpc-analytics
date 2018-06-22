@@ -834,6 +834,12 @@ function sendFormWithId(id, computation_t) {
         document.getElementById('loading-wrapper_'+formId).style.display = "none"; // hide the loading sign
         document.getElementById(tabId).innerHTML = '<iframe width="900" height="800" frameborder="0" scrolling="no" src="' + response + '"></iframe>';
       }
+  }).fail( function (response) {
+      document.getElementById('loading-wrapper_'+formId).style.display = "none"; // hide the loading sign
+      document.getElementById(tabId).innerHTML = `<br><br><div class="alert alert-danger fade in">
+        <a href="#" class="close" data-dismiss="alert">&times;</a>
+        <strong>Error!</strong> A problem has occurred while processing your request.
+    </div>`;
   });
 }
 
