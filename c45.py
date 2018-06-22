@@ -153,6 +153,7 @@ examples = [[4.3, 3.0, 1.1, 0.1, 'Iris-setosa'],
  [6.3, 3.3, 6.0, 2.5, 'Iris-virginica'],
  [7.2, 3.6, 6.1, 2.5, 'Iris-virginica']]
 
+# examples = [[5.1, 3.5, 1.4, 0.2, 'Iris-setosa'], [4.9, 3.0, 1.4, 0.2, 'Iris-setosa'], [4.7, 3.2, 1.3, 0.2, 'Iris-setosa'], [4.6, 3.1, 1.5, 0.2, 'Iris-setosa'], [5.0, 3.6, 1.4, 0.2, 'Iris-setosa'], [5.4, 3.9, 1.7, 0.4, 'Iris-setosa'], [4.6, 3.4, 1.4, 0.3, 'Iris-setosa'], [5.0, 3.4, 1.5, 0.2, 'Iris-setosa'], [4.4, 2.9, 1.4, 0.2, 'Iris-setosa'], [4.9, 3.1, 1.5, 0.1, 'Iris-setosa'], [7.0, 3.2, 4.7, 1.4, 'Iris-versicolor'], [6.4, 3.2, 4.5, 1.5, 'Iris-versicolor'], [6.9, 3.1, 4.9, 1.5, 'Iris-versicolor'], [5.5, 2.3, 4.0, 1.3, 'Iris-versicolor'], [6.5, 2.8, 4.6, 1.5, 'Iris-versicolor'], [5.7, 2.8, 4.5, 1.3, 'Iris-versicolor'], [6.3, 3.3, 4.7, 1.6, 'Iris-versicolor'], [4.9, 2.4, 3.3, 1.0, 'Iris-versicolor'], [6.6, 2.9, 4.6, 1.3, 'Iris-versicolor'], [5.2, 2.7, 3.9, 1.4, 'Iris-versicolor'], [6.3, 3.3, 6.0, 2.5, 'Iris-virginica'], [5.8, 2.7, 5.1, 1.9, 'Iris-virginica'], [7.1, 3.0, 5.9, 2.1, 'Iris-virginica'], [6.3, 2.9, 5.6, 1.8, 'Iris-virginica'], [6.5, 3.0, 5.8, 2.2, 'Iris-virginica'], [7.6, 3.0, 6.6, 2.1, 'Iris-virginica'], [4.9, 2.5, 4.5, 1.7, 'Iris-virginica'], [7.3, 2.9, 6.3, 1.8, 'Iris-virginica'], [6.7, 2.5, 5.8, 1.8, 'Iris-virginica'], [7.2, 3.6, 6.1, 2.5, 'Iris-virginica']]
 
 # possible_values = {'Outlook':['Sunny', 'Overcast', 'Rain'],
 #                     'Temperature':['Hot', 'Mild', 'Cool'],
@@ -178,29 +179,49 @@ def all_examples_same(examples):
         same = same and example1[-1] == example2[-1]
     return same
 
-def best(examples, attributes):
-    max_gain = information_gain(examples, attributes[0])
-    best = attributes[0]
-    for i in range(1,len(attributes)):
-        a = attributes[i]
-        gain = information_gain(examples, a)
-        if gain > max_gain:
-            max_gain = gain
-            best = a
-    return best
 
 def split_attribute(examples, attributes):
-    max_gain, best_threshold, best_splitted = information_gain(examples, attributes[0])
-    best = attributes[0]
-    for i in range(1,len(attributes)):
-        a = attributes[i]
-        gain, threshold, splitted = information_gain(examples, a)
-        if gain > max_gain:
-            max_gain = gain
-            best = a
-            best_threshold = threshold
-            best_splitted = splitted
-    return best, best_threshold, best_splitted
+    splitted = []
+    max_gain = -1 * float('inf')
+    best_threshold = -1
+    best_attribute = -1
+    best_splitted = -1
+    for attribute in attributes:
+        attribute_index = attribute_index = original_attributes.index(attribute)
+        splitted = []
+        if attribute in categorical_attributes:
+            for value in possible_values[attribute]:
+                subset = [example for example in examples if example[attribute_index] == value] # subset of examples that have attribute = value
+                splitted.append(subset)
+            gain = information_gain(examples, splitted)
+            if gain > max_gain:
+                max_gain = gain
+                best_attribute = attribute
+                best_splitted = splitted
+        else:
+            examples = sorted(examples, key=lambda l:l[attribute_index])
+            for i in range(len(examples)-1):
+                example = examples[i]
+                next_example = examples[i+1]
+                if example[attribute_index] != next_example[attribute_index]:
+                    # print(example)
+                    threshold = (example[attribute_index] + next_example[attribute_index]) / 2
+                    less = []
+                    greater = []
+                    for e in examples:
+                        if e[attribute_index] > threshold:
+                            greater.append(e)
+                        else:
+                            less.append(e)
+                    splitted = [less, greater]
+                    gain = information_gain(examples, splitted)
+                    if gain > max_gain:
+                        max_gain = gain
+                        best_attribute = attribute
+                        best_threshold = threshold
+                        best_splitted = splitted
+    return best_attribute, best_threshold, best_splitted
+
 
 def most_common_label(examples):
     label_counts = {}
@@ -222,38 +243,13 @@ def entropy(examples):
     return entropy
 
 
-def information_gain(examples, attribute):
-    attribute_index = original_attributes.index(attribute)
+def information_gain(examples, subsets):
     gain = entropy(examples)
-    threshold = 0
-    splitted = []
-    if attribute in categorical_attributes:
-        for value in possible_values[attribute]:
-            subset = [example for example in examples if example[attribute_index] == value] # subset of examples that have attribute = value
-            splitted.append(subset)
-            percentage = float(len(subset)) / len(examples)
-            if percentage != 0:
-                gain -= (percentage*entropy(subset))
-    else:
-        less = []
-        greater = []
-        examples = sorted(examples, key=lambda l:l[attribute_index])
-        for i in range(len(examples)-1):
-            example = examples[i]
-            next_example = examples[i+1]
-            threshold = (example[attribute_index] + next_example[attribute_index]) / 2
-            if example[attribute_index] > threshold:
-                greater.append(example)
-            else:
-                less.append(example)
-            splitted = [less, greater]
-            percentage = float(len(less)) / len(examples)
-            if percentage != 0:
-                gain -= (percentage*entropy(less))
-            percentage = float(len(greater)) / len(examples)
-            if percentage != 0:
-                gain -= (percentage*entropy(greater))
-    return gain, threshold, splitted
+    for subset in subsets:
+        percentage = float(len(subset)) / len(examples)
+        if percentage != 0:
+            gain -= (percentage*entropy(subset))
+    return gain
 
 
 def c45(examples, attributes):
@@ -274,7 +270,7 @@ def c45(examples, attributes):
             if len(subset) == 0:
                 branch += ' : ' + str(most_common_label(examples))
             else:
-                branch  += ' : ' + str(id3(subset, attributes[:best_attribute_index]+attributes[best_attribute_index+1:]))
+                branch  += ' : ' + str(c45(subset, attributes[:best_attribute_index]+attributes[best_attribute_index+1:]))
             branches.append(branch)
     else:
         branch = '"' + str(best_attribute)+' <= '+str(best_threshold) + '"'
