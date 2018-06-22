@@ -9,3 +9,9 @@
   background-color:#5cb85c;
   border-color:#4cae4c;
 }
+
+.container .btn-group .active { 
+  background-color: #5cb85c;
+  border-color:#4cae4c;
+  color: white;
+}

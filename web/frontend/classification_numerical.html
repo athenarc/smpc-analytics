@@ -59,6 +59,22 @@
 
             <form action="/smpc/id3/categorical" method="post" id="tree_1">
               </br>
+              
+              <b>Select Classifier : </b>
+              <div class="btn-group" data-toggle="buttons">
+          			<label class="btn btn-default active" onclick="selectClassifier('ID3')">
+          				<input type="radio">ID3</input>
+          			</label>
+          			<label class="btn btn-default" onclick="selectClassifier('C45')">
+          				<input type="radio">C4.5</input>
+          			</label>
+
+                <input style="display:none;" type="text" name="classifier_algorithm" id="classifier_algorithm" value="ID3">
+              </div>
+            
+              </br>
+              </br>
+      
               <p>
                 <select class="selectpicker" name="class_attribute">
                   <option value="" selected disabled>Class Attribute</option>

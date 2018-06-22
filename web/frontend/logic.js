@@ -275,6 +275,22 @@ function addDecisionTreeNumericalTab() {
       </div>` +
       `<form action="/smpc/id3/numerical" method="post" id="tree_`+nextTab+`">
         </br>
+        
+        <b>Select Classifier : </b>
+        <div class="btn-group" data-toggle="buttons">
+          <label class="btn btn-default active" onclick="selectClassifier('ID3')">
+            <input type="radio">ID3</input>
+          </label>
+          <label class="btn btn-default" onclick="selectClassifier('C45')">
+            <input type="radio">C4.5</input>
+          </label>
+
+          <input style="display:none;" type="text" name="classifier_algorithm" id="classifier_algorithm" value="ID3">
+        </div>
+
+        </br>
+        </br>
+        
         <p>
           <select class="selectpicker" name="class_attribute">
             <option value="" selected disabled>Class Attribute</option>
@@ -469,6 +485,22 @@ function addDecisionTreeCategoricalTab() {
       </div>` +
       `<form action="/smpc/id3/categorical" method="post" id="tree_` + nextTab + `">
           </br>
+          
+          <b>Select Classifier : </b>
+          <div class="btn-group" data-toggle="buttons">
+            <label class="btn btn-default active" onclick="selectClassifier('ID3')">
+              <input type="radio">ID3</input>
+            </label>
+            <label class="btn btn-default" onclick="selectClassifier('C45')">
+              <input type="radio">C4.5</input>
+            </label>
+
+            <input style="display:none;" type="text" name="classifier_algorithm" id="classifier_algorithm" value="ID3">
+          </div>
+        
+          </br>
+          </br>
+          
           <div class="btn-group">
             Class Attribute
             <input type="text" name="class_attribute" class="form-control" id="usr">
@@ -695,12 +727,20 @@ function objectifyForm(formArray, computation_t) { // serialize data function
               if (element.name == 'class_attribute') {
                   finalJson.class_attribute = element.value;
               }
+              // Select classifier
+              if (element.name == 'classifier_algorithm') {
+                  finalJson.classifier = element.value;
+              }
           } else if (computation_t == '/smpc/id3/numerical') {
               if (element.name == 'class_attribute') {
                   finalJson.class_attribute = {'name':element.value, 'cells':-1};
               }
               if (element.name == 'class_cells') {
                   finalJson.class_attribute.cells = element.value;
+              }
+              // Select classifier
+              if (element.name == 'classifier_algorithm') {
+                  finalJson.classifier = element.value;
               }
           }
           
@@ -818,4 +858,9 @@ function addAttributeToFormWithId(formId, attribute_t) {
     outer_div.appendChild(input_div);
 
     container.appendChild(outer_div);
+}
+
+
+function selectClassifier(classifier) {
+    document.getElementById("classifier_algorithm").value = classifier;
 }
