@@ -13,6 +13,10 @@ import table_database;
 
 domain pd_shared3p shared3p;
 
+template <type T>
+string itoa(T x){
+    return arrayToString(x);
+}
 
 template <type T>
 pd_shared3p xor_uint8[[1]] itoa(pd_shared3p T x){
@@ -319,10 +323,10 @@ string c45(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
             total_count += sum(example_indexes);
         }
         pd_shared3p float64 label = (float64) ((uint64)label_count / (uint64)total_count);
-        return arrayToString(declassify(label));
+        return itoa(declassify(label));
     }
     if (size(attributes) == 0) {
-        return arrayToString(declassify(most_common_label(example_indexes_vmap)));
+        return itoa(declassify(most_common_label(example_indexes_vmap)));
     }
     uint64 best_vmap = split_attribute(example_indexes_vmap, attributes);
     pd_shared3p uint64 best_attribute = tdbVmapGetValue(best_vmap, "best_attribute", 0::uint64)[0];
@@ -354,11 +358,11 @@ string c45(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
             if (declassify(value == -1)) {
                 continue;
             }
-            string branch = "\"" + arrayToString(declassify(best_attribute)) + " == " + arrayToString(declassify(value)) + "\"" + ": ";
+            string branch = "\"" + itoa(declassify(best_attribute)) + " == " + itoa(declassify(value)) + "\"" + ": ";
 
             uint64 subset_vmap = tdbVmapGetValue(best_splitted, "subsets", v)[0];
             if (declassify(sum(subset_vmap, data_providers_num) == 0)) {
-                branch += arrayToString(declassify(most_common_label(example_indexes_vmap)));
+                branch += itoa(declassify(most_common_label(example_indexes_vmap)));
             } else {
                 branch += c45(subset_vmap, (uint64)new_attribs);
             }
@@ -368,11 +372,11 @@ string c45(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
             branches += branch;
         }
     } else{
-        string branch = "\"" + arrayToString(declassify(best_attribute))+ " <= " + arrayToString(declassify(best_threshold)) + "\"" + ": ";
+        string branch = "\"" + itoa(declassify(best_attribute))+ " <= " + itoa(declassify(best_threshold)) + "\"" + ": ";
 
         uint64 less = tdbVmapGetValue(best_splitted, "subsets", 0::uint64)[0];
         if(declassify(sum(less, data_providers_num) == 0)){
-            branch += arrayToString(declassify(most_common_label(example_indexes_vmap)));
+            branch += itoa(declassify(most_common_label(example_indexes_vmap)));
         } else {
             branch += c45(less, (uint64)new_attribs);
         }
@@ -380,10 +384,10 @@ string c45(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
 
         branches += ", ";
 
-        branch = "\"" + arrayToString(declassify(best_attribute)) + " > " + arrayToString(declassify(best_threshold)) + "\"" + ": ";
+        branch = "\"" + itoa(declassify(best_attribute)) + " > " + itoa(declassify(best_threshold)) + "\"" + ": ";
         uint64 greater = tdbVmapGetValue(best_splitted, "subsets", 1::uint64)[0];
         if(declassify(sum(greater, data_providers_num) == 0)){
-            branch += arrayToString(declassify(most_common_label(example_indexes_vmap)));
+            branch += itoa(declassify(most_common_label(example_indexes_vmap)));
         } else {
             branch += c45(greater, (uint64)new_attribs);
         }
