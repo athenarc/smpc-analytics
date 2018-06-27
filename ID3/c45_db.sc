@@ -288,9 +288,9 @@ uint64 split_attribute(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attr
             }
         }
     }
-    tdbVmapAddValue(best_vmap, "best_attribute", best_attribute);
-    tdbVmapAddValue(best_vmap, "best_threshold", best_threshold);
-    tdbVmapAddValue(best_vmap, "best_splitted", best_splitted);
+    tdbVmapAddValue(best_vmap, "best_attribute", declassify(best_attribute));
+    tdbVmapAddValue(best_vmap, "best_threshold", declassify(best_threshold));
+    tdbVmapAddValue(best_vmap, "best_splitted", declassify(best_splitted));
     return best_vmap;
 }
 
@@ -329,12 +329,10 @@ string c45(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
         return itoa(declassify(most_common_label(example_indexes_vmap)));
     }
     uint64 best_vmap = split_attribute(example_indexes_vmap, attributes);
-    pd_shared3p uint64 best_attribute = tdbVmapGetValue(best_vmap, "best_attribute", 0::uint64)[0];
-    pd_shared3p float64 best_threshold = tdbVmapGetValue(best_vmap, "best_threshold", 0::uint64)[0];
-    pd_shared3p uint64 best_splitted_priv = tdbVmapGetValue(best_vmap, "best_splitted",0::uint64)[0];
-    uint64 best_splitted = declassify(best_splitted_priv);
-    pd_shared3p uint64 best_attribute_original_index = index_of(original_attributes, best_attribute); // maybe 1 for loop
-    // pd_shared3p uint64 best_attribute_index = index_of(attributes, best_attribute);
+    uint64 best_attribute = tdbVmapGetValue(best_vmap, "best_attribute", 0::uint64)[0];
+    float64 best_threshold = tdbVmapGetValue(best_vmap, "best_threshold", 0::uint64)[0];
+    uint64 best_splitted = tdbVmapGetValue(best_vmap, "best_splitted",0::uint64)[0];
+    uint64 best_attribute_original_index = index_of(original_attributes, best_attribute); // maybe 1 for loop
 
     pd_shared3p int64[[1]] lt = (int64)(attributes < best_attribute);
     pd_shared3p int64[[1]] gt = (int64)(attributes > best_attribute);
@@ -347,18 +345,15 @@ string c45(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
     }
 
     string branches = "";
-    if (exists(categorical_attributes, declassify(best_attribute))) {
-        pd_shared3p float64[[1]] best_attribute_values(max_attribute_values);
-        for (uint64 j = 0; j < columns; j++) {
-            pd_shared3p bool eq = (j == best_attribute_original_index);
-            best_attribute_values += (float64)eq * possible_values[j,:]; // simd
-        }
+    if (exists(categorical_attributes, best_attribute)) {
+        float64[[1]] best_attribute_values(max_attribute_values) = possible_values[best_attribute_original_index, :];
+
         for (uint64 v = 0 ; v < max_attribute_values ; v++) {
-            pd_shared3p float64 value = best_attribute_values[v];
-            if (declassify(value == -1)) {
+            float64 value = best_attribute_values[v];
+            if (value == -1) {
                 continue;
             }
-            string branch = "\"" + itoa(declassify(best_attribute)) + " == " + itoa(declassify(value)) + "\"" + ": ";
+            string branch = "\"" + itoa(best_attribute) + " == " + itoa(value) + "\"" + ": ";
 
             uint64 subset_vmap = tdbVmapGetValue(best_splitted, "subsets", v)[0];
             if (declassify(sum(subset_vmap, data_providers_num) == 0)) {
@@ -372,7 +367,7 @@ string c45(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
             branches += branch;
         }
     } else{
-        string branch = "\"" + itoa(declassify(best_attribute))+ " <= " + itoa(declassify(best_threshold)) + "\"" + ": ";
+        string branch = "\"" + itoa(best_attribute)+ " <= " + itoa(best_threshold) + "\"" + ": ";
 
         uint64 less = tdbVmapGetValue(best_splitted, "subsets", 0::uint64)[0];
         if(declassify(sum(less, data_providers_num) == 0)){
@@ -384,7 +379,7 @@ string c45(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
 
         branches += ", ";
 
-        branch = "\"" + itoa(declassify(best_attribute)) + " > " + itoa(declassify(best_threshold)) + "\"" + ": ";
+        branch = "\"" + itoa(best_attribute) + " > " + itoa(best_threshold) + "\"" + ": ";
         uint64 greater = tdbVmapGetValue(best_splitted, "subsets", 1::uint64)[0];
         if(declassify(sum(greater, data_providers_num) == 0)){
             branch += itoa(declassify(most_common_label(example_indexes_vmap)));
@@ -399,9 +394,6 @@ string c45(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
 
 string datasource;
 uint64[[1]] categorical_attributes;
-pd_shared3p float64[[1]] imported_mins;
-pd_shared3p float64[[1]] imported_maxs;
-int64[[1]] imported_cells;
 
 
 
@@ -410,18 +402,9 @@ uint64 data_providers_num;
 uint64 max_attribute_values;
 uint64 class_index;
 
-pd_shared3p uint64[[1]] original_attributes;
-pd_shared3p float64[[2]] possible_values;
+uint64[[1]] original_attributes;
+float64[[2]] possible_values;
 
 uint64 rows;
 uint64 columns;
 
-// string quote;
-// string comma;
-// string eq_str;
-// string gt_str;
-// string lte_str;
-// string space;
-// string colon;
-// string left_curly_br;
-// string right_curly_br;

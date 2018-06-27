@@ -22,7 +22,7 @@ void main(){
 
 
     original_attributes = {0,1,2,3,4};
-    pd_shared3p uint64[[1]] original_attributes_without_class = {0,1,2,3};
+    uint64[[1]] original_attributes_without_class = {0,1,2,3};
     class_index = 4;
 
     columns = 5;
@@ -31,10 +31,6 @@ void main(){
     datasource = "DS1";
     categorical_attributes = {-1};
 
-    imported_mins ={18.0, 40.0, 57.0000382657};
-    imported_maxs ={83.0, 123.0, 76.9999502754};
-
-    imported_cells =  {5,5,5};
     print("Opening connection to db: ", datasource);
     tdbOpenConnection(datasource);
 
@@ -56,7 +52,8 @@ void main(){
     }
 
     print("Running C4.5 ...");
-    string root = c45(original_example_indexes_vmap, original_attributes_without_class);
+    pd_shared3p uint64[[1]] original_attributes_without_class_priv = original_attributes_without_class;
+    string root = c45(original_example_indexes_vmap, original_attributes_without_class_priv);
     print(root);
 
     // for (uint64 i = 0 ; i < data_providers_num ; i++) {
