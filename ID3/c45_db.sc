@@ -261,10 +261,12 @@ uint64 split_attribute(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attr
             combined_array[:,1] = total_attribute_column;
             combined_array = sort(combined_array, 1::uint64); // Sort both example_indexes and attribute column, based on attribute column
             for (uint64 i = 0 ; i < total_rows-1 ; i++) { // FIXME Try to find a way to SIMD this.
-                pd_shared3p float64 example_value = total_attribute_column[i];
-                pd_shared3p float64 next_example_value = total_attribute_column[i+1];
-                pd_shared3p float64 neq = (float64) (example_value != next_example_value);
-                pd_shared3p float64 threshold = neq * ((example_value + next_example_value) / 2);
+                pd_shared3p float64 example_value = combined_array[i, 1];
+                pd_shared3p float64 example_index = combined_array[i, 0];
+                pd_shared3p float64 next_example_value = combined_array[i+1, 1];
+                pd_shared3p float64 next_example_index = combined_array[i+1, 0];
+                pd_shared3p float64 valid = ((float64) (example_value != next_example_value)); // FIXME Consider only valid examples (index != 0) 
+                pd_shared3p float64 threshold = valid * ((example_value + next_example_value) / 2);
                 uint64 less = tdbVmapNew();
                 uint64 greater = tdbVmapNew();
                 for (uint64 j = 0 ; j < data_providers_num ; j++) {
