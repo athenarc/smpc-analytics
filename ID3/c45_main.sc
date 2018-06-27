@@ -13,17 +13,6 @@ import table_database;
 import c45_db;
 
 void main(){
-
-    quote = bl_str("\"");
-    comma = bl_str(", ");
-    eq_str = bl_str(" == ");
-    lte_str = bl_str(" <= ");
-    gt_str = bl_str(" > ");
-    space = bl_str(" ");
-    colon = bl_str(": ");
-    left_curly_br = bl_str("{ ");
-    right_curly_br = bl_str("}");
-
     string table_0 = "c45_test";
     // Create the data-providers list
     providers_vmap = tdbVmapNew();
@@ -67,8 +56,8 @@ void main(){
     }
 
     print("Running C4.5 ...");
-    pd_shared3p xor_uint8[[1]] root = c45(original_example_indexes_vmap, original_attributes_without_class);
-    print(bl_strDeclassify(root));
+    string root = c45(original_example_indexes_vmap, original_attributes_without_class);
+    print(root);
 
     // for (uint64 i = 0 ; i < data_providers_num ; i++) {
     //     string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);

@@ -14,23 +14,6 @@ import table_database;
 domain pd_shared3p shared3p;
 
 
-/**
- * Gender (0) : int64,
- * Height (cm) (1) : float64,
- * Weight (kg) (2) : float64,
- * Patient Age (3) : int64,
-**/
-
-/**
- * ID3 Summary
- * 1. Calculate the entropy of every attribute using the data set
- * 2. Split the set into subsets using the attribute for which the resulting entropy
- *     (after splitting) is minimum (or, equivalently, information gain is maximum)
- * 3. Make a decision tree node containing that attribute
- * 4. Recurse on subsets using remaining attributes.
-**/
-
-
 template <type T>
 pd_shared3p xor_uint8[[1]] itoa(pd_shared3p T x){
     pd_shared3p uint8[[1]] stru(20);
@@ -323,7 +306,7 @@ pd_shared3p int64 most_common_label(uint64 example_indexes_vmap) {
 }
 
 
-pd_shared3p xor_uint8[[1]] c45(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
+string c45(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
     if (declassify(all_examples_same(example_indexes_vmap))) {
         pd_shared3p int64 label_count = 0;
         pd_shared3p int64 total_count = 0;
@@ -336,10 +319,10 @@ pd_shared3p xor_uint8[[1]] c45(uint64 example_indexes_vmap, pd_shared3p uint64[[
             total_count += sum(example_indexes);
         }
         pd_shared3p float64 label = (float64) ((uint64)label_count / (uint64)total_count);
-        return itoa((int64)label);
+        return arrayToString(declassify(label));
     }
     if (size(attributes) == 0) {
-        return itoa(most_common_label(example_indexes_vmap));
+        return arrayToString(declassify(most_common_label(example_indexes_vmap)));
     }
     uint64 best_vmap = split_attribute(example_indexes_vmap, attributes);
     pd_shared3p uint64 best_attribute = tdbVmapGetValue(best_vmap, "best_attribute", 0::uint64)[0];
@@ -359,7 +342,7 @@ pd_shared3p xor_uint8[[1]] c45(uint64 example_indexes_vmap, pd_shared3p uint64[[
         new_attribs[i-1] += (int64)neq * (1+second_half[i]);
     }
 
-    pd_shared3p xor_uint8[[1]] branches;
+    string branches = "";
     if (exists(categorical_attributes, declassify(best_attribute))) {
         pd_shared3p float64[[1]] best_attribute_values(max_attribute_values);
         for (uint64 j = 0; j < columns; j++) {
@@ -371,54 +354,42 @@ pd_shared3p xor_uint8[[1]] c45(uint64 example_indexes_vmap, pd_shared3p uint64[[
             if (declassify(value == -1)) {
                 continue;
             }
-            pd_shared3p xor_uint8[[1]] branch = bl_strCat(quote, itoa(best_attribute));
-            branch = bl_strCat(branch, eq_str);
-            branch = bl_strCat(branch, itoa((int64)value));
-            branch = bl_strCat(branch, quote);
-            branch = bl_strCat(branch, colon);
+            string branch = "\"" + arrayToString(declassify(best_attribute)) + " == " + arrayToString(declassify(value)) + "\"" + ": ";
+
             uint64 subset_vmap = tdbVmapGetValue(best_splitted, "subsets", v)[0];
             if (declassify(sum(subset_vmap, data_providers_num) == 0)) {
-                branch = bl_strCat(branch, itoa(most_common_label(example_indexes_vmap)));
+                branch += arrayToString(declassify(most_common_label(example_indexes_vmap)));
             } else {
-                branch = bl_strCat(branch, c45(subset_vmap, (uint64)new_attribs));
+                branch += c45(subset_vmap, (uint64)new_attribs);
             }
             if (v != max_attribute_values -1) {
-                branches = bl_strCat(branches, comma);
+                branches += ", ";
             }
-            branches = bl_strCat(branches, branch);
+            branches += branch;
         }
     } else{
-        pd_shared3p xor_uint8[[1]] branch = bl_strCat(quote, itoa(best_attribute));
-        branch = bl_strCat(branch, lte_str);
-        branch = bl_strCat(branch, itoa(best_threshold));
-        branch = bl_strCat(branch, quote);
-        branch = bl_strCat(branch, colon);
+        string branch = "\"" + arrayToString(declassify(best_attribute))+ " <= " + arrayToString(declassify(best_threshold)) + "\"" + ": ";
 
         uint64 less = tdbVmapGetValue(best_splitted, "subsets", 0::uint64)[0];
         if(declassify(sum(less, data_providers_num) == 0)){
-            branch = bl_strCat(branch, itoa(most_common_label(example_indexes_vmap)));
+            branch += arrayToString(declassify(most_common_label(example_indexes_vmap)));
         } else {
-            branch = bl_strCat(branch, c45(less, (uint64)new_attribs));
+            branch += c45(less, (uint64)new_attribs);
         }
-        branches = bl_strCat(branches, branch);
+        branches += branch;
 
-        branches = bl_strCat(branches, comma);
+        branches += ", ";
 
-        branch = bl_strCat(quote, itoa(best_attribute));
-        branch = bl_strCat(branch, gt_str);
-        branch = bl_strCat(branch, itoa(best_threshold));
-        branch = bl_strCat(branch, quote);
-        branch = bl_strCat(branch, colon);
+        branch = "\"" + arrayToString(declassify(best_attribute)) + " > " + arrayToString(declassify(best_threshold)) + "\"" + ": ";
         uint64 greater = tdbVmapGetValue(best_splitted, "subsets", 1::uint64)[0];
         if(declassify(sum(greater, data_providers_num) == 0)){
-            branch = bl_strCat(branch, itoa(most_common_label(example_indexes_vmap)));
+            branch += arrayToString(declassify(most_common_label(example_indexes_vmap)));
         } else {
-            branch = bl_strCat(branch, c45(greater, (uint64)new_attribs));
+            branch += c45(greater, (uint64)new_attribs);
         }
-        branches = bl_strCat(branches, branch);
+        branches += branch;
     }
-    pd_shared3p xor_uint8[[1]] root = bl_strCat(left_curly_br, branches);
-    return bl_strCat(root, right_curly_br);
+    return "{ " + branches + "}";
 }
 
 
@@ -441,12 +412,12 @@ pd_shared3p float64[[2]] possible_values;
 uint64 rows;
 uint64 columns;
 
-pd_shared3p xor_uint8[[1]] quote;
-pd_shared3p xor_uint8[[1]] comma;
-pd_shared3p xor_uint8[[1]] eq_str;
-pd_shared3p xor_uint8[[1]] gt_str;
-pd_shared3p xor_uint8[[1]] lte_str;
-pd_shared3p xor_uint8[[1]] space;
-pd_shared3p xor_uint8[[1]] colon;
-pd_shared3p xor_uint8[[1]] left_curly_br;
-pd_shared3p xor_uint8[[1]] right_curly_br;
+// string quote;
+// string comma;
+// string eq_str;
+// string gt_str;
+// string lte_str;
+// string space;
+// string colon;
+// string left_curly_br;
+// string right_curly_br;
