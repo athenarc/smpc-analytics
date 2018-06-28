@@ -279,7 +279,7 @@ app.post('/smpc/histogram', function(req, res) {
         if (SIMULATION_MODE) {
             return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
         } else {
-            return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json --DNS web/MHMDdns_cvi.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
         }
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
