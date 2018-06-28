@@ -261,12 +261,25 @@ uint64 split_attribute(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attr
             combined_array[:,1] = total_attribute_column;
             combined_array = sort(combined_array, 1::uint64); // Sort both example_indexes and attribute column, based on attribute column
             for (uint64 i = 0 ; i < total_rows-1 ; i++) { // FIXME Try to find a way to SIMD this.
-                pd_shared3p float64 example_value = combined_array[i, 1];
-                pd_shared3p float64 example_index = combined_array[i, 0];
-                pd_shared3p float64 next_example_value = combined_array[i+1, 1];
-                pd_shared3p float64 next_example_index = combined_array[i+1, 0];
-                pd_shared3p float64 valid = ((float64) (example_value != next_example_value)); // FIXME Consider only valid examples (index != 0) 
-                pd_shared3p float64 threshold = valid * ((example_value + next_example_value) / 2);
+                pd_shared3p float64 example_index = 0;
+                pd_shared3p float64 example_value = 0;
+                pd_shared3p float64 next_example_index = 0;
+                pd_shared3p float64 next_example_value = 0;
+                pd_shared3p uint64 count = 0;
+                pd_shared3p float64 found_one = 0;
+                pd_shared3p float64 found_two = 0;
+                for (uint64 j = i ; j < total_rows ; j++) {
+                    pd_shared3p float64 valid = (float64)(combined_array[j, 0] != 0); //Example is in the subset i.e it is valid.
+                    count += (uint64)valid;
+                    example_index = (1-found_one) * (valid * combined_array[j, 0] + (1-valid) * example_index) + found_one * example_index;
+                    example_value = (1-found_one) * (valid * combined_array[j, 1] + (1-valid) * example_value) + found_one * example_value;
+                    next_example_index = (1-found_two) * (valid * combined_array[j, 0] + (1-valid) * next_example_index) + found_two * next_example_index;
+                    next_example_value = (1-found_two) * (valid * combined_array[j, 1] + (1-valid) * next_example_value) + found_two * next_example_value;
+                    found_one = (float64)(count > 0);
+                    found_two = (float64)(count > 1);
+                }
+                pd_shared3p float64 neq = ((float64) (example_value != next_example_value));
+                pd_shared3p float64 threshold = ((example_value + next_example_value) / 2);
                 uint64 less = tdbVmapNew();
                 uint64 greater = tdbVmapNew();
                 for (uint64 j = 0 ; j < data_providers_num ; j++) {
@@ -279,9 +292,10 @@ uint64 split_attribute(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attr
                     tdbVmapAddValue(less, "0", partial_less);
                     tdbVmapAddValue(greater, "0", partial_greater);
                 }
+                splitted = tdbVmapNew();
                 tdbVmapAddValue(splitted, "subsets", less);
                 tdbVmapAddValue(splitted, "subsets", greater);
-                pd_shared3p float64 gain = information_gain(example_indexes_vmap, splitted);
+                pd_shared3p float64 gain = neq * information_gain(example_indexes_vmap, splitted) + (1-neq) * (-1) * (float64)UINT64_MAX;
                 pd_shared3p uint64 gt = (uint64) (gain > max_gain);
                 max_gain = (float64)gt * gain + ((float64)(1 - gt)) * max_gain;
                 best_threshold = (float64)gt * threshold + (float64)(1 - gt) * best_threshold;
