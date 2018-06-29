@@ -54,6 +54,17 @@ pd_shared3p xor_uint8[[1]] itoa(pd_shared3p T x){
     return reshare(res);
 }
 
+template <type T>
+int64 index_of(T[[1]] arr, T element) {
+    for (uint64 i = 0; i < size(arr); i++) {
+        if (arr[i] == element) {
+            return (int64)i;
+        }
+    }
+    return -1;
+}
+
+
 template <domain D, type T>
 D uint64 index_of_max(D T[[1]] arr) {
     D uint64 idx = 0;
@@ -203,12 +214,12 @@ pd_shared3p float64 information_gain(uint64 example_indexes_vmap, uint64 splitte
 }
 
 
-uint64 split_attribute(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
+uint64 split_attribute(uint64 example_indexes_vmap, uint64[[1]] attributes) {
     uint64 best_vmap = tdbVmapNew();
     pd_shared3p float64 max_gain = (-1)*(float64)UINT64_MAX;
     pd_shared3p float64 best_threshold = -1;
-    uint64 new_map = tdbVmapNew();
-    pd_shared3p uint64 best_splitted = new_map;
+    uint64 empty_map = tdbVmapNew();
+    pd_shared3p uint64 best_splitted = empty_map;
     pd_shared3p uint64 best_attribute = 0;
     uint64 total_rows = 0;
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
@@ -216,10 +227,10 @@ uint64 split_attribute(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attr
         uint64 rows = tdbGetRowCount(datasource, table);
         total_rows += rows;
     }
-    for (uint64 attribute = 0; attribute < size(attributes); attribute++){
-        // pd_shared3p uint64 attribute = attributes[attribute];
-        uint64 splitted = tdbVmapNew();
+    for (uint64 a = 0; a < size(attributes); a++){
+        uint64 attribute = attributes[a];
         if (exists(categorical_attributes, attribute)) { // If attribute is categorical
+            uint64 splitted = tdbVmapNew();
             pd_shared3p float64[[1]] attribute_values = possible_values[attribute,:];
             for (uint64 v = 0; v < max_attribute_values; v++) {
                 pd_shared3p float64 value = attribute_values[v];
@@ -240,10 +251,6 @@ uint64 split_attribute(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attr
             best_attribute = gt * attribute + (1 - gt) * best_attribute;
             best_splitted = gt * splitted + (1 - gt) * best_splitted;
         } else {
-            // Combine example_indexes_vmap into one array
-            // Combine column of attribute from each provider into one array
-            // Combine these two arrays into a 2d array
-            // Sort the 2d array according to the column values
             pd_shared3p float64[[2]] combined_array(total_rows, 2);
             pd_shared3p float64[[1]] total_example_indexes(total_rows);
             pd_shared3p float64[[1]] total_attribute_column(total_rows);
@@ -253,6 +260,7 @@ uint64 split_attribute(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attr
                 uint64 rows = tdbGetRowCount(datasource, table);
                 pd_shared3p float64[[1]] attribute_column(rows) = tdbReadColumn(datasource, table, attribute);
                 pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
+
                 total_example_indexes[counter : counter + rows] = (float64)example_indexes;
                 total_attribute_column[counter : counter + rows] = (float64)attribute_column;
                 counter += rows;
@@ -260,26 +268,37 @@ uint64 split_attribute(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attr
             combined_array[:,0] = total_example_indexes;
             combined_array[:,1] = total_attribute_column;
             combined_array = sort(combined_array, 1::uint64); // Sort both example_indexes and attribute column, based on attribute column
+            pd_shared3p int64 last_found_position = -1;
+
             for (uint64 i = 0 ; i < total_rows-1 ; i++) { // FIXME Try to find a way to SIMD this.
-                pd_shared3p float64 example_index = 0;
-                pd_shared3p float64 example_value = 0;
-                pd_shared3p float64 next_example_index = 0;
-                pd_shared3p float64 next_example_value = 0;
+                pd_shared3p float64 example_index = -1;
+                pd_shared3p float64 example_value = -1;
+                pd_shared3p float64 next_example_index = -1;
+                pd_shared3p float64 next_example_value = -1;
                 pd_shared3p uint64 count = 0;
                 pd_shared3p float64 found_one = 0;
                 pd_shared3p float64 found_two = 0;
+                pd_shared3p int64 found_position = -1;
+
                 for (uint64 j = i ; j < total_rows ; j++) {
                     pd_shared3p float64 valid = (float64)(combined_array[j, 0] != 0); //Example is in the subset i.e it is valid.
                     count += (uint64)valid;
                     example_index = (1-found_one) * (valid * combined_array[j, 0] + (1-valid) * example_index) + found_one * example_index;
                     example_value = (1-found_one) * (valid * combined_array[j, 1] + (1-valid) * example_value) + found_one * example_value;
+                    found_position = (int64)(1-found_one) * ((int64)valid * (int64)j + (int64)(1-valid) * found_position) + (int64)found_one * found_position;
+
                     next_example_index = (1-found_two) * (valid * combined_array[j, 0] + (1-valid) * next_example_index) + found_two * next_example_index;
                     next_example_value = (1-found_two) * (valid * combined_array[j, 1] + (1-valid) * next_example_value) + found_two * next_example_value;
                     found_one = (float64)(count > 0);
                     found_two = (float64)(count > 1);
                 }
-                pd_shared3p float64 neq = ((float64) (example_value != next_example_value));
+                pd_shared3p float64 neq = (float64) (example_value != next_example_value);
+
+                pd_shared3p float64 new_example = (float64)(found_position != last_found_position);
+                last_found_position = found_position;
+
                 pd_shared3p float64 threshold = ((example_value + next_example_value) / 2);
+                uint64 splitted = tdbVmapNew();
                 uint64 less = tdbVmapNew();
                 uint64 greater = tdbVmapNew();
                 for (uint64 j = 0 ; j < data_providers_num ; j++) {
@@ -292,10 +311,9 @@ uint64 split_attribute(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attr
                     tdbVmapAddValue(less, "0", partial_less);
                     tdbVmapAddValue(greater, "0", partial_greater);
                 }
-                splitted = tdbVmapNew();
                 tdbVmapAddValue(splitted, "subsets", less);
                 tdbVmapAddValue(splitted, "subsets", greater);
-                pd_shared3p float64 gain = neq * information_gain(example_indexes_vmap, splitted) + (1-neq) * (-1) * (float64)UINT64_MAX;
+                pd_shared3p float64 gain = (neq * new_example * found_two) * information_gain(example_indexes_vmap, splitted) + (1 - neq * new_example * found_two) * (-1) * (float64)UINT64_MAX;
                 pd_shared3p uint64 gt = (uint64) (gain > max_gain);
                 max_gain = (float64)gt * gain + ((float64)(1 - gt)) * max_gain;
                 best_threshold = (float64)gt * threshold + (float64)(1 - gt) * best_threshold;
@@ -326,7 +344,7 @@ pd_shared3p int64 most_common_label(uint64 example_indexes_vmap) {
 }
 
 
-string c45(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
+string c45(uint64 example_indexes_vmap, uint64[[1]] attributes) {
     if (declassify(all_examples_same(example_indexes_vmap))) {
         pd_shared3p int64 label_count = 0;
         pd_shared3p int64 total_count = 0;
@@ -350,15 +368,10 @@ string c45(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
     uint64 best_splitted = tdbVmapGetValue(best_vmap, "best_splitted",0::uint64)[0];
     uint64 best_attribute_original_index = index_of(original_attributes, best_attribute); // maybe 1 for loop
 
-    pd_shared3p int64[[1]] lt = (int64)(attributes < best_attribute);
-    pd_shared3p int64[[1]] gt = (int64)(attributes > best_attribute);
-    pd_shared3p int64[[1]] first_half(size(attributes)) = lt * (int64)attributes + (1-lt) * (-1);
-    pd_shared3p int64[[1]] second_half(size(attributes)) = gt * (int64)attributes + (1-gt) * (-1);
-    pd_shared3p int64[[1]] new_attribs(size(attributes)-1) = first_half[:size(attributes)-1];
-    for (uint64 i = size(attributes)-1; i > 0; i--) {
-        pd_shared3p bool neq = (second_half[i] != -1);
-        new_attribs[i-1] += (int64)neq * (1+second_half[i]);
-    }
+    int64 best_attribute_index = index_of(attributes, best_attribute);
+    uint64[[1]] first_half = attributes[:(uint64)best_attribute_index];
+    uint64[[1]] second_half = attributes[(uint64)best_attribute_index + 1:];
+    uint64[[1]] new_attribs = cat(first_half, second_half);
 
     string branches = "";
     if (exists(categorical_attributes, best_attribute)) {
@@ -375,7 +388,7 @@ string c45(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
             if (declassify(sum(subset_vmap, data_providers_num) == 0)) {
                 branch += itoa(declassify(most_common_label(example_indexes_vmap)));
             } else {
-                branch += c45(subset_vmap, (uint64)new_attribs);
+                branch += c45(subset_vmap, new_attribs);
             }
             if (v != max_attribute_values -1) {
                 branches += ", ";
@@ -384,12 +397,11 @@ string c45(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
         }
     } else{
         string branch = "\"" + itoa(best_attribute)+ " <= " + itoa(best_threshold) + "\"" + ": ";
-
         uint64 less = tdbVmapGetValue(best_splitted, "subsets", 0::uint64)[0];
         if(declassify(sum(less, data_providers_num) == 0)){
             branch += itoa(declassify(most_common_label(example_indexes_vmap)));
         } else {
-            branch += c45(less, (uint64)new_attribs);
+            branch += c45(less, new_attribs);
         }
         branches += branch;
 

@@ -52,8 +52,7 @@ void main(){
     }
 
     print("Running C4.5 ...");
-    pd_shared3p uint64[[1]] original_attributes_without_class_priv = original_attributes_without_class;
-    string root = c45(original_example_indexes_vmap, original_attributes_without_class_priv);
+    string root = c45(original_example_indexes_vmap, original_attributes_without_class);
     print(root);
 
     // for (uint64 i = 0 ; i < data_providers_num ; i++) {
