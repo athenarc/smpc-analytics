@@ -341,7 +341,7 @@ app.post('/smpc/histogram', function(req, res) {
             console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
         });
         console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
-        res.send(400);
+        res.sendStatus(400);
     });
 });
 
@@ -455,7 +455,7 @@ app.post('/smpc/count', function(req, res) {
             console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
         });
         console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
-        res.send(400);
+        res.sendStatus(400);
     });
 });
 
@@ -570,7 +570,7 @@ app.post('/smpc/id3/numerical', function(req, res) {
             console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
         });
         console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
-        res.send(400);
+        res.sendStatus(400);
     });
 });
 
@@ -673,7 +673,7 @@ app.post('/smpc/id3/categorical', function(req, res) {
             console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
         });
         console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
-        res.send(400);
+        res.sendStatus(400);
     });
 });
 
