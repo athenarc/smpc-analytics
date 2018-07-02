@@ -30,6 +30,10 @@ void main(){
     datasource = "DS1";
     categorical_attributes = {-1};
 
+    class_min = 0;
+    class_max = 100;
+    class_cells = 3;
+
     print("Opening connection to db: ", datasource);
     tdbOpenConnection(datasource);
 
