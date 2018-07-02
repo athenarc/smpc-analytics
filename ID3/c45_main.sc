@@ -35,11 +35,10 @@ void main(){
     tdbOpenConnection(datasource);
 
 
-    possible_values = reshape({-1,-1,-1,
-                                -1,-1,-1,
-                                -1,-1,-1,
-                                -1,-1,-1,
-                                0,1,2},columns,max_attribute_values);
+    possible_values = tdbVmapNew();
+    float64[[1]] values;
+    values = {0,1,2};
+    tdbVmapAddValue(possible_values, "4", values);
 
 
     uint64 original_example_indexes_vmap = tdbVmapNew();

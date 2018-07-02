@@ -155,7 +155,7 @@ pd_shared3p bool all_examples_same(uint64 example_indexes_vmap) {
         pd_shared3p float64[[1]] label_column = tdbReadColumn(datasource, table, class_index);
         pd_shared3p int64 positive_indexes = sum(example_indexes);
         for (uint64 a = 0; a < max_attribute_values; a++) {
-            pd_shared3p float64 label = possible_values[class_index, a];
+            float64 label = tdbVmapGetValue(possible_values, arrayToString(class_index), 0::uint64)[a];
             pd_shared3p uint64[[1]] eq = (uint64)(label_column == label) * (uint64)(example_indexes != 0) * (uint64)(label != -1);
             class_counts[a] = sum(eq);
             partial_res += (uint64)(class_counts[a] == (uint64) positive_indexes);
@@ -180,7 +180,7 @@ pd_shared3p float64 entropy(uint64 example_indexes_vmap) {
             pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
             uint64 rows = tdbGetRowCount(datasource, table);
             pd_shared3p float64[[1]] label_column = tdbReadColumn(datasource, table, class_index);
-            pd_shared3p float64 label = possible_values[class_index, c];
+            float64 label = tdbVmapGetValue(possible_values, arrayToString(class_index), 0::uint64)[c];
             pd_shared3p uint64[[1]] eq = (uint64)(label_column == label) * (uint64)(example_indexes != 0) * (uint64)(label != -1);
             equal_count += sum(eq);
         }
@@ -231,7 +231,7 @@ uint64 split_attribute(uint64 example_indexes_vmap, uint64[[1]] attributes) {
         uint64 attribute = attributes[a];
         if (exists(categorical_attributes, attribute)) { // If attribute is categorical
             uint64 splitted = tdbVmapNew();
-            pd_shared3p float64[[1]] attribute_values = possible_values[attribute,:];
+            float64[[1]] attribute_values = tdbVmapGetValue(possible_values, arrayToString(attribute), 0::uint64);
             for (uint64 v = 0; v < max_attribute_values; v++) {
                 pd_shared3p float64 value = attribute_values[v];
                 uint64 subset = tdbVmapNew();
@@ -375,13 +375,11 @@ string c45(uint64 example_indexes_vmap, uint64[[1]] attributes) {
 
     string branches = "";
     if (exists(categorical_attributes, best_attribute)) {
-        float64[[1]] best_attribute_values(max_attribute_values) = possible_values[best_attribute_original_index, :];
+        float64[[1]] best_attribute_values = tdbVmapGetValue(possible_values, arrayToString(best_attribute_original_index), 0::uint64);
 
-        for (uint64 v = 0 ; v < max_attribute_values ; v++) {
+        uint64 length = size(best_attribute_values);
+        for (uint64 v = 0 ; v < length ; v++) {
             float64 value = best_attribute_values[v];
-            if (value == -1) {
-                continue;
-            }
             string branch = "\"" + itoa(best_attribute) + " == " + itoa(value) + "\"" + ": ";
 
             uint64 subset_vmap = tdbVmapGetValue(best_splitted, "subsets", v)[0];
@@ -390,7 +388,7 @@ string c45(uint64 example_indexes_vmap, uint64[[1]] attributes) {
             } else {
                 branch += c45(subset_vmap, new_attribs);
             }
-            if (v != max_attribute_values -1) {
+            if (v != length -1) {
                 branches += ", ";
             }
             branches += branch;
@@ -431,7 +429,7 @@ uint64 max_attribute_values;
 uint64 class_index;
 
 uint64[[1]] original_attributes;
-float64[[2]] possible_values;
+uint64 possible_values;
 
 uint64 rows;
 uint64 columns;
