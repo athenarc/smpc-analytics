@@ -26,7 +26,6 @@ void main(){
     class_index = 4;
 
     columns = 5;
-    max_attribute_values = 3;
 
     datasource = "DS1";
     categorical_attributes = {-1};
