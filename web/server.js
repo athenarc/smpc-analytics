@@ -469,6 +469,7 @@ app.post('/smpc/decision_tree/numerical', function(req, res) {
     var attributes = req.body.attributes;
     var datasources = req.body.datasources;
     var class_attribute = req.body.class_attribute.name;
+    var classifier = ('classifier' in req.body) ? req.body.classifier : "ID3";
 
     db.put(uid, JSON.stringify({'status':'running'}));
     var plot = ('plot' in req.body); // if plot exists in req.body
@@ -506,9 +507,17 @@ app.post('/smpc/decision_tree/numerical', function(req, res) {
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
         if (SIMULATION_MODE) {
-            return _exec('python dataset-scripts/id3_numerical_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            if (classifier == "ID3") {
+                return _exec('python dataset-scripts/id3_numerical_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            } else if (classifier == "C45") {
+                return _exec('python dataset-scripts/c45_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            }
         } else {
-            return _exec('python dataset-scripts/id3_numerical_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            if (classifier == "ID3") {
+                return _exec('python dataset-scripts/id3_numerical_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            } else if (classifier == "C45") {
+                return _exec('python dataset-scripts/c45_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            }
         }
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
@@ -544,9 +553,17 @@ app.post('/smpc/decision_tree/numerical', function(req, res) {
         }
 
         if (plot) {
-            return _exec('python web/id3_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json --plot', {cwd: parent, shell: '/bin/bash'});
+            if (classifier == "ID3") {
+                return _exec('python web/id3_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json --plot', {cwd: parent, shell: '/bin/bash'});
+            } else if (classifier == "C45") {
+                return _exec('python web/c45_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json --plot', {cwd: parent, shell: '/bin/bash'});
+            }  
         } else {
-            return _exec('python web/id3_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json', {cwd: parent, shell: '/bin/bash'});
+            if (classifier == "ID3") {
+                return _exec('python web/id3_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json', {cwd: parent, shell: '/bin/bash'});
+            } else if (classifier == "C45") {
+                return _exec('python web/c45_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json', {cwd: parent, shell: '/bin/bash'});
+            }
         }
     }).then((result) => {
         if (plot) {
@@ -585,6 +602,7 @@ app.post('/smpc/decision_tree/categorical', function(req, res) {
     var datasources = req.body.datasources;
     var class_attribute = req.body.class_attribute;
     attributes.push(class_attribute);
+    var classifier = ('classifier' in req.body) ? req.body.classifier : "ID3";
 
     db.put(uid, JSON.stringify({'status':'running'}));
     var plot = ('plot' in req.body); // if plot exists in req.body
@@ -609,9 +627,17 @@ app.post('/smpc/decision_tree/categorical', function(req, res) {
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
         if (SIMULATION_MODE) {
-            return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            if (classifier == "ID3") {
+                return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            } else if (classifier == "C45") {
+                return _exec('python dataset-scripts/c45_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            }
         } else {
-            return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            if (classifier == "ID3") {
+                return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            } else if (classifier == "C45") {
+                return _exec('python dataset-scripts/c45_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            }
         }
     }).then((buffer) => {
         console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
@@ -647,9 +673,17 @@ app.post('/smpc/decision_tree/categorical', function(req, res) {
         }
 
         if (plot) {
-            return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --plot --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
+            if (classifier == "ID3") {
+                return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --plot --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
+            } else if (classifier == "C45") {
+                return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json --plot --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
+            }
         } else {
-            return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
+            if (classifier == "ID3") {
+                return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
+            } else if (classifier == "C45") {
+                return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
+            }
         }
     }).then((result) => {
         if (plot) {
