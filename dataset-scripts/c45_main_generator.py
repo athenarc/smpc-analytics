@@ -76,13 +76,13 @@ def main():
     tdbVmapAddString(providers_vmap, "0", table_'''+ quote(i) +''');
 '''
     attributes = configuration['attributes']
-    class_attribute = configuration['class_attribute']
+    class_attribute = configuration['class_attribute']['name']
     original_attributes = list(range(len(attributes)+1))
-    class_index = quote(len(attributes))
+    class_index = len(attributes)
     main_f += '''
     original_attributes = {'''+','.join(map(quote,original_attributes))+'''};
     uint64[[1]] original_attributes_without_class = {'''+','.join(map(quote,original_attributes[:-1]))+'''};
-    class_index = ''' +class_index + ''';
+    class_index = ''' + quote(class_index) + ''';
     possible_values = tdbVmapNew();
     float64[[1]] values;
 '''
@@ -92,11 +92,11 @@ def main():
     main_f += '''
     columns = ''' + quote(columns) + ''';
 '''
-    if 'class_cells' in configuration:
+    if 'cells' in configuration['class_attribute']:
         categorical_attributes = [-1]
         class_min = summary[summary['Field'] == class_attribute][' Min'].item()
         class_max = summary[summary['Field'] == class_attribute][' Max'].item()
-        class_cells = configuration['class_cells']
+        class_cells = int(configuration['class_attribute']['cells'])
         main_f += '''
     values = {''' + ','.join(map(quote, list(range(class_cells)))) + '''};
     tdbVmapAddValue(possible_values, "''' + quote(class_index) + '''", values);
@@ -134,15 +134,15 @@ def main():
     string root = c45(original_example_indexes_vmap, original_attributes_without_class);
     print(root);
 
-    //for (uint64 i = 0 ; i < data_providers_num ; i++) {
-    //    string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
-    //    // Check if a table exists
-    //    if (tdbTableExists(datasource, table)) {
-    //      // Delete existing table
-    //      print("Deleting table: ", table);
-    //      tdbTableDelete(datasource, table);
-    //    }
-    //}
+    for (uint64 i = 0 ; i < data_providers_num ; i++) {
+        string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
+        // Check if a table exists
+        if (tdbTableExists(datasource, table)) {
+          // Delete existing table
+          print("Deleting table: ", table);
+          tdbTableDelete(datasource, table);
+        }
+    }
 }'''
 
     if os.path.isdir("./ID3/"):
