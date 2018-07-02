@@ -273,7 +273,7 @@ function addDecisionTreeNumericalTab() {
         <div id="loading-text">Loading</div>
         <div id="loading-content"></div>
       </div>` +
-      `<form action="/smpc/id3/numerical" method="post" id="tree_`+nextTab+`">
+      `<form action="/smpc/decision_tree/numerical" method="post" id="tree_`+nextTab+`">
         </br>
         
         <b>Select Classifier : </b>
@@ -451,7 +451,7 @@ function addDecisionTreeNumericalTab() {
           </ul>
         </p>
         <p>
-          <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/id3\/numerical')" class="btn btn-success" value="Compute Decision Tree">
+          <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/decision_tree\/numerical')" class="btn btn-success" value="Compute Decision Tree">
         </p>
         </form>`+
     '</div>').appendTo('.tab-content');
@@ -483,7 +483,7 @@ function addDecisionTreeCategoricalTab() {
         <div id="loading-text">Loading</div>
         <div id="loading-content"></div>
       </div>` +
-      `<form action="/smpc/id3/categorical" method="post" id="tree_` + nextTab + `">
+      `<form action="/smpc/decision_tree/categorical" method="post" id="tree_` + nextTab + `">
           </br>
           
           <b>Select Classifier : </b>
@@ -537,7 +537,7 @@ function addDecisionTreeCategoricalTab() {
             </ul>
           </p>
           <p>
-            <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/id3\/categorical')" class="btn btn-success" value="Compute Decision Tree">
+            <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/decision_tree\/categorical')" class="btn btn-success" value="Compute Decision Tree">
           </p>
 
         </form>`+
@@ -738,7 +738,7 @@ function objectifyForm(formArray, computation_t) { // serialize data function
       for (var j = 0; j < form.length; j++){
           var element = form[j];      
 
-          if (computation_t == '/smpc/id3/categorical') {
+          if (computation_t == '/smpc/decision_tree/categorical') {
               if (element.name == 'class_attribute') {
                   finalJson.class_attribute = element.value;
               }
@@ -746,7 +746,7 @@ function objectifyForm(formArray, computation_t) { // serialize data function
               if (element.name.includes('classifier_algorithm')) {
                   finalJson.classifier = element.value;
               }
-          } else if (computation_t == '/smpc/id3/numerical') {
+          } else if (computation_t == '/smpc/decision_tree/numerical') {
               if (element.name == 'class_attribute') {
                   finalJson.class_attribute = {'name':element.value, 'cells':-1};
               }
@@ -762,7 +762,7 @@ function objectifyForm(formArray, computation_t) { // serialize data function
           if ((element.name.includes('attributes') && element.checked == true) || element.name == 'count_attributes') {
               formJSON.attribute_names.push(element.value);
           }
-          if (element.name.includes('cells') && element.value != "") {
+          if (element.name.includes('cells') && element.value != "" && element.name != "class_cells") {
               formJSON.attribute_cells.push(element.value);
           }
           if (element.name == 'datasources' && element.checked == true) {
@@ -798,7 +798,7 @@ function objectifyForm(formArray, computation_t) { // serialize data function
           }
       }
       
-      if (computation_t == '/smpc/count' || computation_t == '/smpc/id3/categorical') {
+      if (computation_t == '/smpc/count' || computation_t == '/smpc/decision_tree/categorical') {
           for (var k = 0; k < formJSON.attribute_names.length; k++) {
               finalJson.attributes.push(formJSON.attribute_names[k]);
           }
@@ -806,7 +806,7 @@ function objectifyForm(formArray, computation_t) { // serialize data function
           for (var a = 0; a < formJSON.attribute_names.length; a++){
               var name = formJSON.attribute_names[a];
               var cells = formJSON.attribute_cells[a];
-              if (computation_t == '/smpc/id3/numerical') {
+              if (computation_t == '/smpc/decision_tree/numerical') {
                   finalJson.attributes.push({'name':name, 'cells':cells});
               } else {
                   finalJson.attributes[0].push({'name':name, 'cells':cells});

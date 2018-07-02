@@ -461,7 +461,7 @@ app.post('/smpc/count', function(req, res) {
 
 
 
-app.post('/smpc/id3/numerical', function(req, res) {
+app.post('/smpc/decision_tree/numerical', function(req, res) {
     var parent = path.dirname(__basedir);
     var content = JSON.stringify(req.body);
     console.log(content);
@@ -576,7 +576,7 @@ app.post('/smpc/id3/numerical', function(req, res) {
 
 
 
-app.post('/smpc/id3/categorical', function(req, res) {
+app.post('/smpc/decision_tree/categorical', function(req, res) {
     var parent = path.dirname(__basedir);
     var content = JSON.stringify(req.body);
     console.log(content);
