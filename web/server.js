@@ -516,10 +516,10 @@ app.post('/smpc/decision_tree/numerical', function(req, res) {
         db.put(uid, JSON.stringify({'status':'running', 'step':db_msg})).catch((err) => {
             console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
         });
-        return _unlinkIfExists(parent + '/ID3/.main_' + uid + '.sb.src');
+        return _unlinkIfExists(parent + '/decision-tree/.main_' + uid + '.sb.src');
     }).then((msg) => {
         console.log('['+print_msg+'] Old .main_' + uid + '.sb.src deleted.\n');
-        var exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh ID3/main_' : 'sharemind-scripts/sm_compile_and_run.sh ID3/main_';
+        var exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh decision-tree/main_' : 'sharemind-scripts/sm_compile_and_run.sh decision-tree/main_';
         return _exec(exec_arg + uid + '.sc', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
     }).then((buffer) => {
         if (SIMULATION_MODE) {
@@ -527,7 +527,7 @@ app.post('/smpc/decision_tree/numerical', function(req, res) {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE SIMULATION] Request(' + uid + ') Program compiled.\n');
-            return _exec('set -o pipefail && sharemind-scripts/run.sh ID3/main_' + uid + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > out_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            return _exec('set -o pipefail && sharemind-scripts/run.sh decision-tree/main_' + uid + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > out_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
         } else {
             db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'})).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
@@ -619,10 +619,10 @@ app.post('/smpc/decision_tree/categorical', function(req, res) {
         db.put(uid, JSON.stringify({'status':'running', 'step':db_msg})).catch((err) => {
             console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
         });
-        return _unlinkIfExists(parent + '/ID3/.main_' + uid + '.sb.src');
+        return _unlinkIfExists(parent + '/decision-tree/.main_' + uid + '.sb.src');
     }).then((msg) => {
         console.log('['+print_msg+'] Old .main_' + uid + '.sb.src deleted.\n');
-        var exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh ID3/main_' : 'sharemind-scripts/sm_compile_and_run.sh ID3/main_';
+        var exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh decision-tree/main_' : 'sharemind-scripts/sm_compile_and_run.sh decision-tree/main_';
         return _exec(exec_arg + uid + '.sc', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
     }).then((buffer) => {
         if (SIMULATION_MODE) {
@@ -630,7 +630,7 @@ app.post('/smpc/decision_tree/categorical', function(req, res) {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE SIMULATION] Request(' + uid + ') Program compiled.\n');
-            return _exec('set -o pipefail && sharemind-scripts/run.sh ID3/main_' + uid + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > out_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            return _exec('set -o pipefail && sharemind-scripts/run.sh decision-tree/main_' + uid + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > out_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
         } else {
             db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'})).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);

@@ -26,10 +26,10 @@ else:
 print('Generating ID3 data from csv dataset: "' + DATASET + '", with row limit ' + ROW_LIMIT + '\n')
 
 
-if os.path.isdir("./ID3/"):
-    OUTPUT_DIR = './ID3/'
-elif os.path.isdir("../ID3/"):
-    OUTPUT_DIR = '../ID3/'
+if os.path.isdir("./decision-tree/"):
+    OUTPUT_DIR = './decision-tree/'
+elif os.path.isdir("../decision-tree/"):
+    OUTPUT_DIR = '../decision-tree/'
 else:
     OUTPUT_DIR = './'
 OUTPUT = OUTPUT_DIR + 'data_input.sc'

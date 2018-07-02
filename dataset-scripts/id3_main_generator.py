@@ -134,10 +134,10 @@ def main():
     }
 }'''
 
-    if os.path.isdir("./ID3/"):
-        OUTPUT_DIR = './ID3/'
-    elif os.path.isdir("../ID3/"):
-        OUTPUT_DIR = '../ID3/'
+    if os.path.isdir("./decision-tree/"):
+        OUTPUT_DIR = './decision-tree/'
+    elif os.path.isdir("../decision-tree/"):
+        OUTPUT_DIR = '../decision-tree/'
     else:
         OUTPUT_DIR = './'
     with open(OUTPUT_DIR + 'main_' + uid + '.sc', 'w') as output:

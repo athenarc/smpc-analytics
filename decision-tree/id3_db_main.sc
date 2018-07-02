@@ -9,7 +9,7 @@ import shared3p_oblivious;
 
 import shared3p_table_database;
 import table_database;
-import id3_db;
+import id3_db_categorical;
 
 /**
  * Gender (0) : int64,
@@ -20,7 +20,6 @@ import id3_db;
 
 
 void main() {
-    rows = 100;
     columns = 4;
     max_attribute_values = 4;
     class_index = 3;
@@ -42,19 +41,21 @@ void main() {
     // Create the data-providers list
     providers_vmap = tdbVmapNew();
 
-    data_providers_num = 3;
-    string table_0 = "id3_data_provider_0";
-    string table_1 = "id3_data_provider_1";
-    string table_2 = "id3_data_provider_2";
+    data_providers_num = 1;
+    string table_0 = "data_1000";
+    // string table_1 = "id3_data_provider_1_num";
+    // string table_2 = "id3_data_provider_2_num";
     tdbVmapAddString(providers_vmap, "0", table_0);
-    tdbVmapAddString(providers_vmap, "0", table_1);
-    tdbVmapAddString(providers_vmap, "0", table_2);
+    // tdbVmapAddString(providers_vmap, "0", table_1);
+    // tdbVmapAddString(providers_vmap, "0", table_2);
 
     // Open database before running operations on it
     print("Opening connection to db: ", datasource);
     tdbOpenConnection(datasource);
 
 // for creating the db from original_examples (local use). Uncomment if necessary.
+    // pd_shared3p int64[[2]] original_examples(rows, columns) = reshape({0,0,1,3,0,0,0,1,1,3,2,1,1,3,2,1,0,1,1,2,0,0,0,0,1,2,3,0,1,2,1,2,0,0,1,3,1,2,3,3,1,2,3,1,1,2,2,2,1,2,3,0,0,0,0,3,1,3,3,1,1,2,3,1,0,1,1,1,0,1,1,2,1,2,3,1,1,2,2,3,1,2,3,3,1,2,2,3,1,3,3,0,1,3,3,3,1,2,2,3,1,3,1,0,1,3,3,2,1,2,3,0,0,1,0,3,1,2,2,1,1,2,3,1,1,2,1,2,0,1,0,2,1,2,3,0,1,3,2,0,1,2,3,1,0,0,0,2,1,2,3,3,1,2,3,1,1,3,2,1,1,3,2,2,0,1,1,0,1,2,2,1,1,3,3,3,1,2,3,1,1,2,2,0,1,2,1,3,1,3,2,0,1,3,3,0,1,3,3,0,1,2,1,2,1,2,1,1,0,1,1,2,1,2,3,0,0,0,0,2,0,0,1,1,1,3,2,3,1,3,3,2,1,2,2,0,0,0,1,3,1,3,3,3,1,3,3,3,0,0,0,1,0,1,0,2,0,1,1,0,1,2,1,0,1,3,3,2,1,1,2,3,1,3,3,1,0,0,1,0,1,1,3,0,1,2,3,0,1,1,3,3,0,1,1,0,1,3,2,0,1,2,1,3,1,2,3,2,1,3,2,3,0,1,0,1,0,0,0,3,1,2,2,0,0,2,1,2,0,1,2,0,0,1,1,1,1,1,2,1,0,1,1,0,1,3,2,3,1,3,3,1,0,0,0,3,0,0,0,1,1,3,2,2,1,2,2,1,1,2,1,0,1,2,2,3,1,1,2,1,1,3,2,1,1,2,2,0,1,2,2,1,1,2,2,3,1,3,2,3}, 100, 4);
+    //
     // for (uint64 i = 0 ; i < data_providers_num ; i++) {
     //     string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
     //     print("Table: " + table);

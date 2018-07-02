@@ -7,8 +7,8 @@ import stdlib;
 import oblivious;
 import shared3p_oblivious;
 
-import data_input;
-
+// import data_input;
+domain pd_shared3p shared3p;
 /**
  * ID3 Summary
  * 1. Calculate the entropy of every attribute using the data set
@@ -18,31 +18,31 @@ import data_input;
  * 4. Recurse on subsets using remaining attributes.
 **/
 
-// uint64 rows = 14;
-// uint64 columns = 5;
-// uint64 max_attribute_values = 3;
-// uint64 class_index = columns-1;
-// pd_shared3p uint64[[1]] original_attributes(columns) = {0,1,2,3,4}; //private? //iota
-// pd_shared3p int64[[2]] original_examples(rows,columns) = reshape({0,0,1,0,1,
-//                                                                     0,0,1,1,1,
-//                                                                     1,0,1,0,0,
-//                                                                     2,1,1,0,0,
-//                                                                     2,2,0,0,0,
-//                                                                     2,2,0,1,1,
-//                                                                     1,2,0,1,0,
-//                                                                     0,1,1,0,1,
-//                                                                     0,2,0,0,0,
-//                                                                     2,1,0,0,0,
-//                                                                     0,1,0,1,0,
-//                                                                     1,1,1,1,0,
-//                                                                     1,0,0,0,0,
-//                                                                     2,1,1,1,1}, rows, columns);
-//
-// pd_shared3p int64[[2]] possible_values(columns,max_attribute_values) = reshape({0,1,2,
-//                                                                                 0,1,2,
-//                                                                                 0,1,-1,
-//                                                                                 0,1,-1,
-//                                                                                 0,1,-1}, columns, max_attribute_values);
+uint64 rows = 14;
+uint64 columns = 5;
+uint64 max_attribute_values = 3;
+uint64 class_index = columns-1;
+pd_shared3p uint64[[1]] original_attributes(columns) = {0,1,2,3,4}; //private? //iota
+pd_shared3p int64[[2]] original_examples(rows,columns) = reshape({0,0,1,0,1,
+                                                                    0,0,1,1,1,
+                                                                    1,0,1,0,0,
+                                                                    2,1,1,0,0,
+                                                                    2,2,0,0,0,
+                                                                    2,2,0,1,1,
+                                                                    1,2,0,1,0,
+                                                                    0,1,1,0,1,
+                                                                    0,2,0,0,0,
+                                                                    2,1,0,0,0,
+                                                                    0,1,0,1,0,
+                                                                    1,1,1,1,0,
+                                                                    1,0,0,0,0,
+                                                                    2,1,1,1,1}, rows, columns);
+
+pd_shared3p int64[[2]] possible_values(columns,max_attribute_values) = reshape({0,1,2,
+                                                                                0,1,2,
+                                                                                0,1,-1,
+                                                                                0,1,-1,
+                                                                                0,1,-1}, columns, max_attribute_values);
 
 
 template <type T>
@@ -151,6 +151,11 @@ pd_shared3p bool all_examples_same(pd_shared3p int64[[2]] examples) {
         }
         res += (uint64)(class_counts[c] == count_positives(examples));
     }
+    print("Examples:");
+    for(uint64 i = 0; i < rows; i++){
+        printVector(declassify(examples[i,:]));
+    }
+    print("Same",declassify(res));
     return (bool)res;
 }
 
@@ -171,6 +176,7 @@ pd_shared3p float64 entropy(pd_shared3p int64[[2]] examples) {
         pd_shared3p float64 percentage = (float64)count / (float64)count_positives(examples);
         entropy -= (percentage * log2(percentage));
     }
+    print("Entropy",declassify(entropy));
     return entropy;
 }
 
@@ -198,6 +204,7 @@ pd_shared3p float64 information_gain(pd_shared3p int64[[2]] examples, pd_shared3
         pd_shared3p bool neq = (percentage != 0);
         gain -= (float64)neq * percentage * entropy(subset);
     }
+    // print("Gain",declassify(gain));
     return gain;
 }
 
@@ -234,6 +241,7 @@ pd_shared3p int64 most_common_label(pd_shared3p int64[[2]] examples) {
 
 
 pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint64[[1]] attributes) {
+    print("id3\n");
     if (declassify(all_examples_same(examples))) {
         pd_shared3p int64 label = -1;
         for (uint64 i = 0; i < rows; i++) {
@@ -255,9 +263,18 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
         pd_shared3p bool eq = (i == best_attribute_original_index);
         best_attribute_values += (int64)eq * possible_values[i,:]; // simd
     }
+    print("Original attributes ");
+    printVector(declassify(original_attributes));
+    print("Best attribute",declassify(best_attribute));
+    print("Best index",declassify(best_attribute_index));
+
+    print("Best original ",declassify(best_attribute_original_index));
 
     for (uint64 v = 0 ; v < max_attribute_values ; v++) {
         pd_shared3p int64 value = best_attribute_values[v];
+        print("Values: ");
+        printVector(declassify(best_attribute_values));
+        print("Value: ",declassify(value));
         if (declassify(value == -1)) {
             continue;
         }
@@ -270,6 +287,10 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
                 eq += (uint64)(example[j] == value) * (uint64)(j == best_attribute_original_index);
             }
             subset[i,:] = (int64)eq * example + (int64)(1-eq) * minus_ones; // simd
+        }
+        print("Subset");
+        for(uint64 i = 0; i < rows; i++){
+            printVector(declassify(subset[i,:]));
         }
         pd_shared3p xor_uint8[[1]] branch = bl_strCat(quote, itoa(best_attribute));
         branch = bl_strCat(branch, eq_str);
@@ -306,7 +327,7 @@ pd_shared3p xor_uint8[[1]] id3(pd_shared3p int64[[2]] examples, pd_shared3p uint
 }
 
 void main() {
-    quote = bl_str('"');
+    quote = bl_str("\"");
     comma = bl_str(", ");
     eq_str = bl_str(" == ");
     space = bl_str(" ");
@@ -319,9 +340,9 @@ void main() {
 }
 
 pd_shared3p xor_uint8[[1]] quote;
-pd_shared3p xor_uint8[[1]] quote;
 pd_shared3p xor_uint8[[1]] eq_str;
 pd_shared3p xor_uint8[[1]] space;
 pd_shared3p xor_uint8[[1]] colon;
+pd_shared3p xor_uint8[[1]] comma;
 pd_shared3p xor_uint8[[1]] left_curly_br;
 pd_shared3p xor_uint8[[1]] right_curly_br;

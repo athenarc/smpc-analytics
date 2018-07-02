@@ -20,7 +20,7 @@ else:
 if args.id3out is not None:
     ID3_RESULTS = args.id3out
 else:
-    ID3_RESULTS = '../ID3/id3.out'
+    ID3_RESULTS = '../decision-tree/id3.out'
 
 print('Post-processing csv dataset: "' + INITIAL_DATASET + '", with "' + ID3_RESULTS + '" output\n')
 

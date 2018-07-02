@@ -20,7 +20,7 @@ else:
 if args.id3json is not None:
     JSON_FILE = args.id3json
 else:
-    JSON_FILE = '../ID3/id3_out.json'
+    JSON_FILE = '../decision-tree/id3_out.json'
 
 if args.reqid is not None:
     REQ_ID = args.reqid
