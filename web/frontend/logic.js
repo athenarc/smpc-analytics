@@ -179,7 +179,7 @@ function addHistogramNumericalTab() {
 
   // make the new tab active
   $('#tabs a:last').tab('show');
-  assignButtons();
+  assignButtons(nextTab);
 
   // add the button to the end
   $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addHistogramNumericalTab()" class="btn btn-info btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
@@ -277,15 +277,15 @@ function addDecisionTreeNumericalTab() {
         </br>
         
         <b>Select Classifier : </b>
-        <div class="btn-group" data-toggle="buttons">
-          <label class="btn btn-default active" onclick="selectClassifier('ID3')">
+        <div class="btn-group" data-toggle="buttons" id="classifier_selector_`+nextTab+`">
+          <label class="btn btn-default active" onclick="selectClassifier('ID3',`+nextTab+`)">
             <input type="radio">ID3</input>
           </label>
-          <label class="btn btn-default" onclick="selectClassifier('C45')">
+          <label class="btn btn-default" onclick="selectClassifier('C45',`+nextTab+`)">
             <input type="radio">C4.5</input>
           </label>
 
-          <input style="display:none;" type="text" name="classifier_algorithm" id="classifier_algorithm" value="ID3">
+          <input style="display:none;" type="text" name="classifier_algorithm_`+nextTab+`" id="classifier_algorithm_`+nextTab+`" value="ID3">
         </div>
 
         </br>
@@ -328,112 +328,112 @@ function addDecisionTreeNumericalTab() {
         <p>
           <ul class="list-group">
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="Patient Age"> Patient Age
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="Patient Age"> Patient Age
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="Heart rate"> Heart rate
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="Heart rate"> Heart rate
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="Height (cm)"> Height (cm)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="Height (cm)"> Height (cm)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="Weight (kg)"> Weight (kg)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="Weight (kg)"> Weight (kg)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="LVEDV (ml)"> LVEDV (ml)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="LVEDV (ml)"> LVEDV (ml)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="LVESV (ml)"> LVESV (ml)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="LVESV (ml)"> LVESV (ml)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="LVSV (ml)"> LVSV (ml)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="LVSV (ml)"> LVSV (ml)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="LVEF (%)"> LVEF (%)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="LVEF (%)"> LVEF (%)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="LV Mass (g)"> LV Mass (g)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="LV Mass (g)"> LV Mass (g)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="RVEDV (ml)"> RVEDV (ml)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="RVEDV (ml)"> RVEDV (ml)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="RVESV (ml)"> RVESV (ml)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="RVESV (ml)"> RVESV (ml)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="RVSV (ml)"> RVSV (ml)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="RVSV (ml)"> RVSV (ml)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="RVEF (%)"> RVEF (%)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="RVEF (%)"> RVEF (%)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="RV Mass (g)"> RV Mass (g)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="RV Mass (g)"> RV Mass (g)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="BMI (kg/msq)"> BMI (kg/msq)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="BMI (kg/msq)"> BMI (kg/msq)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="BSA"> BSA
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="BSA"> BSA
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="BSA (msq)"> BSA (msq)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="BSA (msq)"> BSA (msq)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="CO (L/min)"> CO (L/min)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="CO (L/min)"> CO (L/min)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="Central PP(mmHg)"> Central PP(mmHg)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="Central PP(mmHg)"> Central PP(mmHg)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="DBP (mmHg)"> DBP (mmHg)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="DBP (mmHg)"> DBP (mmHg)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="LVEF (ratio)"> LVEF (ratio)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="LVEF (ratio)"> LVEF (ratio)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="MAP"> MAP
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="MAP"> MAP
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="PAP (mmHg)"> PAP (mmHg)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="PAP (mmHg)"> PAP (mmHg)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="PP (mmHg)"> PP (mmHg)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="PP (mmHg)"> PP (mmHg)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="RVEF (ratio)"> RVEF (ratio)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="RVEF (ratio)"> RVEF (ratio)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="SBP (mmHg)"> SBP (mmHg)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="SBP (mmHg)"> SBP (mmHg)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes" value="SVR (mmHg/L/min)"> SVR (mmHg/L/min)
-              <span style="float:right;"><input type="number" name="cells" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_`+nextTab+`" value="SVR (mmHg/L/min)"> SVR (mmHg/L/min)
+              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
           </ul>
         </p>
@@ -458,7 +458,7 @@ function addDecisionTreeNumericalTab() {
 
   // make the new tab active
   $('#tabs a:last').tab('show');
-  assignButtons();
+  assignButtons(nextTab);
 
   // add the button to the end
   $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addDecisionTreeNumericalTab()" class="btn btn-success btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
@@ -487,15 +487,15 @@ function addDecisionTreeCategoricalTab() {
           </br>
           
           <b>Select Classifier : </b>
-          <div class="btn-group" data-toggle="buttons">
-            <label class="btn btn-default active" onclick="selectClassifier('ID3')">
+          <div class="btn-group" data-toggle="buttons" id="classifier_selector_`+nextTab+`">
+            <label class="btn btn-default active" onclick="selectClassifier('ID3',`+nextTab+`)">
               <input type="radio">ID3</input>
             </label>
-            <label class="btn btn-default" onclick="selectClassifier('C45')">
+            <label class="btn btn-default" onclick="selectClassifier('C45',`+nextTab+`)">
               <input type="radio">C4.5</input>
             </label>
 
-            <input style="display:none;" type="text" name="classifier_algorithm" id="classifier_algorithm" value="ID3">
+            <input style="display:none;" type="text" name="classifier_algorithm_`+nextTab+`" id="classifier_algorithm_`+nextTab+`" value="ID3">
           </div>
         
           </br>
@@ -554,30 +554,44 @@ function addDecisionTreeCategoricalTab() {
 
 
 
-function assignButtons(){
-    var checkboxes = document.querySelectorAll('input[name="attributes"]');
-    var cells = document.querySelectorAll('input[name="cells"]');
+function assignButtons(tab) {
+    var closureMaker = function(i, classifier) {
+      return function(event){
+        if (checkboxes[i].checked && (classifier == "ID3" || classifier == null)) {
+          cells[i].style.display = "inline";
+          cells[i].value = "5";
+          cells[i].required = "true";
+          cells[i].disabled = false;
+        } else {
+          cells[i].style.display = "none";
+          cells[i].value = "";
+          cells[i].required = "false";
+          cells[i].disabled = "disabled";
+        }
+      };
+    };
+    
+    var classifier = document.getElementById("classifier_algorithm_"+tab);
+    var checkboxes, cells, classifier_selector;
+    if (classifier != null) { // if decision tree
+        classifier = classifier.value;
+        checkboxes = document.querySelectorAll('input[name="attributes_'+tab+'"]');
+        cells = document.querySelectorAll('input[name="cells_'+tab+'"]');
+        classifier_selector = document.getElementById("classifier_selector_"+tab);
+    } else { // if histogram
+        checkboxes = document.querySelectorAll('input[name="attributes"]');
+        cells = document.querySelectorAll('input[name="cells"]');
+    }
     for (var i = 0; i < checkboxes.length; i++) {
-        var closureMaker = function(i) {
-            return function(event){
-                if(checkboxes[i].checked){
-                    cells[i].style.display = "inline";
-                    cells[i].value = "5";
-                    cells[i].required = "true";
-                    cells[i].disabled = false;
-                } else {
-                    cells[i].style.display = "none";
-                    cells[i].value = "";
-                    cells[i].required = "false";
-                    cells[i].disabled = "disabled";
-                }
-            };
-        };
-        var closure = closureMaker( i );
+        var closure = closureMaker(i, classifier);
         checkboxes[i].addEventListener('click', closure, false);
+        if (classifier != null) { // if decision tree
+            classifier_selector.addEventListener('click', closure, false); // add event on ID3-C45 selector button
+        }
     }
 }
-assignButtons();
+assignButtons(1);
+
 
 function addFilterToFormWithId(formId) {
     var id = formId.substring(14);
@@ -716,6 +730,7 @@ function addFilterToFormWithIdCategorical(formId) {
 
 function objectifyForm(formArray, computation_t) { // serialize data function
   var returnArray = {};
+  
   for (var i = 0; i < formArray.length; i++){
       formJSON = {'attribute_names' : [], 'attribute_cells' : []};
       finalJson = {'plot': 'yeshhh', 'attributes' : [[]]};
@@ -728,7 +743,7 @@ function objectifyForm(formArray, computation_t) { // serialize data function
                   finalJson.class_attribute = element.value;
               }
               // Select classifier
-              if (element.name == 'classifier_algorithm') {
+              if (element.name.includes('classifier_algorithm')) {
                   finalJson.classifier = element.value;
               }
           } else if (computation_t == '/smpc/id3/numerical') {
@@ -739,15 +754,15 @@ function objectifyForm(formArray, computation_t) { // serialize data function
                   finalJson.class_attribute.cells = element.value;
               }
               // Select classifier
-              if (element.name == 'classifier_algorithm') {
+              if (element.name.includes('classifier_algorithm')) {
                   finalJson.classifier = element.value;
               }
           }
           
-          if ((element.name == 'attributes' && element.checked == true) || element.name == 'count_attributes') {
+          if ((element.name.includes('attributes') && element.checked == true) || element.name == 'count_attributes') {
               formJSON.attribute_names.push(element.value);
           }
-          if (element.name == 'cells' && element.value != "") {
+          if (element.name.includes('cells') && element.value != "") {
               formJSON.attribute_cells.push(element.value);
           }
           if (element.name == 'datasources' && element.checked == true) {
@@ -867,6 +882,7 @@ function addAttributeToFormWithId(formId, attribute_t) {
 }
 
 
-function selectClassifier(classifier) {
-    document.getElementById("classifier_algorithm").value = classifier;
+function selectClassifier(classifier, tab) {
+    document.getElementById("classifier_algorithm_"+tab).value = classifier;
+    assignButtons(tab);
 }
