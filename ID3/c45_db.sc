@@ -145,7 +145,8 @@ pd_shared3p int64 sum(uint64 vmap, uint64 len) {
 
 pd_shared3p bool all_examples_same(uint64 example_indexes_vmap) {
     pd_shared3p uint64 res = 0;
-    pd_shared3p uint64[[1]] class_counts(max_attribute_values);
+    float64[[1]] possible_classes = tdbVmapGetValue(possible_values, arrayToString(class_index), 0::uint64);
+    pd_shared3p uint64[[1]] class_counts(size(possible_classes));
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
         pd_shared3p uint64 partial_res = 0;
         string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
@@ -154,9 +155,13 @@ pd_shared3p bool all_examples_same(uint64 example_indexes_vmap) {
         uint64 columns = tdbGetColumnCount(datasource, table);
         pd_shared3p float64[[1]] label_column = tdbReadColumn(datasource, table, class_index);
         pd_shared3p int64 positive_indexes = sum(example_indexes);
-        for (uint64 a = 0; a < max_attribute_values; a++) {
-            pd_shared3p float64 label = possible_values[class_index, a];
-            pd_shared3p uint64[[1]] eq = (uint64)(label_column == label) * (uint64)(example_indexes != 0) * (uint64)(label != -1);
+        if (!_exists(categorical_attributes, class_index) ){ // If class attribute is NOT categorical, Compute corresponding cells (integers from floats).
+            float64 width = (class_max - class_min) / (float64) class_cells;
+            label_column = (float64)((int64)((label_column - class_min) / width));
+        }
+        for (uint64 a = 0; a < size(possible_classes); a++) {
+            float64 label = possible_classes[a];
+            pd_shared3p uint64[[1]] eq = (uint64)(label_column == label) * (uint64)(example_indexes != 0);
             class_counts[a] = sum(eq);
             partial_res += (uint64)(class_counts[a] == (uint64) positive_indexes);
         }
@@ -173,15 +178,20 @@ pd_shared3p float64 entropy(uint64 example_indexes_vmap) {
         pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
         total_count += sum(example_indexes);
     }
-    for (uint64 c = 0; c < max_attribute_values; c++) {
+    float64[[1]] possible_classes = tdbVmapGetValue(possible_values, arrayToString(class_index), 0::uint64);
+    for (uint64 c = 0; c < size(possible_classes); c++) {
         pd_shared3p uint64 equal_count = 0;
+        float64 label = possible_classes[c];
         for (uint64 i = 0 ; i < data_providers_num ; i++) {
             string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
             pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
             uint64 rows = tdbGetRowCount(datasource, table);
             pd_shared3p float64[[1]] label_column = tdbReadColumn(datasource, table, class_index);
-            pd_shared3p float64 label = possible_values[class_index, c];
-            pd_shared3p uint64[[1]] eq = (uint64)(label_column == label) * (uint64)(example_indexes != 0) * (uint64)(label != -1);
+            if (!_exists(categorical_attributes, class_index) ){ // If class attribute is NOT categorical, Compute corresponding cells (integers from floats).
+                float64 width = (class_max - class_min) / (float64) class_cells;
+                label_column = (float64)((int64)((label_column - class_min) / width));
+            }
+            pd_shared3p uint64[[1]] eq = (uint64)(label_column == label) * (uint64)(example_indexes != 0);
             equal_count += sum(eq);
         }
         pd_shared3p float64 percentage = (float64)equal_count / (float64)total_count;
@@ -231,9 +241,9 @@ uint64 split_attribute(uint64 example_indexes_vmap, uint64[[1]] attributes) {
         uint64 attribute = attributes[a];
         if (exists(categorical_attributes, attribute)) { // If attribute is categorical
             uint64 splitted = tdbVmapNew();
-            pd_shared3p float64[[1]] attribute_values = possible_values[attribute,:];
-            for (uint64 v = 0; v < max_attribute_values; v++) {
-                pd_shared3p float64 value = attribute_values[v];
+            float64[[1]] attribute_values = tdbVmapGetValue(possible_values, arrayToString(attribute), 0::uint64);
+            for (uint64 v = 0; v < size(attribute_values); v++) {
+                float64 value = attribute_values[v];
                 uint64 subset = tdbVmapNew();
                 for (uint64 i = 0 ; i < data_providers_num ; i++) {
                     string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
@@ -330,12 +340,17 @@ uint64 split_attribute(uint64 example_indexes_vmap, uint64[[1]] attributes) {
 
 
 pd_shared3p int64 most_common_label(uint64 example_indexes_vmap) {
-    pd_shared3p uint64[[1]] label_counts(max_attribute_values);
+    float64[[1]] possible_classes = tdbVmapGetValue(possible_values, arrayToString(class_index), 0::uint64);
+    pd_shared3p uint64[[1]] label_counts(size(possible_classes));
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
         string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
         pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
         pd_shared3p float64[[1]] label_column = tdbReadColumn(datasource, table, class_index);
-        for (uint64 a = 0; a < max_attribute_values; a++) {
+        if (!_exists(categorical_attributes, class_index) ){ // If class attribute is NOT categorical, Compute corresponding cells (integers from floats).
+            float64 width = (class_max - class_min) / (float64) class_cells;
+            label_column = (float64)((int64)((label_column - class_min) / width));
+        }
+        for (uint64 a = 0; a < size(possible_classes); a++) {
             pd_shared3p uint64[[1]] eq = (uint64)((int64)label_column == (int64) a)* (uint64)(example_indexes != 0);
             label_counts[a] += sum(eq);
         }
@@ -352,6 +367,10 @@ string c45(uint64 example_indexes_vmap, uint64[[1]] attributes) {
             string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
             pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
             pd_shared3p float64[[1]] label_column = tdbReadColumn(datasource, table, class_index);
+            if (!_exists(categorical_attributes, class_index) ){ // If class attribute is NOT categorical, Compute corresponding cells (integers from floats).
+                float64 width = (class_max - class_min) / (float64) class_cells;
+                label_column = (float64)((int64)((label_column - class_min) / width));
+            }
             pd_shared3p float64[[1]] true_labels = (float64)example_indexes * label_column;
             label_count += (int64)sum(true_labels);
             total_count += sum(example_indexes);
@@ -375,13 +394,11 @@ string c45(uint64 example_indexes_vmap, uint64[[1]] attributes) {
 
     string branches = "";
     if (exists(categorical_attributes, best_attribute)) {
-        float64[[1]] best_attribute_values(max_attribute_values) = possible_values[best_attribute_original_index, :];
+        float64[[1]] best_attribute_values = tdbVmapGetValue(possible_values, arrayToString(best_attribute_original_index), 0::uint64);
 
-        for (uint64 v = 0 ; v < max_attribute_values ; v++) {
+        uint64 length = size(best_attribute_values);
+        for (uint64 v = 0 ; v < length ; v++) {
             float64 value = best_attribute_values[v];
-            if (value == -1) {
-                continue;
-            }
             string branch = "\"" + itoa(best_attribute) + " == " + itoa(value) + "\"" + ": ";
 
             uint64 subset_vmap = tdbVmapGetValue(best_splitted, "subsets", v)[0];
@@ -390,7 +407,7 @@ string c45(uint64 example_indexes_vmap, uint64[[1]] attributes) {
             } else {
                 branch += c45(subset_vmap, new_attribs);
             }
-            if (v != max_attribute_values -1) {
+            if (v != length -1) {
                 branches += ", ";
             }
             branches += branch;
@@ -422,16 +439,18 @@ string c45(uint64 example_indexes_vmap, uint64[[1]] attributes) {
 
 string datasource;
 uint64[[1]] categorical_attributes;
+float64 class_min;
+float64 class_max;
+int64 class_cells;
 
 
 
 uint64 providers_vmap;
 uint64 data_providers_num;
-uint64 max_attribute_values;
 uint64 class_index;
 
 uint64[[1]] original_attributes;
-float64[[2]] possible_values;
+uint64 possible_values;
 
 uint64 rows;
 uint64 columns;

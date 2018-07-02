@@ -26,20 +26,22 @@ void main(){
     class_index = 4;
 
     columns = 5;
-    max_attribute_values = 3;
 
     datasource = "DS1";
     categorical_attributes = {-1};
+
+    class_min = 0;
+    class_max = 100;
+    class_cells = 3;
 
     print("Opening connection to db: ", datasource);
     tdbOpenConnection(datasource);
 
 
-    possible_values = reshape({-1,-1,-1,
-                                -1,-1,-1,
-                                -1,-1,-1,
-                                -1,-1,-1,
-                                0,1,2},columns,max_attribute_values);
+    possible_values = tdbVmapNew();
+    float64[[1]] values;
+    values = {0,1,2};
+    tdbVmapAddValue(possible_values, "4", values);
 
 
     uint64 original_example_indexes_vmap = tdbVmapNew();
