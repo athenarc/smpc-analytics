@@ -556,13 +556,13 @@ app.post('/smpc/decision_tree/numerical', function(req, res) {
             if (classifier == "ID3") {
                 return _exec('python web/id3_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json --plot', {cwd: parent, shell: '/bin/bash'});
             } else if (classifier == "C45") {
-                return _exec('python web/c45_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json --plot', {cwd: parent, shell: '/bin/bash'});
-            }  
+                return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json --plot', {cwd: parent, shell: '/bin/bash'});
+            }
         } else {
             if (classifier == "ID3") {
                 return _exec('python web/id3_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json', {cwd: parent, shell: '/bin/bash'});
             } else if (classifier == "C45") {
-                return _exec('python web/c45_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json', {cwd: parent, shell: '/bin/bash'});
+                return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json', {cwd: parent, shell: '/bin/bash'});
             }
         }
     }).then((result) => {
