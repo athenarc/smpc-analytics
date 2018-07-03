@@ -41,7 +41,7 @@ def main():
         for line in results:
             if line.startswith('{'):
                 tree = json.loads(line)
-                converted, nodes, edges, leaves = convert_tree(tree)
+                converted, nodes, edges, leaves, id = convert_tree(tree)
                 break
     if args.plot:
         plotted_file = plot(nodes, edges, leaves)
@@ -86,7 +86,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
             edge_target = graph_node_id
             edge_node = { 'data': { 'source': edge_source, 'target': edge_target, 'label': branch } }
             edges.append(edge_node)
-        return subtree, nodes, edges, leaves
+        return subtree, nodes, edges, leaves, id
     for node, subtree in tree.items():
         id += 1
 
@@ -110,10 +110,10 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
                 edges.append(edge_node)
 
         branch = str(operator + ' ' + threshold)
-        subtree,nodes,edges,leaves = convert_tree(tree = subtree, id = id, nodes = nodes, edges = edges, leaves = leaves, parent = graph_node, branch = branch)
+        subtree,nodes,edges,leaves, id = convert_tree(tree = subtree, id = id, nodes = nodes, edges = edges, leaves = leaves, parent = graph_node, branch = branch)
         new_tree[new_node] = subtree
 
-    return new_tree, nodes, edges, leaves
+    return new_tree, nodes, edges, leaves, id
 
 def plot(nodes, edges, leaves):
     class_name = configuration['class_attribute']['name']
