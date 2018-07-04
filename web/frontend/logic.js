@@ -603,7 +603,7 @@ function addFilterToFormWithId(formId) {
     }
     var outer_div = document.createElement('div');
     var select_attributes = document.createElement('select');
-    select_attributes.name = "filter_" + "attributes";
+    select_attributes.name = "filter_attributes";
     select_attributes.form = "hist_" + id;
     select_attributes.className = "selectpicker";
     var attributes = ["Patient Age", "Heart rate", "Height (cm)", "Weight (kg)", "LVEDV (ml)", "LVESV (ml)", "LVSV (ml)", "LVEF (%)", "LV Mass (g)", "RVEDV (ml)", "RVESV (ml)", "RVSV (ml)", "RVEF (%)", "RV Mass (g)", "BMI (kg/msq)", "BSA", "BSA (msq)", "CO (L/min)", "Central PP(mmHg)", "DBP (mmHg)", "LVEF (ratio)", "MAP", "PAP (mmHg)", "PP (mmHg)", "RVEF (ratio)", "SBP (mmHg)", "SVR (mmHg/L/min)"];
@@ -821,6 +821,7 @@ function objectifyForm(formArray, computation_t) { // serialize data function
               var attribute_value = formJSON.filter_values[f];
               if (computation_t == '/smpc/histogram') {
                   var attribute_operator = formJSON.filter_operators[f];
+                  finalJson.filters.conditions.push({'attribute' : attribute_name, 'operator' : attribute_operator, 'value' : attribute_value});
               } else {
                   finalJson.filters.conditions.push({'attribute' : attribute_name, 'value' : attribute_value});
               }
