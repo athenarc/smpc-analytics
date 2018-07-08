@@ -3,29 +3,12 @@ const express = require('express');
 const app = express();
 const { exec } = require('child_process');
 const fs = require('fs');
-var path = require('path');
-var bodyParser = require('body-parser');
+const path = require('path');
+const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 global.__basedir = __dirname;
 
-
-// function to return a promise to write to file
-function _writeFile(filename, content, encoding = null) {
-    return new Promise((resolve, reject) => {
-      try {
-          fs.writeFile(filename, content, encoding, (err, buffer) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(buffer);
-            }
-          });
-      } catch (err) {
-          reject(err);
-      }
-    });
-}
 
 // function to return a promise to exec a process
 function _exec(script, args) {
@@ -47,7 +30,7 @@ function _exec(script, args) {
 // function to return a promise to unlink a file if exists
 function _unlinkIfExists(filename) {
     return new Promise((resolve, reject) => {
-        fs.stat(filename, (err, stat) => {
+        fs.stat(filename, (err) => {
             if (err === null) {
                 fs.unlink(filename, err => {
                     if (err) { return reject(err); }
@@ -62,33 +45,32 @@ function _unlinkIfExists(filename) {
 
 
 app.post('/smpc/import', function(req, res) {
-    var parent = path.dirname(__basedir);
-    var content = JSON.stringify(req.body);
+    const parent = path.dirname(__basedir);
 
-    var attributes = req.body.attributes;
-    var hospitalName = req.body.datasource;
+    const attributes = req.body.attributes;
+    const hospitalName = req.body.datasource;
     console.log('[NODE] Going to import dataset from /patients.json, /mesh_mapping.json, /m.json, /m_inv.json, for attributes ' + attributes + '\n');
     console.log('[NODE] Running CSV-preprocessor.');
     console.log('\tpython /mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ')  + '\" /patients.json --output /' + hospitalName + '.csv\n');
     _exec('python /mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" /patients.json --output /' + hospitalName + '.csv', {stdio:[0,1,2],cwd: parent})
-    .then((buffer) => {
+    .then(() => {
         console.log('[NODE] Running XML-Generator');
         console.log('\tpython /mhmd-driver/xml_generator.py /' + hospitalName + '.csv --float --table ' + hospitalName + '\n');
         return _exec('python /mhmd-driver/xml_generator.py /' + hospitalName + '.csv --float --table ' + hospitalName, {stdio:[0,1,2],cwd: parent});
-    }).then((buffer) => {
+    }).then(() => {
         console.log('[NODE] Running CSV-Importer');
         console.log('\tsharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv /' + hospitalName + '.csv --model /' + hospitalName + '.xml --separator c --log /' + hospitalName + '.log\n');
         return _exec('sharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv /' + hospitalName + '.csv --model /' + hospitalName + '.xml --separator c --log /' + hospitalName + '.log', {stdio:[0,1,2],cwd: parent});
-    }).then((result) => {
+    }).then(() => {
         console.log('[NODE] Now unlinking intermidiate files.\n');
         // remove intermidiate files
-        var unlink_promises = [];
+        const unlink_promises = [];
         unlink_promises.push( _unlinkIfExists(parent + '/' + hospitalName + '.csv') );
         unlink_promises.push( _unlinkIfExists(parent + '/' + hospitalName + '.xml') );
         unlink_promises.push( _unlinkIfExists(parent + '/' + hospitalName + '.log') );
 
         return Promise.all(unlink_promises);
-    }).then((result) => {
+    }).then(() => {
         console.log('[NODE] Data importing Successful.\n');
         res.end();
     }).catch((err) => {
@@ -100,33 +82,32 @@ app.post('/smpc/import', function(req, res) {
 
 
 app.post('/smpc/import/cvi', function(req, res) {
-    var parent = path.dirname(__basedir);
-    var content = JSON.stringify(req.body);
+    const parent = path.dirname(__basedir);
 
-    var attributes = req.body.attributes;
-    var hospitalName = req.body.datasource;
+    const attributes = req.body.attributes;
+    const hospitalName = req.body.datasource;
     console.log('[NODE] Going to import CVI dataset, for attributes ' + attributes + '\n');
     console.log('[NODE] Running CSV-filter.');
     console.log('\tpython /mhmd-driver/csv_filter.py \"' + attributes.join(';')  + '\" --path /cvi_identified.csv --output /cvi_identified_' + hospitalName + '_filtered.csv\n');
     _exec('\tpython /mhmd-driver/csv_filter.py \"' + attributes.join(';')  + '\" --path /cvi_identified.csv --output /cvi_identified_' + hospitalName + '_filtered.csv', {stdio:[0,1,2],cwd: parent})
-    .then((buffer) => {
+    .then(() => {
         console.log('[NODE] Running XML-Generator');
         console.log('\tpython /mhmd-driver/xml_generator.py /cvi_identified_' + hospitalName + '_filtered.csv --float --table ' + hospitalName + '\n');
         return _exec('python /mhmd-driver/xml_generator.py /cvi_identified_' + hospitalName + '_filtered.csv --float --table ' + hospitalName, {stdio:[0,1,2],cwd: parent});
-    }).then((buffer) => {
+    }).then(() => {
         console.log('[NODE] Running CSV-Importer');
         console.log('\tsharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv /cvi_identified_' + hospitalName + '_filtered.csv --model /cvi_identified_' + hospitalName + '_filtered.xml --separator c --log /cvi_identified_' + hospitalName + '_filtered.log\n');
         return _exec('sharemind-csv-importer --force --conf /mhmd-driver/client/client.conf --mode overwrite --csv /cvi_identified_' + hospitalName + '_filtered.csv --model /cvi_identified_' + hospitalName + '_filtered.xml --separator c --log /cvi_identified_' + hospitalName + '_filtered.log', {stdio:[0,1,2],cwd: parent});
-    }).then((result) => {
+    }).then(() => {
         console.log('[NODE] Now unlinking intermidiate files.\n');
         // remove intermidiate files
-        var unlink_promises = [];
+        const unlink_promises = [];
         unlink_promises.push( _unlinkIfExists(parent + '/cvi_identified_' + hospitalName + '_filtered.csv') );
         unlink_promises.push( _unlinkIfExists(parent + '/cvi_identified_' + hospitalName + '_filtered.xml') );
         unlink_promises.push( _unlinkIfExists(parent + '/cvi_identified_' + hospitalName + '_filtered.log') );
 
         return Promise.all(unlink_promises);
-    }).then((result) => {
+    }).then(() => {
         console.log('[NODE] Data importing Successful.\n');
         res.end();
     }).catch((err) => {
