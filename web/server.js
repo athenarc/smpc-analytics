@@ -365,7 +365,7 @@ app.post('/smpc/count', function(req, res) {
     if ('filters' in req.body) {
         const filters = req.body.filters;
         // Add filter attributes for importing to list
-        for (i = 0; i < filters.conditions.length; i++) {
+        for (let i = 0; i < filters.conditions.length; i++) {
             attrib = filters.conditions[i].attribute;
             if (attributes.indexOf(attrib) === -1) { // if attribute does not exist in list (avoid duplicate imports)
                 attributes.push(attrib);
