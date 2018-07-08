@@ -1,20 +1,20 @@
 function addHistogramNumericalTab() {
-  var nextTab = $('#tabs li').length;
+    let nextTab = $('#tabs li').length;
 
-  // remove the button from the end
-  var add_btn = document.getElementById('btnAdd');
-  add_btn.parentElement.remove();
+    // remove the button from the end
+    const add_btn = document.getElementById('btnAdd');
+    add_btn.parentElement.remove();
 
-  // create the tab and add it to the end
-  $('<li class="nav-item"><a class="nav-link" href="#tab'+nextTab+'" id="tab'+nextTab+'-tab" data-toggle="tab">Histogram '+nextTab+'</a></li>').appendTo('#tabs');
+    // create the tab and add it to the end
+    $('<li class="nav-item"><a class="nav-link" href="#tab' + nextTab + '" id="tab' + nextTab + '-tab" data-toggle="tab">Histogram ' + nextTab + '</a></li>').appendTo('#tabs');
 
-  // create the tab content
-  $('<div class="tab-pane fade" id="tab'+nextTab+'">' +
-      `<div style="display: none;" id="loading-wrapper_hist_`+nextTab+`">
+    // create the tab content
+    $('<div class="tab-pane fade" id="tab' + nextTab + '">' +
+        `<div style="display: none;" id="loading-wrapper_hist_` + nextTab + `">
         <div id="loading-text">Loading</div>
         <div id="loading-content"></div>
       </div>` +
-      `<form action="/smpc/histogram" method="post" id="hist_`+nextTab+`">
+        `<form action="/smpc/histogram" method="post" id="hist_` + nextTab + `">
         <p>
           <ul class="list-group">
               <li class="list-group-item">
@@ -174,39 +174,39 @@ function addHistogramNumericalTab() {
         <p>
           <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/histogram')" class="btn btn-primary" value="Compute Histogram">
         </p>
-        </form>`+
-    '</div>').appendTo('.tab-content');
+        </form>` +
+        '</div>').appendTo('.tab-content');
 
-  // make the new tab active
-  $('#tabs a:last').tab('show');
-  assignButtons(nextTab);
+    // make the new tab active
+    $('#tabs a:last').tab('show');
+    assignButtons(nextTab);
 
-  // add the button to the end
-  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addHistogramNumericalTab()" class="btn btn-info btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
+    // add the button to the end
+    $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addHistogramNumericalTab()" class="btn btn-info btn-sm" value="+" id="tabButton"/></a></li>').appendTo('#tabs');
 
-  $('.selectpicker').selectpicker();
+    $('.selectpicker').selectpicker();
 }
 
 
 function addHistogramCategoricalTab() {
-  var nextTab = $('#tabs li').length;
+    const nextTab = $('#tabs li').length;
 
-  // remove the button from the end
-  var add_btn = document.getElementById('btnAdd');
-  add_btn.parentElement.remove();
+    // remove the button from the end
+    const add_btn = document.getElementById('btnAdd');
+    add_btn.parentElement.remove();
 
-  // create the tab and add it to the end
-  $('<li class="nav-item"><a class="nav-link" href="#tab'+nextTab+'" id="tab'+nextTab+'-tab" data-toggle="tab">Histogram '+nextTab+'</a></li>').appendTo('#tabs');
+    // create the tab and add it to the end
+    $('<li class="nav-item"><a class="nav-link" href="#tab' + nextTab + '" id="tab' + nextTab + '-tab" data-toggle="tab">Histogram ' + nextTab + '</a></li>').appendTo('#tabs');
 
-  // create the tab content
-  $('<div class="tab-pane fade" id="tab'+nextTab+'">' +
-      `<div style="display: none;" id="loading-wrapper_hist_`+nextTab+`">
+    // create the tab content
+    $('<div class="tab-pane fade" id="tab' + nextTab + '">' +
+        `<div style="display: none;" id="loading-wrapper_hist_` + nextTab + `">
         <div id="loading-text">Loading</div>
         <div id="loading-content"></div>
       </div>` +
-      `<form action="/smpc/count" method="post" id="hist_` + nextTab + `">
+        `<form action="/smpc/count" method="post" id="hist_` + nextTab + `">
           </br>
-          <div id="attribute_container_`+nextTab+`">
+          <div id="attribute_container_` + nextTab + `">
             Attributes for Aggregation
 
             </br>
@@ -220,11 +220,11 @@ function addHistogramCategoricalTab() {
             <input type="button" id="filter_button_` + nextTab + `"" onclick="addAttributeToFormWithId(this.id, 'count_attributes')" class="btn btn-default" value="Add Attribute">
           </p>
 
-          <div id="filter_container_`+nextTab+`">
+          <div id="filter_container_` + nextTab + `">
           </div>
           <br>
           <p>
-            <input type="button" id="filter_button_`+nextTab+`" onclick="addFilterToFormWithIdCategorical(this.id)" class="btn btn-default" value="Add Filter">
+            <input type="button" id="filter_button_` + nextTab + `" onclick="addFilterToFormWithIdCategorical(this.id)" class="btn btn-default" value="Add Filter">
           </p>
           
           <p>
@@ -244,48 +244,48 @@ function addHistogramCategoricalTab() {
             <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/count')" class="btn btn-primary" value="Compute Histogram">
           </p>
 
-        </form>`+
-    '</div>').appendTo('.tab-content');
+        </form>` +
+        '</div>').appendTo('.tab-content');
 
-  // make the new tab active
-  $('#tabs a:last').tab('show');
+    // make the new tab active
+    $('#tabs a:last').tab('show');
 
-  // add the button to the end
-  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addHistogramCategoricalTab()" class="btn btn-primary btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
+    // add the button to the end
+    $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addHistogramCategoricalTab()" class="btn btn-primary btn-sm" value="+" id="tabButton"/></a></li>').appendTo('#tabs');
 
-  $('.selectpicker').selectpicker();
+    $('.selectpicker').selectpicker();
 }
 
 
 function addDecisionTreeNumericalTab() {
-  var nextTab = $('#tabs li').length;
+    const nextTab = $('#tabs li').length;
 
-  // remove the button from the end
-  var add_btn = document.getElementById('btnAdd');
-  add_btn.parentElement.remove();
+    // remove the button from the end
+    const add_btn = document.getElementById('btnAdd');
+    add_btn.parentElement.remove();
 
-  // create the tab and add it to the end
-  $('<li class="nav-item"><a class="nav-link" href="#tab'+nextTab+'" id="tab'+nextTab+'-tab" data-toggle="tab">Decision Tree '+nextTab+'</a></li>').appendTo('#tabs');
+    // create the tab and add it to the end
+    $('<li class="nav-item"><a class="nav-link" href="#tab' + nextTab + '" id="tab' + nextTab + '-tab" data-toggle="tab">Decision Tree ' + nextTab + '</a></li>').appendTo('#tabs');
 
-  // create the tab content
-  $('<div class="tab-pane fade" id="tab'+nextTab+'">' +
-      `<div style="display: none;" id="loading-wrapper_tree_`+nextTab+`">
+    // create the tab content
+    $('<div class="tab-pane fade" id="tab' + nextTab + '">' +
+        `<div style="display: none;" id="loading-wrapper_tree_` + nextTab + `">
         <div id="loading-text">Loading</div>
         <div id="loading-content"></div>
       </div>` +
-      `<form action="/smpc/decision_tree/numerical" method="post" id="tree_`+nextTab+`">
+        `<form action="/smpc/decision_tree/numerical" method="post" id="tree_` + nextTab + `">
         </br>
         
         <b>Select Classifier : </b>
-        <div class="btn-group" data-toggle="buttons" id="classifier_selector_`+nextTab+`">
-          <label class="btn btn-default active" onclick="selectClassifier('ID3',`+nextTab+`)">
+        <div class="btn-group" data-toggle="buttons" id="classifier_selector_` + nextTab + `">
+          <label class="btn btn-default active" onclick="selectClassifier('ID3',` + nextTab + `)">
             <input type="radio">ID3</input>
           </label>
-          <label class="btn btn-default" onclick="selectClassifier('C45',`+nextTab+`)">
+          <label class="btn btn-default" onclick="selectClassifier('C45',` + nextTab + `)">
             <input type="radio">C4.5</input>
           </label>
 
-          <input style="display:none;" type="text" name="classifier_algorithm_`+nextTab+`" id="classifier_algorithm_`+nextTab+`" value="ID3">
+          <input style="display:none;" type="text" name="classifier_algorithm_` + nextTab + `" id="classifier_algorithm_` + nextTab + `" value="ID3">
         </div>
 
         </br>
@@ -328,112 +328,112 @@ function addDecisionTreeNumericalTab() {
         <p>
           <ul class="list-group">
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="Patient Age"> Patient Age
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="Patient Age"> Patient Age
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="Heart rate"> Heart rate
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="Heart rate"> Heart rate
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="Height (cm)"> Height (cm)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="Height (cm)"> Height (cm)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="Weight (kg)"> Weight (kg)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="Weight (kg)"> Weight (kg)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="LVEDV (ml)"> LVEDV (ml)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="LVEDV (ml)"> LVEDV (ml)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="LVESV (ml)"> LVESV (ml)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="LVESV (ml)"> LVESV (ml)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="LVSV (ml)"> LVSV (ml)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="LVSV (ml)"> LVSV (ml)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="LVEF (%)"> LVEF (%)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="LVEF (%)"> LVEF (%)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="LV Mass (g)"> LV Mass (g)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="LV Mass (g)"> LV Mass (g)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="RVEDV (ml)"> RVEDV (ml)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="RVEDV (ml)"> RVEDV (ml)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="RVESV (ml)"> RVESV (ml)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="RVESV (ml)"> RVESV (ml)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="RVSV (ml)"> RVSV (ml)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="RVSV (ml)"> RVSV (ml)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="RVEF (%)"> RVEF (%)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="RVEF (%)"> RVEF (%)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="RV Mass (g)"> RV Mass (g)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="RV Mass (g)"> RV Mass (g)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="BMI (kg/msq)"> BMI (kg/msq)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="BMI (kg/msq)"> BMI (kg/msq)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="BSA"> BSA
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="BSA"> BSA
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="BSA (msq)"> BSA (msq)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="BSA (msq)"> BSA (msq)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="CO (L/min)"> CO (L/min)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="CO (L/min)"> CO (L/min)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="Central PP(mmHg)"> Central PP(mmHg)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="Central PP(mmHg)"> Central PP(mmHg)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="DBP (mmHg)"> DBP (mmHg)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="DBP (mmHg)"> DBP (mmHg)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="LVEF (ratio)"> LVEF (ratio)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="LVEF (ratio)"> LVEF (ratio)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="MAP"> MAP
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="MAP"> MAP
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="PAP (mmHg)"> PAP (mmHg)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="PAP (mmHg)"> PAP (mmHg)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="PP (mmHg)"> PP (mmHg)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="PP (mmHg)"> PP (mmHg)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="RVEF (ratio)"> RVEF (ratio)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="RVEF (ratio)"> RVEF (ratio)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="SBP (mmHg)"> SBP (mmHg)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="SBP (mmHg)"> SBP (mmHg)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
             <li class="list-group-item">
-              <input type="checkbox" name="attributes_`+nextTab+`" value="SVR (mmHg/L/min)"> SVR (mmHg/L/min)
-              <span style="float:right;"><input type="number" name="cells_`+nextTab+`" min="1" max="15" style="display:none;" placeholder="3"></span>
+              <input type="checkbox" name="attributes_` + nextTab + `" value="SVR (mmHg/L/min)"> SVR (mmHg/L/min)
+              <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
             </li>
           </ul>
         </p>
@@ -453,49 +453,50 @@ function addDecisionTreeNumericalTab() {
         <p>
           <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/decision_tree\/numerical')" class="btn btn-success" value="Compute Decision Tree">
         </p>
-        </form>`+
-    '</div>').appendTo('.tab-content');
+        </form>` +
+        '</div>').appendTo('.tab-content');
 
-  // make the new tab active
-  $('#tabs a:last').tab('show');
-  assignButtons(nextTab);
+    // make the new tab active
+    $('#tabs a:last').tab('show');
+    assignButtons(nextTab);
 
-  // add the button to the end
-  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addDecisionTreeNumericalTab()" class="btn btn-success btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
+    // add the button to the end
+    // language=HTML
+    $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addDecisionTreeNumericalTab()" class="btn btn-success btn-sm" value="+" id="tabButton"/></a></li>').appendTo('#tabs');
 
-  $('.selectpicker').selectpicker();
+    $('.selectpicker').selectpicker();
 }
 
 
 function addDecisionTreeCategoricalTab() {
-  var nextTab = $('#tabs li').length;
+    const nextTab = $('#tabs li').length;
 
-  // remove the button from the end
-  var add_btn = document.getElementById('btnAdd');
-  add_btn.parentElement.remove();
+    // remove the button from the end
+    const add_btn = document.getElementById('btnAdd');
+    add_btn.parentElement.remove();
 
-  // create the tab and add it to the end
-  $('<li class="nav-item"><a class="nav-link" href="#tab'+nextTab+'" id="tab'+nextTab+'-tab" data-toggle="tab">Decision Tree '+nextTab+'</a></li>').appendTo('#tabs');
+    // create the tab and add it to the end
+    $('<li class="nav-item"><a class="nav-link" href="#tab' + nextTab + '" id="tab' + nextTab + '-tab" data-toggle="tab">Decision Tree ' + nextTab + '</a></li>').appendTo('#tabs');
 
-  // create the tab content
-  $('<div class="tab-pane fade" id="tab'+nextTab+'">' +
-      `<div style="display: none;" id="loading-wrapper_tree_`+nextTab+`">
+    // create the tab content
+    $('<div class="tab-pane fade" id="tab' + nextTab + '">' +
+        `<div style="display: none;" id="loading-wrapper_tree_` + nextTab + `">
         <div id="loading-text">Loading</div>
         <div id="loading-content"></div>
       </div>` +
-      `<form action="/smpc/decision_tree/categorical" method="post" id="tree_` + nextTab + `">
+        `<form action="/smpc/decision_tree/categorical" method="post" id="tree_` + nextTab + `">
           </br>
           
           <b>Select Classifier : </b>
-          <div class="btn-group" data-toggle="buttons" id="classifier_selector_`+nextTab+`">
-            <label class="btn btn-default active" onclick="selectClassifier('ID3',`+nextTab+`)">
+          <div class="btn-group" data-toggle="buttons" id="classifier_selector_` + nextTab + `">
+            <label class="btn btn-default active" onclick="selectClassifier('ID3',` + nextTab + `)">
               <input type="radio">ID3</input>
             </label>
-            <label class="btn btn-default" onclick="selectClassifier('C45',`+nextTab+`)">
+            <label class="btn btn-default" onclick="selectClassifier('C45',` + nextTab + `)">
               <input type="radio">C4.5</input>
             </label>
 
-            <input style="display:none;" type="text" name="classifier_algorithm_`+nextTab+`" id="classifier_algorithm_`+nextTab+`" value="ID3">
+            <input style="display:none;" type="text" name="classifier_algorithm_` + nextTab + `" id="classifier_algorithm_` + nextTab + `" value="ID3">
           </div>
         
           </br>
@@ -508,7 +509,7 @@ function addDecisionTreeCategoricalTab() {
           </br>
           </br>
 
-          <div id="attribute_container_`+nextTab+`">
+          <div id="attribute_container_` + nextTab + `">
             Attributes for Classification
 
             </br>
@@ -540,100 +541,103 @@ function addDecisionTreeCategoricalTab() {
             <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/decision_tree\/categorical')" class="btn btn-success" value="Compute Decision Tree">
           </p>
 
-        </form>`+
-    '</div>').appendTo('.tab-content');
+        </form>` +
+        '</div>').appendTo('.tab-content');
 
-  // make the new tab active
-  $('#tabs a:last').tab('show');
+    // make the new tab active
+    $('#tabs a:last').tab('show');
 
-  // add the button to the end
-  $('<li class="nav-item"><a href="#" id="btnAdd"><input type="submit" onclick="addDecisionTreeCategoricalTab()" class="btn btn-success btn-sm" value="+" id="tabButton"></input></a></li>').appendTo('#tabs');
+    // add the button to the end
+    $("<li class=\"nav-item\"><a href=\"#\" id=\"btnAdd\"><input type=\"submit\" onclick=\"addDecisionTreeCategoricalTab()\" class=\"btn btn-success btn-sm\" value=\"+\" id=\"tabButton\"/></a></li>").appendTo('#tabs');
 
-  $('.selectpicker').selectpicker();
+    $('.selectpicker').selectpicker();
 }
 
 
-
 function assignButtons(tab) {
-    var closureMaker = function(i, classifier) {
-      return function(event){
-        if (checkboxes[i].checked && (classifier == "ID3" || classifier == null)) {
-          cells[i].style.display = "inline";
-          cells[i].value = "5";
-          cells[i].required = "true";
-          cells[i].disabled = false;
-        } else {
-          cells[i].style.display = "none";
-          cells[i].value = "";
-          cells[i].required = "false";
-          cells[i].disabled = "disabled";
-        }
-      };
+    let checkboxes;
+    let cells;
+    const closureMaker = function (i, classifier) {
+        return function () {
+            if (checkboxes[i].checked && (classifier === "ID3" || classifier == null)) {
+                cells[i].style.display = "inline";
+                cells[i].value = "5";
+                cells[i].required = "true";
+                cells[i].disabled = false;
+            } else {
+                cells[i].style.display = "none";
+                cells[i].value = "";
+                cells[i].required = "false";
+                cells[i].disabled = "disabled";
+            }
+        };
     };
-    
-    var classifier = document.getElementById("classifier_algorithm_"+tab);
-    var checkboxes, cells, classifier_selector;
+
+    let classifier = document.getElementById("classifier_algorithm_" + tab);
+    let classifier_selector;
     if (classifier != null) { // if decision tree
         classifier = classifier.value;
-        checkboxes = document.querySelectorAll('input[name="attributes_'+tab+'"]');
-        cells = document.querySelectorAll('input[name="cells_'+tab+'"]');
-        classifier_selector = document.getElementById("classifier_selector_"+tab);
+        checkboxes = document.querySelectorAll('input[name="attributes_' + tab + '"]');
+        cells = document.querySelectorAll('input[name="cells_' + tab + '"]');
+        classifier_selector = document.getElementById("classifier_selector_" + tab);
     } else { // if histogram
         checkboxes = document.querySelectorAll('input[name="attributes"]');
         cells = document.querySelectorAll('input[name="cells"]');
     }
-    for (var i = 0; i < checkboxes.length; i++) {
-        var closure = closureMaker(i, classifier);
+    for (let i = 0; i < checkboxes.length; i++) {
+        const closure = closureMaker(i, classifier);
         checkboxes[i].addEventListener('click', closure, false);
         if (classifier != null) { // if decision tree
             classifier_selector.addEventListener('click', closure, false); // add event on ID3-C45 selector button
         }
     }
 }
+
 assignButtons(1);
 
 
 function addFilterToFormWithId(formId) {
-    var id = formId.substring(14);
-    var container = document.getElementById('filter_container_'+id);
-    var children = container.childElementCount;
-    if (children == 0) {
-        var br = document.createElement('br');
+    let i;
+    const id = formId.substring(14);
+    const container = document.getElementById('filter_container_' + id);
+    const children = container.childElementCount;
+    if (children === 0) {
+        const br = document.createElement('br');
         container.appendChild(br);
     }
-    var outer_div = document.createElement('div');
-    var select_attributes = document.createElement('select');
+    const outer_div = document.createElement('div');
+    const select_attributes = document.createElement('select');
     select_attributes.name = "filter_attributes";
     select_attributes.form = "hist_" + id;
     select_attributes.className = "selectpicker";
-    var attributes = ["Patient Age", "Heart rate", "Height (cm)", "Weight (kg)", "LVEDV (ml)", "LVESV (ml)", "LVSV (ml)", "LVEF (%)", "LV Mass (g)", "RVEDV (ml)", "RVESV (ml)", "RVSV (ml)", "RVEF (%)", "RV Mass (g)", "BMI (kg/msq)", "BSA", "BSA (msq)", "CO (L/min)", "Central PP(mmHg)", "DBP (mmHg)", "LVEF (ratio)", "MAP", "PAP (mmHg)", "PP (mmHg)", "RVEF (ratio)", "SBP (mmHg)", "SVR (mmHg/L/min)"];
-    var option = document.createElement('option');
+    const attributes = ["Patient Age", "Heart rate", "Height (cm)", "Weight (kg)", "LVEDV (ml)", "LVESV (ml)", "LVSV (ml)", "LVEF (%)", "LV Mass (g)", "RVEDV (ml)", "RVESV (ml)", "RVSV (ml)", "RVEF (%)", "RV Mass (g)", "BMI (kg/msq)", "BSA", "BSA (msq)", "CO (L/min)", "Central PP(mmHg)", "DBP (mmHg)", "LVEF (ratio)", "MAP", "PAP (mmHg)", "PP (mmHg)", "RVEF (ratio)", "SBP (mmHg)", "SVR (mmHg/L/min)"];
+    let option = document.createElement('option');
     option.text = "Attribute";
     option.selected = true;
     option.disabled = true;
     select_attributes.appendChild(option);
-    for (var i = 0; i < attributes.length; i++){
+    for (i = 0; i < attributes.length; i++) {
         option = document.createElement('option');
         option.value = attributes[i];
         option.text = attributes[i];
         select_attributes.appendChild(option);
     }
     outer_div.appendChild(select_attributes);
-    space_span = document.createElement('span');
+    let space_span = document.createElement('span');
     space_span.innerHTML = " ";
     outer_div.appendChild(space_span);
 
-    var select_op = document.createElement('select');
+    let select_op = document.createElement('select');
     select_op.name = "filter_" + "operators";
     select_op.form = "hist_" + id;
     select_op.className = "selectpicker";
-    var operators = [">", "<", "="];
+    const operators = [">", "<", "="];
     option = document.createElement('option');
     option.text = "Operator";
     option.selected = true;
     option.disabled = true;
     select_op.appendChild(option);
-    for (i = 0; i < operators.length; i++){
+    for (i = 0; i < operators.length; i++) {
         option = document.createElement('option');
         option.value = operators[i];
         option.text = operators[i];
@@ -644,9 +648,9 @@ function addFilterToFormWithId(formId) {
     space_span.innerHTML = " ";
     outer_div.appendChild(space_span);
 
-    var input_div = document.createElement('div');
+    const input_div = document.createElement('div');
     input_div.className = "btn-group";
-    var input = document.createElement('input');
+    const input = document.createElement('input');
     input.name = "filter_" + "values";
     input.type = "text";
     input.required = true;
@@ -657,13 +661,13 @@ function addFilterToFormWithId(formId) {
     space_span.innerHTML = " ";
     outer_div.appendChild(space_span);
 
-    if (children == 0) {
-        var bool_operators = ["AND", "OR", "XOR"];
+    if (children === 0) {
+        const bool_operators = ["AND", "OR", "XOR"];
         select_op = document.createElement('select');
         select_op.text = "Boolean Operator";
         select_op.name = "boolean_opreator";
         select_op.className = "selectpicker";
-        for (i = 0; i < bool_operators.length; i++){
+        for (i = 0; i < bool_operators.length; i++) {
             option = document.createElement('option');
             option.value = bool_operators[i];
             option.text = bool_operators[i];
@@ -676,202 +680,212 @@ function addFilterToFormWithId(formId) {
 }
 
 function addFilterToFormWithIdCategorical(formId) {
-  var id = formId.substring(14);
-  var container = document.getElementById('filter_container_'+id);
-  var children = container.childElementCount;
-  if (children == 0) {
-      var br = document.createElement('br');
-      container.appendChild(br);
-  }
-  var outer_div = document.createElement('div');
+    const id = formId.substring(14);
+    const container = document.getElementById('filter_container_' + id);
+    const children = container.childElementCount;
+    if (children === 0) {
+        const br = document.createElement('br');
+        container.appendChild(br);
+    }
+    const outer_div = document.createElement('div');
 
-  var input_div = document.createElement('div');
-  input_div.className = "btn-group";
-  var input = document.createElement('input');
-  input.name = "filter_attributes";
-  input.type = "text";
-  input.required = true;
-  input.className = "form-control";
-  input_div.appendChild(input);
-  outer_div.appendChild(input_div);
-  
-  space_span = document.createElement('span');
-  space_span.innerHTML = " Equals ";
-  outer_div.appendChild(space_span);
-  
-  var value_div = document.createElement('div');
-  value_div.className = "btn-group";
-  var value = document.createElement('input');
-  value.name = "filter_values";
-  value.type = "text";
-  value.required = true;
-  value.className = "form-control";
-  value_div.appendChild(value);
-  outer_div.appendChild(value_div);
+    const input_div = document.createElement('div');
+    input_div.className = "btn-group";
+    const input = document.createElement('input');
+    input.name = "filter_attributes";
+    input.type = "text";
+    input.required = true;
+    input.className = "form-control";
+    input_div.appendChild(input);
+    outer_div.appendChild(input_div);
 
-  if (children == 0) {
-      var bool_operators = ["AND", "OR", "XOR"];
-      select_op = document.createElement('select');
-      select_op.text = "Boolean Operator";
-      select_op.name = "boolean_opreator";
-      select_op.className = "selectpicker";
-      for (i = 0; i < bool_operators.length; i++){
-          option = document.createElement('option');
-          option.value = bool_operators[i];
-          option.text = bool_operators[i];
-          select_op.appendChild(option);
-      }
-      outer_div.appendChild(select_op);
-  }
-  container.appendChild(outer_div);
-  $('.selectpicker').selectpicker();
-  container.appendChild(outer_div);
+    let space_span = document.createElement('span');
+    space_span.innerHTML = " Equals ";
+    outer_div.appendChild(space_span);
+
+    const value_div = document.createElement('div');
+    value_div.className = "btn-group";
+    const value = document.createElement('input');
+    value.name = "filter_values";
+    value.type = "text";
+    value.required = true;
+    value.className = "form-control";
+    value_div.appendChild(value);
+    outer_div.appendChild(value_div);
+
+    let select_op;
+    let option;
+    if (children === 0) {
+        const bool_operators = ["AND", "OR", "XOR"];
+        select_op = document.createElement('select');
+        select_op.text = "Boolean Operator";
+        select_op.name = "boolean_opreator";
+        select_op.className = "selectpicker";
+        for (let i = 0; i < bool_operators.length; i++) {
+            option = document.createElement('option');
+            option.value = bool_operators[i];
+            option.text = bool_operators[i];
+            select_op.appendChild(option);
+        }
+        outer_div.appendChild(select_op);
+    }
+    container.appendChild(outer_div);
+    $('.selectpicker').selectpicker();
+    container.appendChild(outer_div);
 }
 
 function objectifyForm(formArray, computation_t) { // serialize data function
-  var returnArray = {};
-  
-  for (var i = 0; i < formArray.length; i++){
-      formJSON = {'attribute_names' : [], 'attribute_cells' : []};
-      finalJson = {'plot': 'yeshhh', 'attributes' : [[]]};
-      var form  = formArray[i];
-      for (var j = 0; j < form.length; j++){
-          var element = form[j];      
+    const returnArray = {};
 
-          if (computation_t == '/smpc/decision_tree/categorical') {
-              if (element.name == 'class_attribute') {
-                  finalJson.class_attribute = element.value;
-              }
-              // Select classifier
-              if (element.name.includes('classifier_algorithm')) {
-                  finalJson.classifier = element.value;
-              }
-          } else if (computation_t == '/smpc/decision_tree/numerical') {
-              if (element.name == 'class_attribute') {
-                  finalJson.class_attribute = {'name':element.value, 'cells':-1};
-              }
-              if (element.name == 'class_cells') {
-                  finalJson.class_attribute.cells = element.value;
-              }
-              // Select classifier
-              if (element.name.includes('classifier_algorithm')) {
-                  finalJson.classifier = element.value;
-              }
-          }
-          
-          if ((element.name.includes('attributes') && element.checked == true) || element.name == 'count_attributes') {
-              formJSON.attribute_names.push(element.value);
-          }
-          if (element.name.includes('cells') && element.value != "" && element.name != "class_cells") {
-              formJSON.attribute_cells.push(element.value);
-          }
-          if (element.name == 'datasources' && element.checked == true) {
-              if ('datasources' in finalJson) {
-                  finalJson.datasources.push(element.value);
-              } else {
-                  finalJson.datasources = [element.value];
-              }
-          }
-          if (element.name == 'filter_attributes') {
-              if ('filter_attributes' in formJSON) {
-                  formJSON.filter_attributes.push(element.value);
-              } else {
-                  formJSON.filter_attributes = [element.value];
-              }
-          }
-          if (element.name == 'filter_operators') {
-              if ('filter_operators' in formJSON) {
-                  formJSON.filter_operators.push(element.value);
-              } else {
-                  formJSON.filter_operators = [element.value];
-              }
-          }
-          if (element.name == 'filter_values') {
-              if ('filter_values' in formJSON) {
-                  formJSON.filter_values.push(element.value);
-              } else {
-                  formJSON.filter_values = [element.value];
-              }
-          }
-          if (element.name == 'boolean_opreator') {
-              formJSON.boolean_opreator = element.value;
-          }
-      }
-      
-      if (computation_t == '/smpc/count' || computation_t == '/smpc/decision_tree/categorical') {
-          for (var k = 0; k < formJSON.attribute_names.length; k++) {
-              finalJson.attributes.push(formJSON.attribute_names[k]);
-          }
-      } else {
-          for (var a = 0; a < formJSON.attribute_names.length; a++){
-              var name = formJSON.attribute_names[a];
-              var cells = formJSON.attribute_cells[a];
-              if (computation_t == '/smpc/decision_tree/numerical') {
-                  finalJson.attributes.push({'name':name, 'cells':cells});
-              } else {
-                  finalJson.attributes[0].push({'name':name, 'cells':cells});
-              }
-          }
-      }
-      if ('filter_attributes' in formJSON) {
-          var boolean_opreator = formJSON.boolean_opreator;
-          finalJson.filters = {'operator' : boolean_opreator, 'conditions' : []};
-          for (var f = 0; f < formJSON.filter_attributes.length; f++){
-              var attribute_name = formJSON.filter_attributes[f];
-              var attribute_value = formJSON.filter_values[f];
-              if (computation_t == '/smpc/histogram') {
-                  var attribute_operator = formJSON.filter_operators[f];
-                  finalJson.filters.conditions.push({'attribute' : attribute_name, 'operator' : attribute_operator, 'value' : attribute_value});
-              } else {
-                  finalJson.filters.conditions.push({'attribute' : attribute_name, 'value' : attribute_value});
-              }
-          }
-      }
-      returnArray[i] = finalJson;
-  }
-  // console.log(finalJson);
-  return returnArray[0];
+    let formJSON;
+    let finalJson;
+    for (let i = 0; i < formArray.length; i++) {
+        formJSON = {'attribute_names': [], 'attribute_cells': []};
+        finalJson = {'plot': 'yeshhh', 'attributes': [[]]};
+        const form = formArray[i];
+        for (let j = 0; j < form.length; j++) {
+            const element = form[j];
+
+            if (computation_t === '/smpc/decision_tree/categorical') {
+                if (element.name === 'class_attribute') {
+                    finalJson.class_attribute = element.value;
+                }
+                // Select classifier
+                if (element.name.includes('classifier_algorithm')) {
+                    finalJson.classifier = element.value;
+                }
+            } else if (computation_t === '/smpc/decision_tree/numerical') {
+                if (element.name === 'class_attribute') {
+                    finalJson.class_attribute = {'name': element.value, 'cells': -1};
+                }
+                if (element.name === 'class_cells') {
+                    finalJson.class_attribute.cells = element.value;
+                }
+                // Select classifier
+                if (element.name.includes('classifier_algorithm')) {
+                    finalJson.classifier = element.value;
+                }
+            }
+
+            if ((element.name.includes('attributes') && element.checked === true) || element.name === 'count_attributes') {
+                formJSON.attribute_names.push(element.value);
+            }
+            if (element.name.includes('cells') && element.value !== "" && element.name !== "class_cells") {
+                formJSON.attribute_cells.push(element.value);
+            }
+            if (element.name === 'datasources' && element.checked === true) {
+                if ('datasources' in finalJson) {
+                    finalJson.datasources.push(element.value);
+                } else {
+                    finalJson.datasources = [element.value];
+                }
+            }
+            if (element.name === 'filter_attributes') {
+                if ('filter_attributes' in formJSON) {
+                    formJSON.filter_attributes.push(element.value);
+                } else {
+                    formJSON.filter_attributes = [element.value];
+                }
+            }
+            if (element.name === 'filter_operators') {
+                if ('filter_operators' in formJSON) {
+                    formJSON.filter_operators.push(element.value);
+                } else {
+                    formJSON.filter_operators = [element.value];
+                }
+            }
+            if (element.name === 'filter_values') {
+                if ('filter_values' in formJSON) {
+                    formJSON.filter_values.push(element.value);
+                } else {
+                    formJSON.filter_values = [element.value];
+                }
+            }
+            if (element.name === 'boolean_opreator') {
+                formJSON.boolean_opreator = element.value;
+            }
+        }
+
+        if (computation_t === '/smpc/count' || computation_t === '/smpc/decision_tree/categorical') {
+            for (let k = 0; k < formJSON.attribute_names.length; k++) {
+                finalJson.attributes.push(formJSON.attribute_names[k]);
+            }
+        } else {
+            for (let a = 0; a < formJSON.attribute_names.length; a++) {
+                const name = formJSON.attribute_names[a];
+                const cells = formJSON.attribute_cells[a];
+                if (computation_t === '/smpc/decision_tree/numerical') {
+                    finalJson.attributes.push({'name': name, 'cells': cells});
+                } else {
+                    finalJson.attributes[0].push({'name': name, 'cells': cells});
+                }
+            }
+        }
+        if ('filter_attributes' in formJSON) {
+            const boolean_opreator = formJSON.boolean_opreator;
+            finalJson.filters = {'operator': boolean_opreator, 'conditions': []};
+            for (let f = 0; f < formJSON.filter_attributes.length; f++) {
+                const attribute_name = formJSON.filter_attributes[f];
+                const attribute_value = formJSON.filter_values[f];
+                if (computation_t === '/smpc/histogram') {
+                    const attribute_operator = formJSON.filter_operators[f];
+                    finalJson.filters.conditions.push({
+                        'attribute': attribute_name,
+                        'operator': attribute_operator,
+                        'value': attribute_value
+                    });
+                } else {
+                    finalJson.filters.conditions.push({'attribute': attribute_name, 'value': attribute_value});
+                }
+            }
+        }
+        returnArray[i] = finalJson;
+    }
+    // console.log(finalJson);
+    return returnArray[0];
 }
 
 function sendFormWithId(id, computation_t) {
-  var formId = id.substring(7); // get the hist id from the button id
-  var tabId = "tab" + formId.substring(5); // get the tab id
-  var jsonReq = objectifyForm($('#'+formId), computation_t);
-  
-  $.ajax({
-      type: 'POST',
-      url: computation_t,
-      data : jsonReq,
-      beforeSend : function() {
-        document.getElementById(formId).style.display = "none"; // hide the attribute list
-        document.getElementById('loading-wrapper_'+formId).style.display = "block"; // show the loading sign
-      },
-      success : function (response) {
-        document.getElementById('loading-wrapper_'+formId).style.display = "none"; // hide the loading sign
-        document.getElementById(tabId).innerHTML = '<iframe width="900" height="800" frameborder="0" scrolling="no" src="' + response + '"></iframe>';
-      }
-  }).fail( function (response) {
-      document.getElementById('loading-wrapper_'+formId).style.display = "none"; // hide the loading sign
-      document.getElementById(tabId).innerHTML = `<br><br><div class="alert alert-danger fade in">
-        <a href="#" class="close" data-dismiss="alert">&times;</a>
-        <strong>Error!</strong> A problem has occurred while processing your request.
-    </div>`;
-  });
+    const formId = id.substring(7); // get the hist id from the button id
+    const tabId = "tab" + formId.substring(5); // get the tab id
+    const jsonReq = objectifyForm($('#' + formId), computation_t);
+
+    $.ajax({
+        type: 'POST',
+        url: computation_t,
+        data: jsonReq,
+        beforeSend: function () {
+            document.getElementById(formId).style.display = "none"; // hide the attribute list
+            document.getElementById('loading-wrapper_' + formId).style.display = "block"; // show the loading sign
+        },
+        success: function (response) {
+            document.getElementById('loading-wrapper_' + formId).style.display = "none"; // hide the loading sign
+            document.getElementById(tabId).innerHTML = '<iframe width="900" height="800" frameborder="0" scrolling="no" src="' + response + '"></iframe>';
+        }
+    }).fail(function () {
+        document.getElementById('loading-wrapper_' + formId).style.display = "none"; // hide the loading sign
+        document.getElementById(tabId).innerHTML =
+            `<br><br>
+            <div class="alert alert-danger fade in">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <strong>Error!</strong> A problem has occurred while processing your request.
+            </div>`;
+    });
 }
 
 function addAttributeToFormWithId(formId, attribute_t) {
-    var id = formId.substring(14);
-    var container = document.getElementById('attribute_container_'+id);
-    var children = container.childElementCount;
-    if (children == 0) {
-        var br = document.createElement('br');
+    const id = formId.substring(14);
+    const container = document.getElementById('attribute_container_' + id);
+    const children = container.childElementCount;
+    if (children === 0) {
+        const br = document.createElement('br');
         container.appendChild(br);
     }
-    var outer_div = document.createElement('div');
+    const outer_div = document.createElement('div');
 
-    var input_div = document.createElement('div');
+    const input_div = document.createElement('div');
     input_div.className = "btn-group";
-    var input = document.createElement('input');
+    const input = document.createElement('input');
     input.name = attribute_t;
     input.type = "text";
     input.required = true;
@@ -884,6 +898,6 @@ function addAttributeToFormWithId(formId, attribute_t) {
 
 
 function selectClassifier(classifier, tab) {
-    document.getElementById("classifier_algorithm_"+tab).value = classifier;
+    document.getElementById("classifier_algorithm_" + tab).value = classifier;
     assignButtons(tab);
 }
