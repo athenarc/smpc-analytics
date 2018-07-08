@@ -154,3 +154,4 @@ simulated_import_*.sc
 # HTTPS configuration files
 web/static/*
 
+.idea/*
