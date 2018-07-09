@@ -145,7 +145,7 @@ pd_shared3p int64 sum(uint64 vmap, uint64 len) {
 
 pd_shared3p bool all_examples_same(uint64 example_indexes_vmap) {
     pd_shared3p uint64 res = 0;
-    float64[[1]] possible_classes = tdbVmapGetValue(possible_values, arrayToString(class_index), 0::uint64);
+    float64[[1]] possible_classes = tdbVmapGetValue(possible_values, itoa(class_index), 0::uint64);
     pd_shared3p uint64[[1]] class_counts(size(possible_classes));
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
         pd_shared3p uint64 partial_res = 0;
@@ -178,7 +178,7 @@ pd_shared3p float64 entropy(uint64 example_indexes_vmap) {
         pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
         total_count += sum(example_indexes);
     }
-    float64[[1]] possible_classes = tdbVmapGetValue(possible_values, arrayToString(class_index), 0::uint64);
+    float64[[1]] possible_classes = tdbVmapGetValue(possible_values, itoa(class_index), 0::uint64);
     for (uint64 c = 0; c < size(possible_classes); c++) {
         pd_shared3p uint64 equal_count = 0;
         float64 label = possible_classes[c];
@@ -241,7 +241,7 @@ uint64 split_attribute(uint64 example_indexes_vmap, uint64[[1]] attributes) {
         uint64 attribute = attributes[a];
         if (exists(categorical_attributes, attribute)) { // If attribute is categorical
             uint64 splitted = tdbVmapNew();
-            float64[[1]] attribute_values = tdbVmapGetValue(possible_values, arrayToString(attribute), 0::uint64);
+            float64[[1]] attribute_values = tdbVmapGetValue(possible_values, itoa(attribute), 0::uint64);
             for (uint64 v = 0; v < size(attribute_values); v++) {
                 float64 value = attribute_values[v];
                 uint64 subset = tdbVmapNew();
@@ -340,7 +340,7 @@ uint64 split_attribute(uint64 example_indexes_vmap, uint64[[1]] attributes) {
 
 
 pd_shared3p int64 most_common_label(uint64 example_indexes_vmap) {
-    float64[[1]] possible_classes = tdbVmapGetValue(possible_values, arrayToString(class_index), 0::uint64);
+    float64[[1]] possible_classes = tdbVmapGetValue(possible_values, itoa(class_index), 0::uint64);
     pd_shared3p uint64[[1]] label_counts(size(possible_classes));
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
         string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
@@ -394,7 +394,7 @@ string c45(uint64 example_indexes_vmap, uint64[[1]] attributes) {
 
     string branches = "";
     if (exists(categorical_attributes, best_attribute)) {
-        float64[[1]] best_attribute_values = tdbVmapGetValue(possible_values, arrayToString(best_attribute_original_index), 0::uint64);
+        float64[[1]] best_attribute_values = tdbVmapGetValue(possible_values, itoa(best_attribute_original_index), 0::uint64);
 
         uint64 length = size(best_attribute_values);
         for (uint64 v = 0 ; v < length ; v++) {

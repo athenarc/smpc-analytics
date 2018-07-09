@@ -30,6 +30,10 @@ domain pd_shared3p shared3p;
  * 4. Recurse on subsets using remaining attributes.
 **/
 
+template <type T>
+string itoa(T x){
+    return arrayToString(x);
+}
 
 template <type T>
 pd_shared3p xor_uint8[[1]] itoa(pd_shared3p T x){
@@ -94,6 +98,16 @@ D uint64 index_of(D T[[1]] arr, D T element) {
     return idx;
 }
 
+template <type T>
+int64 index_of(T[[1]] arr, T element) {
+    for (uint64 i = 0; i < size(arr); i++) {
+        if (arr[i] == element) {
+            return (int64)i;
+        }
+    }
+    return -1;
+}
+
 template <domain D, type T>
 D bool exists(T[[1]] arr, D T element) {
     D uint64 exists = 0;
@@ -147,7 +161,8 @@ pd_shared3p int64 sum(uint64 vmap, uint64 len) {
 
 pd_shared3p bool all_examples_same(uint64 example_indexes_vmap) {
     pd_shared3p uint64 res = 0;
-    pd_shared3p uint64[[1]] class_counts(max_attribute_values);
+    float64[[1]] possible_classes = tdbVmapGetValue(possible_values, itoa(class_index), 0::uint64);
+    pd_shared3p uint64[[1]] class_counts(size(possible_classes));
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
         pd_shared3p uint64 partial_res = 0;
         string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
@@ -163,8 +178,8 @@ pd_shared3p bool all_examples_same(uint64 example_indexes_vmap) {
             pd_shared3p float64 width = (max - min) / (float64) number_of_cells;
             label_column = (float64)((int64)((label_column - min) / width));
         }
-        for (uint64 a = 0; a < max_attribute_values; a++) {
-            pd_shared3p float64 label = possible_values[class_index, a];
+        for (uint64 a = 0; a < size(possible_classes); a++) {
+            float64 label = possible_classes[a];
             pd_shared3p uint64[[1]] eq = (uint64)(label_column == label) * (uint64)(example_indexes != 0) * (uint64)(label != -1);
             class_counts[a] = sum(eq);
             partial_res += (uint64)(class_counts[a] == (uint64) positive_indexes);
@@ -182,8 +197,10 @@ pd_shared3p float64 entropy(uint64 example_indexes_vmap) {
         pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
         total_count += sum(example_indexes);
     }
-    for (uint64 c = 0; c < max_attribute_values; c++) {
+    float64[[1]] possible_classes = tdbVmapGetValue(possible_values, itoa(class_index), 0::uint64);
+    for (uint64 c = 0; c < size(possible_classes); c++) {
         pd_shared3p uint64 equal_count = 0;
+        float64 label = possible_classes[c];
         for (uint64 i = 0 ; i < data_providers_num ; i++) {
             string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
             pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
@@ -196,7 +213,6 @@ pd_shared3p float64 entropy(uint64 example_indexes_vmap) {
                 pd_shared3p float64 width = (max - min) / (float64) number_of_cells;
                 label_column = (float64)((int64)((label_column - min) / width));
             }
-            pd_shared3p float64 label = possible_values[class_index, c];
             pd_shared3p uint64[[1]] eq = (uint64)(label_column == label) * (uint64)(example_indexes != 0) * (uint64)(label != -1);
             equal_count += sum(eq);
         }
@@ -207,41 +223,30 @@ pd_shared3p float64 entropy(uint64 example_indexes_vmap) {
 }
 
 
-pd_shared3p float64 information_gain(uint64 example_indexes_vmap, pd_shared3p uint64 attribute) {
+pd_shared3p float64 information_gain(uint64 example_indexes_vmap, uint64 attribute) {
     pd_shared3p float64 gain = entropy(example_indexes_vmap);
-    pd_shared3p float64[[1]] attribute_values(max_attribute_values);
     pd_shared3p int64 total_count = 0;
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
         pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
         total_count += sum(example_indexes);
     }
-    for (uint64 i = 0; i < columns; i++) {
-        pd_shared3p bool eq = (attribute == i);
-        attribute_values += (float64)eq * possible_values[i,:]; // simd
-    }
-    for (uint64 v = 0; v < max_attribute_values; v++) {
-        pd_shared3p float64 value = attribute_values[v];
+    float64[[1]] attribute_values = tdbVmapGetValue(possible_values, itoa(attribute), 0::uint64);
+    for (uint64 v = 0; v < size(attribute_values); v++) {
+        float64 value = attribute_values[v];
         uint64 subset = tdbVmapNew();
         pd_shared3p int64 subset_count = 0;
         for (uint64 i = 0 ; i < data_providers_num ; i++) {
             string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
             pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
             uint64 rows = tdbGetRowCount(datasource, table);
-            pd_shared3p float64[[1]] attribute_column(rows);
-            pd_shared3p float64 min = 0;
-            pd_shared3p float64 max = 0;
-            pd_shared3p int64 number_of_cells = 0;
-            pd_shared3p float64 width = 0;
-            for (uint64 c = 0; c < columns; c++) {
-                pd_shared3p bool eq = (attribute == c);
-                attribute_column += (float64)eq * tdbReadColumn(datasource, table, c);
-                min += (float64)eq * imported_mins[c];
-                max += (float64)eq * imported_maxs[c];
-                number_of_cells += (int64)eq * imported_cells[c];
-                width = (max - min) / (float64) number_of_cells;
+            pd_shared3p float64[[1]] attribute_column(rows) = tdbReadColumn(datasource, table, attribute);
+            pd_shared3p float64 min = imported_mins[attribute];
+            pd_shared3p float64 max = imported_maxs[attribute];
+            int64 number_of_cells = imported_cells[attribute];
+            pd_shared3p float64 width = (max - min) / (float64) number_of_cells;
+            if (!_exists(categorical_attributes, attribute)){
+                attribute_column = (float64)((int64)((attribute_column - min) / width)); // If attribute is NOT categorical, change the column.
             }
-            pd_shared3p bool categorical = exists(categorical_attributes, attribute);
-            attribute_column = (attribute_column * (float64)categorical) + (float64)((int64)((attribute_column - min) / width)) * (1-(float64)categorical); // If attribute is NOT categorical, change the column.
             pd_shared3p int64[[1]] partial_subset(rows) = (int64)(attribute_column == value) * (int64)(example_indexes != 0);
             tdbVmapAddValue(subset, "0", partial_subset);
             subset_count += sum(partial_subset);
@@ -254,23 +259,24 @@ pd_shared3p float64 information_gain(uint64 example_indexes_vmap, pd_shared3p ui
 }
 
 
-pd_shared3p uint64 best(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
+uint64 best(uint64 example_indexes_vmap, uint64[[1]] attributes) {
     pd_shared3p float64 max_gain = information_gain(example_indexes_vmap, attributes[0]);
     pd_shared3p uint64 best = attributes[0];
     for (uint64 i = 1; i < size(attributes); i++){
-        pd_shared3p uint64 a = attributes[i];
+        uint64 a = attributes[i];
         pd_shared3p float64 gain = information_gain(example_indexes_vmap, a);
         pd_shared3p float64 gt = (float64)(gain > max_gain);
         max_gain = gt * gain + (1 - gt) * max_gain;
         best = (uint64)gt * a + (uint64)(1 - gt) * best;
     }
-    return best;
+    return declassify(best);
 }
 
 
 
 pd_shared3p int64 most_common_label(uint64 example_indexes_vmap) {
-    pd_shared3p uint64[[1]] label_counts(max_attribute_values);
+    float64[[1]] possible_classes = tdbVmapGetValue(possible_values, itoa(class_index), 0::uint64);
+    pd_shared3p uint64[[1]] label_counts(size(possible_classes));
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
         string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
         pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
@@ -282,7 +288,7 @@ pd_shared3p int64 most_common_label(uint64 example_indexes_vmap) {
             pd_shared3p float64 width = (max - min) / (float64) number_of_cells;
             label_column = (float64)((int64)((label_column - min) / width));
         }
-        for (uint64 a = 0; a < max_attribute_values; a++) {
+        for (uint64 a = 0; a < size(possible_classes); a++) {
             pd_shared3p uint64[[1]] eq = (uint64)((int64)label_column == (int64) a)* (uint64)(example_indexes != 0);
             label_counts[a] += sum(eq);
         }
@@ -291,7 +297,7 @@ pd_shared3p int64 most_common_label(uint64 example_indexes_vmap) {
 }
 
 
-pd_shared3p xor_uint8[[1]] id3(uint64 example_indexes_vmap, pd_shared3p uint64[[1]] attributes) {
+string id3(uint64 example_indexes_vmap, uint64[[1]] attributes) {
     if (declassify(all_examples_same(example_indexes_vmap))) {
         pd_shared3p int64 label_count = 0;
         pd_shared3p int64 total_count = 0;
@@ -311,88 +317,56 @@ pd_shared3p xor_uint8[[1]] id3(uint64 example_indexes_vmap, pd_shared3p uint64[[
             total_count += sum(example_indexes);
         }
         pd_shared3p float64 label = (float64) ((uint64)label_count / (uint64)total_count);
-        return itoa((int64)label);
+        return itoa(declassify(label));
     }
     if (size(attributes) == 0) {
-        return itoa(most_common_label(example_indexes_vmap));
+        return itoa(declassify(most_common_label(example_indexes_vmap)));
     }
-    pd_shared3p uint64 best_attribute = best(example_indexes_vmap, attributes); // find best attribute
-    pd_shared3p uint64 best_attribute_original_index = index_of(original_attributes, best_attribute); // maybe 1 for loop
-    pd_shared3p uint64 best_attribute_index = index_of(attributes, best_attribute);
-    pd_shared3p xor_uint8[[1]] branches;
-    pd_shared3p float64[[1]] best_attribute_values(max_attribute_values);
-    for (uint64 j = 0; j < columns; j++) {
-        pd_shared3p bool eq = (j == best_attribute_original_index);
-        best_attribute_values += (float64)eq * possible_values[j,:]; // simd
-    }
+    uint64 best_attribute = best(example_indexes_vmap, attributes); // find best attribute
+    uint64 best_attribute_original_index = index_of(original_attributes, best_attribute); // maybe 1 for loop
+    int64 best_attribute_index = index_of(attributes, best_attribute);
+    uint64[[1]] first_half = attributes[:(uint64)best_attribute_index];
+    uint64[[1]] second_half = attributes[(uint64)best_attribute_index + 1:];
+    uint64[[1]] new_attribs = cat(first_half, second_half);
+    string branches = "";
+    float64[[1]] best_attribute_values = tdbVmapGetValue(possible_values, itoa(best_attribute_original_index), 0::uint64);
+    uint64 length = size(best_attribute_values);
+    for (uint64 v = 0 ; v < length ; v++) {
+        float64 value = best_attribute_values[v];
 
-    for (uint64 v = 0 ; v < max_attribute_values ; v++) {
-        pd_shared3p float64 value = best_attribute_values[v];
-        if (declassify(value == -1)) {
-            continue;
-        }
         uint64 subset = tdbVmapNew();
         for (uint64 i = 0 ; i < data_providers_num ; i++) {
             string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
             uint64 rows = tdbGetRowCount(datasource, table);
-            pd_shared3p float64[[1]] best_attribute_column(rows);
-            pd_shared3p float64 min = 0;
-            pd_shared3p float64 max = 0;
-            pd_shared3p int64 number_of_cells = 0;
-            pd_shared3p float64 width = 0;
+            pd_shared3p float64[[1]] best_attribute_column(rows) = tdbReadColumn(datasource, table, best_attribute_original_index);
+            pd_shared3p float64 min = imported_mins[best_attribute_original_index];
+            pd_shared3p float64 max = imported_maxs[best_attribute_original_index];
+            pd_shared3p int64 number_of_cells = imported_cells[best_attribute_original_index];
+            pd_shared3p float64 width = (max - min) / (float64) number_of_cells;
             pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
-            for (uint64 j = 0; j < columns; j++) {
-                pd_shared3p bool eq = (j == best_attribute_original_index);
-                best_attribute_column += (float64)eq * tdbReadColumn(datasource, table, j);
-                min += (float64)eq * imported_mins[j];
-                max += (float64)eq * imported_maxs[j];
-                number_of_cells += (int64)eq * imported_cells[j];
-                width = (max - min) / (float64) number_of_cells;
-            }
-            pd_shared3p bool categorical = exists(categorical_attributes, best_attribute);
-            best_attribute_column = (best_attribute_column * (float64)categorical) + ((float64)((int64)((best_attribute_column - min) / width))) * (1-(float64)categorical); // If attribute is NOT categorical, change the column.
 
+            if (!_exists(categorical_attributes, best_attribute)){
+                best_attribute_column = (float64)((int64)((best_attribute_column - min) / width)); // If attribute is NOT categorical, change the column.
+            }
             pd_shared3p int64[[1]] partial_subset(rows) = (int64)(best_attribute_column == value) * (int64)(example_indexes != 0);
             tdbVmapAddValue(subset, "0", partial_subset);
         }
-        pd_shared3p xor_uint8[[1]] branch = bl_strCat(quote, itoa(best_attribute));
-        branch = bl_strCat(branch, eq_str);
-        branch = bl_strCat(branch, itoa((int64)value));
-        branch = bl_strCat(branch, quote);
-        branch = bl_strCat(branch, colon);
+        string branch = "\"" + itoa(best_attribute) + " == " + itoa(value) + "\"" + ": ";
 
         if (declassify(sum(subset, data_providers_num) == 0)) {
-            branch = bl_strCat(branch, itoa(most_common_label(example_indexes_vmap)));
+            branch += itoa(declassify(most_common_label(example_indexes_vmap)));
         } else {
-            uint64[[1]] attribute_indexes = iota(size(attributes));
-            pd_shared3p int64[[1]] lt = (int64)(attribute_indexes < best_attribute_index);
-            pd_shared3p int64[[1]] gt = (int64)(attribute_indexes > best_attribute_index);
-            pd_shared3p int64[[1]] first_half(size(attributes)) = lt * (int64)attributes + (1-lt) * (-1);
-            pd_shared3p int64[[1]] second_half(size(attributes)) = gt * (int64)attributes + (1-gt) * (-1);
-            pd_shared3p int64[[1]] new_attribs(size(attributes)-1) = first_half[:size(attributes)-1];
-            for (uint64 i = size(attributes)-1; i > 0; i--) {
-                pd_shared3p bool neq = (second_half[i] != -1);
-                new_attribs[i-1] += (int64)neq * (1+second_half[i]);
-            }
-            branch = bl_strCat(branch, id3(subset, (uint64)new_attribs));
+            branch += id3(subset, new_attribs);
         }
-        branches = bl_strCat(branches, branch);
-        if (v != max_attribute_values -1) {
-            branches = bl_strCat(branches, comma);
+        branches += branch;
+        if (v != length -1) {
+            branches += ", ";
         }
-        branches = bl_strCat(branches, space);
+        branches += " ";
     }
 
-    pd_shared3p xor_uint8[[1]] root = bl_strCat(left_curly_br, branches);
-    return bl_strCat(root, right_curly_br);
+    return "{ " + branches + "}";
 }
-
-
-// string datasource = "DS1";
-// uint64[[1]] categorical_attributes = {};
-// pd_shared3p float64[[1]] imported_mins(4) = {0.0,138.1506186038719,40.37072249313373,19.0};
-// pd_shared3p float64[[1]] imported_maxs(4) = {1.0,196.63799899420812,95.93401920356364,77.0};
-// int64[[1]] imported_cells(4) = {-1, 3, 4, 5};
 
 string datasource;
 uint64[[1]] categorical_attributes;
@@ -404,19 +378,10 @@ int64[[1]] imported_cells;
 
 uint64 providers_vmap;
 uint64 data_providers_num;
-uint64 max_attribute_values;
 uint64 class_index;
 
-pd_shared3p uint64[[1]] original_attributes;
-pd_shared3p float64[[2]] possible_values;
+uint64[[1]] original_attributes;
+uint64 possible_values;
 
 uint64 rows;
 uint64 columns;
-
-pd_shared3p xor_uint8[[1]] quote;
-pd_shared3p xor_uint8[[1]] comma;
-pd_shared3p xor_uint8[[1]] eq_str;
-pd_shared3p xor_uint8[[1]] space;
-pd_shared3p xor_uint8[[1]] colon;
-pd_shared3p xor_uint8[[1]] left_curly_br;
-pd_shared3p xor_uint8[[1]] right_curly_br;
