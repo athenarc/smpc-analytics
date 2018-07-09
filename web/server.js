@@ -11,31 +11,33 @@ if (SIMULATION_MODE) {
     console.log('\n[NODE] Running in Secure Multiparty Computation mode with 3 servers\n');
 }
 
+// Imports
 const https = require('https');
 const http = require('http');
 const express = require('express');
-const app = express();
 const {exec} = require('child_process');
 const {execSync} = require('child_process');
 const fs = require('fs');
 const uuidv4 = require('uuid/v4');
 const path = require('path');
 const bodyParser = require('body-parser');
+const morgan = require('morgan'); // for requests logging
+const morganBody = require('morgan-body');
+const level = require('level'); // leveldb for requests-status and cache
 const rp = require('request-promise');
+
+const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
+
 const frontend = __dirname + "/frontend/";
 global.__basedir = __dirname;
-
-// Log Requests
-const morgan = require('morgan');
 const log_stream = fs.createWriteStream(path.join(__dirname, 'requests.log'), {flags: 'a'});
-const morganBody = require('morgan-body');
 morganBody(app, {stream: log_stream}); // log request body
-app.use(morgan(':remote-addr \\n\\n', {stream: log_stream})); // log request IP
 
-const level = require('level');
+app.use(morgan(':remote-addr \\n\\n', {stream: log_stream})); // log request IP
 const db = level('./mydb');
+const cache = level('./cache-database');
 
 
 app.get('/', function (req, res) {
