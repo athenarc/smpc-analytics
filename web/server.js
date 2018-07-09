@@ -378,12 +378,14 @@ app.post('/smpc/histogram', function (req, res) {
                 return _exec('python web/response.py out_' + uid + '.txt', {cwd: parent, shell: '/bin/bash'});
             }
         }).then((result) => {
+            let request_cache_result;
             if (plot) {
                 console.log('[' + print_msg + '] Request(' + uid + ') Plotting done.\n');
                 let graph_name = result.toString();
                 graph_name = graph_name.slice(0, -1);
                 console.log('[' + print_msg + '] Request(' + uid + ') ' + graph_name);
                 res.send(graph_name);
+                request_cache_result = JSON.stringify(result.replace(/\n/g, ''));
             } else {
                 console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
                 const result_obj = {'status': 'succeeded', 'result': ''};
@@ -391,9 +393,10 @@ app.post('/smpc/histogram', function (req, res) {
                 db.put(uid, JSON.stringify(result_obj)).catch((err) => {
                     console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
                 });
+                request_cache_result = result;
             }
 
-            cachedb.put(request_key, JSON.stringify(result.replace(/\n/g, '')))
+            cachedb.put(request_key, request_cache_result)
             .catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
@@ -546,12 +549,14 @@ app.post('/smpc/count', function (req, res) {
                 });
             }
         }).then((result) => {
+            let request_cache_result;
             if (plot) {
                 console.log('[' + print_msg + '] Request(' + uid + ') Plotting done.\n');
                 let graph_name = result.toString();
                 graph_name = graph_name.slice(0, -1);
                 console.log('[' + print_msg + '] Request(' + uid + ') ' + graph_name);
                 res.send(graph_name);
+                request_cache_result = JSON.stringify(result.replace(/\n/g, ''));
             } else {
                 console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
                 const result_obj = {'status': 'succeeded', 'result': ''};
@@ -559,9 +564,10 @@ app.post('/smpc/count', function (req, res) {
                 db.put(uid, JSON.stringify(result_obj)).catch((err) => {
                     console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
                 });
+                request_cache_result = result;
             }
 
-            cachedb.put(request_key, JSON.stringify(result.replace(/\n/g, '')))
+            cachedb.put(request_key, request_cache_result)
             .catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
@@ -744,12 +750,14 @@ app.post('/smpc/decision_tree/numerical', function (req, res) {
                 }
             }
         }).then((result) => {
+            let request_cache_result;
             if (plot) {
                 console.log('[' + print_msg + '] Request(' + uid + ') Plotting done.\n');
                 let graph_name = result.toString();
                 graph_name = graph_name.slice(0, -1);
                 console.log('[' + print_msg + '] Request(' + uid + ') ' + graph_name);
                 res.send(graph_name);
+                request_cache_result = JSON.stringify(result.replace(/\n/g, ''));
             } else {
                 console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
                 const result_obj = {'status': 'succeeded', 'result': ''};
@@ -757,9 +765,10 @@ app.post('/smpc/decision_tree/numerical', function (req, res) {
                 db.put(uid, JSON.stringify(result_obj)).catch((err) => {
                     console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
                 });
+                request_cache_result = result;
             }
 
-            cachedb.put(request_key, JSON.stringify(result.replace(/\n/g, '')))
+            cachedb.put(request_key, request_cache_result)
             .catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
@@ -932,12 +941,14 @@ app.post('/smpc/decision_tree/categorical', function (req, res) {
                 }
             }
         }).then((result) => {
+            let request_cache_result;
             if (plot) {
                 console.log('[' + print_msg + '] Request(' + uid + ') Plotting done.\n');
                 let graph_name = result.toString();
                 graph_name = graph_name.slice(0, -1);
                 console.log('[' + print_msg + '] Request(' + uid + ') ' + graph_name);
                 res.send(graph_name);
+                request_cache_result = JSON.stringify(result.replace(/\n/g, ''));
             } else {
                 console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
                 const result_obj = {'status': 'succeeded', 'result': ''};
@@ -945,9 +956,10 @@ app.post('/smpc/decision_tree/categorical', function (req, res) {
                 db.put(uid, JSON.stringify(result_obj)).catch((err) => {
                     console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
                 });
+                request_cache_result = result;
             }
 
-            cachedb.put(request_key, JSON.stringify(result.replace(/\n/g, '')))
+            cachedb.put(request_key, request_cache_result)
             .catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
