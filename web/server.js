@@ -27,6 +27,7 @@ const morgan = require('morgan'); // for requests logging
 const morganBody = require('morgan-body');
 const level = require('level'); // leveldb for requests-status and cache
 const rp = require('request-promise');
+const DateDiff = require('date-diff');
 
 const app = express();
 app.use(bodyParser.json());
@@ -283,12 +284,24 @@ app.post('/smpc/histogram', function (req, res) {
     .then((value) => {
         console.log('[' + print_msg + '] ' + FgGreen + 'Request(' + uid + ') Key: ' + request_key + ' found in cache-db!\n' + ResetColor);
 
+        let value_array = value.split(", date:");
+        let diff = new DateDiff(new Date(), new Date(value_array[1]));
+        // if previous computation was a month ago, recompute it
+        if (diff.days() > 30) {
+            console.log('[' + print_msg + '] ' + FgYellow + 'Request(' + uid + ') Key: ' + request_key + ' has expired, goind to recompute it!\n' + ResetColor);
+            db.del(request_key).catch((err) => { // delete previous result
+                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
+            });
+            throw "Result has expired, goind to recompute it!"; // go to catch
+        }
+
+        let result = value_array[0];
         if (plot) {
-            res.send(value.slice(1, -1)); // slice is for removing quotes from string.
+            res.send(result.slice(1, -1)); // slice is for removing quotes from string.
         } else {
             console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
             const result_obj = {'status': 'succeeded', 'result': ''};
-            result_obj.result = JSON.parse(value);
+            result_obj.result = JSON.parse(result);
             db.put(uid, JSON.stringify(result_obj)).catch((err) => {
                 console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
             });
@@ -396,7 +409,7 @@ app.post('/smpc/histogram', function (req, res) {
                 request_cache_result = result;
             }
 
-            cachedb.put(request_key, request_cache_result)
+            cachedb.put(request_key, request_cache_result + ", date:" + new Date())
             .catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
@@ -449,12 +462,24 @@ app.post('/smpc/count', function (req, res) {
     .then((value) => {
         console.log('[' + print_msg + '] ' + FgGreen + 'Request(' + uid + ') Key: ' + request_key + ' found in cache-db!\n' + ResetColor);
 
+        let value_array = value.split(", date:");
+        let diff = new DateDiff(new Date(), new Date(value_array[1]));
+        // if previous computation was a month ago, recompute it
+        if (diff.days() > 30) {
+            console.log('[' + print_msg + '] ' + FgYellow + 'Request(' + uid + ') Key: ' + request_key + ' has expired, goind to recompute it!\n' + ResetColor);
+            db.del(request_key).catch((err) => { // delete previous result
+                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
+            });
+            throw "Result has expired, goind to recompute it!"; // go to catch
+        }
+
+        let result = value_array[0];
         if (plot) {
-            res.send(value.slice(1, -1)); // slice is for removing quotes from string.
+            res.send(result.slice(1, -1)); // slice is for removing quotes from string.
         } else {
             console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
             const result_obj = {'status': 'succeeded', 'result': ''};
-            result_obj.result = JSON.parse(value);
+            result_obj.result = JSON.parse(result);
             db.put(uid, JSON.stringify(result_obj)).catch((err) => {
                 console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
             });
@@ -567,7 +592,7 @@ app.post('/smpc/count', function (req, res) {
                 request_cache_result = result;
             }
 
-            cachedb.put(request_key, request_cache_result)
+            cachedb.put(request_key, request_cache_result + ", date:" + new Date())
             .catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
@@ -617,12 +642,24 @@ app.post('/smpc/decision_tree/numerical', function (req, res) {
     .then((value) => {
         console.log('[' + print_msg + '] ' + FgGreen + 'Request(' + uid + ') Key: ' + request_key + ' found in cache-db!\n' + ResetColor);
 
+        let value_array = value.split(", date:");
+        let diff = new DateDiff(new Date(), new Date(value_array[1]));
+        // if previous computation was a month ago, recompute it
+        if (diff.days() > 30) {
+            console.log('[' + print_msg + '] ' + FgYellow + 'Request(' + uid + ') Key: ' + request_key + ' has expired, goind to recompute it!\n' + ResetColor);
+            db.del(request_key).catch((err) => { // delete previous result
+                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
+            });
+            throw "Result has expired, goind to recompute it!"; // go to catch
+        }
+
+        let result = value_array[0];
         if (plot) {
-            res.send(value.slice(1, -1)); // slice is for removing quotes from string.
+            res.send(result.slice(1, -1)); // slice is for removing quotes from string.
         } else {
             console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
             const result_obj = {'status': 'succeeded', 'result': ''};
-            result_obj.result = JSON.parse(value);
+            result_obj.result = JSON.parse(result);
             db.put(uid, JSON.stringify(result_obj)).catch((err) => {
                 console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
             });
@@ -768,7 +805,7 @@ app.post('/smpc/decision_tree/numerical', function (req, res) {
                 request_cache_result = result;
             }
 
-            cachedb.put(request_key, request_cache_result)
+            cachedb.put(request_key, request_cache_result + ", date:" + new Date())
             .catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
@@ -807,19 +844,30 @@ app.post('/smpc/decision_tree/categorical', function (req, res) {
     cachedb.get(request_key)
     .then((value) => {
         console.log('[' + print_msg + '] ' + FgGreen + 'Request(' + uid + ') Key: ' + request_key + ' found in cache-db!\n' + ResetColor);
+        let value_array = value.split(", date:");
+        let diff = new DateDiff(new Date(), new Date(value_array[1]));
+        // if previous computation was a month ago, recompute it
+        if (diff.days() > 30) {
+            console.log('[' + print_msg + '] ' + FgYellow + 'Request(' + uid + ') Key: ' + request_key + ' has expired, goind to recompute it!\n' + ResetColor);
+            db.del(request_key).catch((err) => { // delete previous result
+                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
+            });
+            throw "Result has expired, goind to recompute it!"; // go to catch
+        }
 
+        let result = value_array[0];
         if (plot) {
-            res.send(value.slice(1, -1)); // slice is for removing quotes from string.
+            res.send(result.slice(1, -1)); // slice is for removing quotes from string.
         } else {
             console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
             const result_obj = {'status': 'succeeded', 'result': ''};
-            result_obj.result = JSON.parse(value);
+            result_obj.result = JSON.parse(result);
             db.put(uid, JSON.stringify(result_obj)).catch((err) => {
                 console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
             });
         }
     }).catch(() => { // If request has not been computed
-    console.log('[' + print_msg + '] ' + FgYellow + 'Request(' + uid + ') Key: ' + request_key + ' not found in cache-db.\n' + ResetColor);
+        console.log('[' + print_msg + '] ' + FgYellow + 'Request(' + uid + ') Key: ' + request_key + ' not found in cache-db.\n' + ResetColor);
 
         // create array of requests for import
         let import_promises = [];
@@ -959,7 +1007,7 @@ app.post('/smpc/decision_tree/categorical', function (req, res) {
                 request_cache_result = result;
             }
 
-            cachedb.put(request_key, request_cache_result)
+            cachedb.put(request_key, request_cache_result + ", date:" + new Date())
             .catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });

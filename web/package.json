@@ -7,13 +7,14 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "author": "",
+  "author": "Dimitris Mouris, Thanos Giannopoulos",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.18.2",
     "child_process": "^1.0.2",
     "csv-parse": "^2.2.0",
     "cytoscape": "^3.2.11",
+    "date-diff": "^0.2.0",
     "express": "^4.16.3",
     "fs": "0.0.1-security",
     "helmet": "^3.12.1",
