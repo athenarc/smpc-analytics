@@ -141,6 +141,7 @@ mhmd-driver/client/*
 
 # Ignore Database files
 web/mydb/*
+web/cache-database/*
 
 # Key-pairs
 *-private-key

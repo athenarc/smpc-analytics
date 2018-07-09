@@ -15,15 +15,15 @@ const https = require('https');
 const http = require('http');
 const express = require('express');
 const app = express();
-const { exec } = require('child_process');
-const { execSync } = require('child_process');
+const {exec} = require('child_process');
+const {execSync} = require('child_process');
 const fs = require('fs');
 const uuidv4 = require('uuid/v4');
 const path = require('path');
 const bodyParser = require('body-parser');
 const rp = require('request-promise');
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({extended: true}));
 const frontend = __dirname + "/frontend/";
 global.__basedir = __dirname;
 
@@ -56,10 +56,10 @@ if (fs.existsSync('./sslcert/fullchain.pem')) {
     const http_port = 80;
     const https_port = 443;
     http.createServer(function (req, res) {
-        if ('headers' in req && 'host' in req.headers){
-            res.writeHead(307, { "Location": "https://" + req.headers.host.replace(http_port,https_port) + req.url });
+        if ('headers' in req && 'host' in req.headers) {
+            res.writeHead(307, {"Location": "https://" + req.headers.host.replace(http_port, https_port) + req.url});
             console.log("http request, will go to >> ");
-            console.log("https://" + req.headers.host.replace(http_port,https_port) + req.url );
+            console.log("https://" + req.headers.host.replace(http_port, https_port) + req.url);
             res.end();
         }
     }).listen(http_port);
@@ -75,34 +75,34 @@ if (fs.existsSync('./sslcert/fullchain.pem')) {
 // function to return a promise to write to file
 function _writeFile(filename, content, encoding = null) {
     return new Promise((resolve, reject) => {
-      try {
-          fs.writeFile(filename, content, encoding, (err, buffer) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(buffer);
-            }
-          });
-      } catch (err) {
-          reject(err);
-      }
+        try {
+            fs.writeFile(filename, content, encoding, (err, buffer) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(buffer);
+                }
+            });
+        } catch (err) {
+            reject(err);
+        }
     });
 }
 
 // function to return a promise to exec a process
 function _exec(script, args) {
     return new Promise((resolve, reject) => {
-      try {
-          exec(script, args, (err, buffer) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(buffer);
-            }
-          });
-      } catch (err) {
-          reject(err);
-      }
+        try {
+            exec(script, args, (err, buffer) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(buffer);
+                }
+            });
+        } catch (err) {
+            reject(err);
+        }
     });
 }
 
@@ -112,7 +112,9 @@ function _unlinkIfExists(filename) {
         fs.stat(filename, (err) => {
             if (err === null) {
                 fs.unlink(filename, err => {
-                    if (err) { return reject(err); }
+                    if (err) {
+                        return reject(err);
+                    }
                     resolve(`Removing document at ${path}`);
                 });
             } else if (err.code === 'ENOENT') {
@@ -142,7 +144,7 @@ function _sendRequest(datasrc, mhmdDNS, attributes, uid, action) {
 // function to send requests for import and return array of promises
 function import_from_servers(attributes, datasources, res, parent, uid, action, DNSfile) {
     const mhmdDNS = JSON.parse(fs.readFileSync(DNSfile, 'utf8'));
-    if (typeof datasources === 'undefined'){
+    if (typeof datasources === 'undefined') {
         datasources = Object.keys(mhmdDNS);
     }
     for (let datasrc of datasources) {        // Check that all IPs exist
@@ -152,7 +154,7 @@ function import_from_servers(attributes, datasources, res, parent, uid, action, 
         }
     }
     // since no error occured in the above loop, we have all IPs
-    db.put(uid, JSON.stringify({'status':'running', 'step' : 'Securely importing data'}));
+    db.put(uid, JSON.stringify({'status': 'running', 'step': 'Securely importing data'}));
 
     // // send the requests for import
     const import_promises = [];
@@ -167,7 +169,7 @@ function import_from_servers(attributes, datasources, res, parent, uid, action, 
 // function to import local data and return promise
 function import_locally(attributes, datasources, res, parent, uid, type) {
     const localDNS = JSON.parse(fs.readFileSync('localDNS.json', 'utf8'));
-    if (typeof datasources === 'undefined'){
+    if (typeof datasources === 'undefined') {
         datasources = Object.keys(localDNS);
     }
     for (let datasrc of datasources) {         // Check that all IPs exist
@@ -183,8 +185,12 @@ function import_locally(attributes, datasources, res, parent, uid, type) {
             const patient_file = localDNS[datasrc][type];
             const csv_file = './datasets/' + datasrc + '_' + uid + '.csv';
             localDNS[datasrc][type] = csv_file;
-            console.log('[NODE SIMULATION] python mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" '+ patient_file + ' --output ' + csv_file + ' --mtrees ./mhmd-driver/m.json --mtrees_inverted ./mhmd-driver/m_inv.json --mapping ./mhmd-driver/mesh_mapping.json\n');
-            execSync('python mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" '+ patient_file + ' --output ' + csv_file + ' --mtrees ./mhmd-driver/m.json --mtrees_inverted ./mhmd-driver/m_inv.json --mapping ./mhmd-driver/mesh_mapping.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            console.log('[NODE SIMULATION] python mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" ' + patient_file + ' --output ' + csv_file + ' --mtrees ./mhmd-driver/m.json --mtrees_inverted ./mhmd-driver/m_inv.json --mapping ./mhmd-driver/mesh_mapping.json\n');
+            execSync('python mhmd-driver/mesh_json_to_csv.py \"' + attributes.join(' ') + '\" ' + patient_file + ' --output ' + csv_file + ' --mtrees ./mhmd-driver/m.json --mtrees_inverted ./mhmd-driver/m_inv.json --mapping ./mhmd-driver/mesh_mapping.json', {
+                stdio: [0, 1, 2],
+                cwd: parent,
+                shell: '/bin/bash'
+            });
         }
     }
 
@@ -192,37 +198,40 @@ function import_locally(attributes, datasources, res, parent, uid, type) {
     // exec asynch python simulated imports
     for (let datasrc of datasources) {
         const dataset = localDNS[datasrc][type];
-        console.log('[NODE SIMULATION] Request(' + uid + ') python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table "' + datasrc+'_'+uid + '"\n');
-        import_promises.push( _exec('python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table "' + datasrc+'_'+uid +'"', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'}) );
+        console.log('[NODE SIMULATION] Request(' + uid + ') python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table "' + datasrc + '_' + uid + '"\n');
+        import_promises.push(_exec('python ./dataset-scripts/simulated_import.py ' + dataset + ' --attributes "' + attributes.join(';') + '" --table "' + datasrc + '_' + uid + '"', {
+            stdio: [0, 1, 2],
+            cwd: parent,
+            shell: '/bin/bash'
+        }));
     }
     // return array of promises for import
     return import_promises;
 }
 
 
-app.options('/*', function(req, res){
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  res.sendStatus(200);
+app.options('/*', function (req, res) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.sendStatus(200);
 });
 
-app.get('/smpc/queue', function(req, res) {
+app.get('/smpc/queue', function (req, res) {
     let request = req.query.request;
     db.get(request)
-    .then((value) => {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.status(200).json(JSON.parse(value));
-    }).catch((err) => {
+        .then((value) => {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.status(200).json(JSON.parse(value));
+        }).catch((err) => {
         console.log(FgRed + '[NODE] ' + ResetColor + err);
         res.setHeader('Access-Control-Allow-Origin', '*');
-        res.status(200).json({'status':'notstarted'});
+        res.status(200).json({'status': 'notstarted'});
     });
 });
 
 
-
-app.post('/smpc/histogram', function(req, res) {
+app.post('/smpc/histogram', function (req, res) {
     let i;
     const parent = path.dirname(__basedir);
     const content = JSON.stringify(req.body);
@@ -231,11 +240,11 @@ app.post('/smpc/histogram', function(req, res) {
     const attributes = req.body.attributes;
     const datasources = req.body.datasources;
 
-    db.put(uid, JSON.stringify({'status':'running'}));
+    db.put(uid, JSON.stringify({'status': 'running'}));
     let plot = ('plot' in req.body); // if plot exists in req.body
     if (!plot) {
         res.setHeader('Access-Control-Allow-Origin', '*');
-        res.status(202).json({"location" : "/smpc/queue?request="+uid});
+        res.status(202).json({"location": "/smpc/queue?request=" + uid});
     }
     // create list of attribute names from the POST request
     let attrib;
@@ -270,44 +279,69 @@ app.post('/smpc/histogram', function(req, res) {
     const print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
 
     Promise.all(import_promises)
-    .then(() => {
-        console.log(FgGreen + 'Importing Finished ' + ResetColor);
-        return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
-    }).then(() => {
-        console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
+        .then(() => {
+            console.log(FgGreen + 'Importing Finished ' + ResetColor);
+            return _writeFile(parent + '/configuration_' + uid + '.json', content, 'utf8');
+        }).then(() => {
+        console.log('[' + print_msg + '] Request(' + uid + ') Configuration file was saved.\n');
         if (SIMULATION_MODE) {
-            return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {
+                stdio: [0, 1, 2],
+                cwd: parent,
+                shell: '/bin/bash'
+            });
         } else {
-            return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json --DNS web/MHMDdns_cvi.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json --DNS web/MHMDdns_cvi.json', {
+                stdio: [0, 1, 2],
+                cwd: parent,
+                shell: '/bin/bash'
+            });
         }
     }).then(() => {
-        console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
+        console.log('[' + print_msg + '] Request(' + uid + ') Main generated.\n');
         const db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
-        db.put(uid, JSON.stringify({'status':'running', 'step':db_msg})).catch((err) => {
-            console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+        db.put(uid, JSON.stringify({'status': 'running', 'step': db_msg})).catch((err) => {
+            console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
         });
         return _unlinkIfExists(parent + '/histogram/.main_' + uid + '.sb.src');
     }).then(() => {
-        console.log('['+print_msg+'] Old .main_' + uid + '.sb.src deleted.\n');
+        console.log('[' + print_msg + '] Old .main_' + uid + '.sb.src deleted.\n');
         const exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh histogram/main_' : 'sharemind-scripts/sm_compile_and_run.sh histogram/main_';
-        return _exec(exec_arg + uid + '.sc', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        return _exec(exec_arg + uid + '.sc', {stdio: [0, 1, 2], cwd: parent, shell: '/bin/bash'});
     }).then(() => {
         if (SIMULATION_MODE) {
-            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'})).catch((err) => {
+            db.put(uid, JSON.stringify({
+                'status': 'running',
+                'step': 'SecreC code compiled. Now running.'
+            })).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE SIMULATION] Request(' + uid + ') Program compiled.\n');
-            return _exec('sharemind-scripts/run.sh histogram/main_' + uid + '.sb 2> out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            return _exec('sharemind-scripts/run.sh histogram/main_' + uid + '.sb 2> out_' + uid + '.txt', {
+                stdio: [0, 1, 2],
+                cwd: parent,
+                shell: '/bin/bash'
+            });
         } else {
-            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'})).catch((err) => {
+            db.put(uid, JSON.stringify({
+                'status': 'running',
+                'step': 'SecreC code compiled and run. Now generating output.'
+            })).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE] Request(' + uid + ') Program executed.\n');
-            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {
+                stdio: [0, 1, 2],
+                cwd: parent,
+                shell: '/bin/bash'
+            });
         }
     }).then(() => {
         if (SIMULATION_MODE) {
-            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'})).catch((err) => {
+            db.put(uid, JSON.stringify({
+                'status': 'running',
+                'step': 'SecreC code run. Now generating output.'
+            })).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE SIMULATION] Request(' + uid + ') Program executed.\n');
@@ -320,32 +354,31 @@ app.post('/smpc/histogram', function(req, res) {
         }
     }).then((result) => {
         if (plot) {
-            console.log('['+print_msg+'] Request(' + uid + ') Plotting done.\n');
+            console.log('[' + print_msg + '] Request(' + uid + ') Plotting done.\n');
             let graph_name = result.toString();
-            graph_name = graph_name.slice(0,-1);
-            console.log('['+print_msg+']' + graph_name);
+            graph_name = graph_name.slice(0, -1);
+            console.log('[' + print_msg + ']' + graph_name);
             res.send(graph_name);
         } else {
-            console.log('['+print_msg+'] Request(' + uid + ') Response ready.\n');
+            console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
             const result_obj = {'status': 'succeeded', 'result': ''};
             result_obj.result = JSON.parse(result);
             db.put(uid, JSON.stringify(result_obj)).catch((err) => {
-              console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
             });
         }
     }).catch((err) => {
-        db.put(uid, JSON.stringify({'status':'failed'}))
-        .catch((err) => {
-            console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
-        });
-        console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+        db.put(uid, JSON.stringify({'status': 'failed'}))
+            .catch((err) => {
+                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
+            });
+        console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
         res.sendStatus(400);
     });
 });
 
 
-
-app.post('/smpc/count', function(req, res) {
+app.post('/smpc/count', function (req, res) {
     const parent = path.dirname(__basedir);
     const content = JSON.stringify(req.body);
     console.log(content);
@@ -354,10 +387,10 @@ app.post('/smpc/count', function(req, res) {
     const datasources = req.body.datasources;
 
     let plot = ('plot' in req.body); // if plot exists in req.body
-    db.put(uid, JSON.stringify({'status':'running'}));
+    db.put(uid, JSON.stringify({'status': 'running'}));
     if (!plot) {
         res.setHeader('Access-Control-Allow-Origin', '*');
-        res.status(202).json({"location" : "/smpc/queue?request="+uid});
+        res.status(202).json({"location": "/smpc/queue?request=" + uid});
     }
 
     // if filters are defined
@@ -384,44 +417,69 @@ app.post('/smpc/count', function(req, res) {
     const print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
     // wait them all to finish
     Promise.all(import_promises)
-    .then(() => {
-        console.log(FgGreen + 'Importing Finished ' + ResetColor);
-        return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
-    }).then(() => {
-        console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
+        .then(() => {
+            console.log(FgGreen + 'Importing Finished ' + ResetColor);
+            return _writeFile(parent + '/configuration_' + uid + '.json', content, 'utf8');
+        }).then(() => {
+        console.log('[' + print_msg + '] Request(' + uid + ') Configuration file was saved.\n');
         if (SIMULATION_MODE) {
-            return _exec('python dataset-scripts/count_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            return _exec('python dataset-scripts/count_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {
+                stdio: [0, 1, 2],
+                cwd: parent,
+                shell: '/bin/bash'
+            });
         } else {
-            return _exec('python dataset-scripts/count_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            return _exec('python dataset-scripts/count_main_generator.py configuration_' + uid + '.json', {
+                stdio: [0, 1, 2],
+                cwd: parent,
+                shell: '/bin/bash'
+            });
         }
     }).then(() => {
-        console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
+        console.log('[' + print_msg + '] Request(' + uid + ') Main generated.\n');
         const db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
-        db.put(uid, JSON.stringify({'status':'running', 'step':db_msg})).catch((err) => {
-            console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+        db.put(uid, JSON.stringify({'status': 'running', 'step': db_msg})).catch((err) => {
+            console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
         });
         return _unlinkIfExists(parent + '/histogram/.main_' + uid + '.sb.src');
     }).then(() => {
-        console.log('['+print_msg+'] Old .main_' + uid + '.sb.src deleted.\n');
+        console.log('[' + print_msg + '] Old .main_' + uid + '.sb.src deleted.\n');
         const exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh histogram/main_' : 'sharemind-scripts/sm_compile_and_run.sh histogram/main_';
-        return _exec(exec_arg + uid + '.sc', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        return _exec(exec_arg + uid + '.sc', {stdio: [0, 1, 2], cwd: parent, shell: '/bin/bash'});
     }).then(() => {
         if (SIMULATION_MODE) {
-            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'})).catch((err) => {
+            db.put(uid, JSON.stringify({
+                'status': 'running',
+                'step': 'SecreC code compiled. Now running.'
+            })).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE SIMULATION] Request(' + uid + ') Program compiled.\n');
-            return _exec('sharemind-scripts/run.sh histogram/main_' + uid + '.sb 2> out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            return _exec('sharemind-scripts/run.sh histogram/main_' + uid + '.sb 2> out_' + uid + '.txt', {
+                stdio: [0, 1, 2],
+                cwd: parent,
+                shell: '/bin/bash'
+            });
         } else {
-            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'})).catch((err) => {
+            db.put(uid, JSON.stringify({
+                'status': 'running',
+                'step': 'SecreC code compiled and run. Now generating output.'
+            })).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE] Request(' + uid + ') Program executed.\n');
-            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {
+                stdio: [0, 1, 2],
+                cwd: parent,
+                shell: '/bin/bash'
+            });
         }
     }).then(() => {
         if (SIMULATION_MODE) {
-            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'})).catch((err) => {
+            db.put(uid, JSON.stringify({
+                'status': 'running',
+                'step': 'SecreC code run. Now generating output.'
+            })).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE SIMULATION] Request(' + uid + ') Program executed.\n');
@@ -430,36 +488,38 @@ app.post('/smpc/count', function(req, res) {
         if (plot) {
             return _exec('python count_plot.py ../out_' + uid + '.txt ../configuration_' + uid + '.json');
         } else {
-            return _exec('python web/response.py out_' + uid + '.txt | python web/transform_response.py  configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json' , {cwd: parent, shell: '/bin/bash'});
+            return _exec('python web/response.py out_' + uid + '.txt | python web/transform_response.py  configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {
+                cwd: parent,
+                shell: '/bin/bash'
+            });
         }
     }).then((result) => {
         if (plot) {
-            console.log('['+print_msg+'] Request(' + uid + ') Plotting done.\n');
+            console.log('[' + print_msg + '] Request(' + uid + ') Plotting done.\n');
             let graph_name = result.toString();
-            graph_name = graph_name.slice(0,-1);
-            console.log('['+print_msg+']' + graph_name);
+            graph_name = graph_name.slice(0, -1);
+            console.log('[' + print_msg + ']' + graph_name);
             res.send(graph_name);
         } else {
-            console.log('['+print_msg+'] Request(' + uid + ') Response ready.\n');
+            console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
             const result_obj = {'status': 'succeeded', 'result': ''};
             result_obj.result = JSON.parse(result);
             db.put(uid, JSON.stringify(result_obj)).catch((err) => {
-              console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
             });
         }
     }).catch((err) => {
-        db.put(uid, JSON.stringify({'status':'failed'}))
-        .catch((err) => {
-            console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
-        });
-        console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+        db.put(uid, JSON.stringify({'status': 'failed'}))
+            .catch((err) => {
+                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
+            });
+        console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
         res.sendStatus(400);
     });
 });
 
 
-
-app.post('/smpc/decision_tree/numerical', function(req, res) {
+app.post('/smpc/decision_tree/numerical', function (req, res) {
     const parent = path.dirname(__basedir);
     const content = JSON.stringify(req.body);
     console.log(content);
@@ -469,11 +529,11 @@ app.post('/smpc/decision_tree/numerical', function(req, res) {
     const class_attribute = req.body.class_attribute.name;
     const classifier = ('classifier' in req.body) ? req.body.classifier : "ID3";
 
-    db.put(uid, JSON.stringify({'status':'running'}));
+    db.put(uid, JSON.stringify({'status': 'running'}));
     let plot = ('plot' in req.body); // if plot exists in req.body
     if (!plot) {
         res.setHeader('Access-Control-Allow-Origin', '*');
-        res.status(202).json({"location" : "/smpc/queue?request="+uid});
+        res.status(202).json({"location": "/smpc/queue?request=" + uid});
     }
 
     // create list of attribute names from the POST request
@@ -487,7 +547,7 @@ app.post('/smpc/decision_tree/numerical', function(req, res) {
     }
     attributes_to_import.push(class_attribute);
 
-    console.log("\n\n\n"+attributes_to_import+"\n\n");
+    console.log("\n\n\n" + attributes_to_import + "\n\n");
     // create array of requests for import
     let import_promises = [];
     if (SIMULATION_MODE) {
@@ -499,52 +559,85 @@ app.post('/smpc/decision_tree/numerical', function(req, res) {
     const print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
     // wait them all to finish
     Promise.all(import_promises)
-    .then(() => {
-        console.log(FgGreen + 'Importing Finished ' + ResetColor);
-        return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
-    }).then(() => {
-        console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
+        .then(() => {
+            console.log(FgGreen + 'Importing Finished ' + ResetColor);
+            return _writeFile(parent + '/configuration_' + uid + '.json', content, 'utf8');
+        }).then(() => {
+        console.log('[' + print_msg + '] Request(' + uid + ') Configuration file was saved.\n');
         if (SIMULATION_MODE) {
             if (classifier === "ID3") {
-                return _exec('python dataset-scripts/id3_numerical_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+                return _exec('python dataset-scripts/id3_numerical_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {
+                    stdio: [0, 1, 2],
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             } else if (classifier === "C45") {
-                return _exec('python dataset-scripts/c45_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+                return _exec('python dataset-scripts/c45_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {
+                    stdio: [0, 1, 2],
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             }
         } else {
             if (classifier === "ID3") {
-                return _exec('python dataset-scripts/id3_numerical_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+                return _exec('python dataset-scripts/id3_numerical_main_generator.py configuration_' + uid + '.json', {
+                    stdio: [0, 1, 2],
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             } else if (classifier === "C45") {
-                return _exec('python dataset-scripts/c45_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+                return _exec('python dataset-scripts/c45_main_generator.py configuration_' + uid + '.json', {
+                    stdio: [0, 1, 2],
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             }
         }
     }).then(() => {
-        console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
+        console.log('[' + print_msg + '] Request(' + uid + ') Main generated.\n');
         const db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
-        db.put(uid, JSON.stringify({'status':'running', 'step':db_msg})).catch((err) => {
-            console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+        db.put(uid, JSON.stringify({'status': 'running', 'step': db_msg})).catch((err) => {
+            console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
         });
         return _unlinkIfExists(parent + '/decision-tree/.main_' + uid + '.sb.src');
     }).then(() => {
-        console.log('['+print_msg+'] Old .main_' + uid + '.sb.src deleted.\n');
+        console.log('[' + print_msg + '] Old .main_' + uid + '.sb.src deleted.\n');
         const exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh decision-tree/main_' : 'sharemind-scripts/sm_compile_and_run.sh decision-tree/main_';
-        return _exec(exec_arg + uid + '.sc', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        return _exec(exec_arg + uid + '.sc', {stdio: [0, 1, 2], cwd: parent, shell: '/bin/bash'});
     }).then(() => {
         if (SIMULATION_MODE) {
-            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'})).catch((err) => {
+            db.put(uid, JSON.stringify({
+                'status': 'running',
+                'step': 'SecreC code compiled. Now running.'
+            })).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE SIMULATION] Request(' + uid + ') Program compiled.\n');
-            return _exec('set -o pipefail && sharemind-scripts/run.sh decision-tree/main_' + uid + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > out_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            return _exec('set -o pipefail && sharemind-scripts/run.sh decision-tree/main_' + uid + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > out_' + uid + '.json', {
+                stdio: [0, 1, 2],
+                cwd: parent,
+                shell: '/bin/bash'
+            });
         } else {
-            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'})).catch((err) => {
+            db.put(uid, JSON.stringify({
+                'status': 'running',
+                'step': 'SecreC code compiled and run. Now generating output.'
+            })).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE] Request(' + uid + ') Program executed.\n');
-            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" | sed --expression="s/,  }/ }/g" >  out_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" | sed --expression="s/,  }/ }/g" >  out_' + uid + '.json', {
+                stdio: [0, 1, 2],
+                cwd: parent,
+                shell: '/bin/bash'
+            });
         }
     }).then(() => {
         if (SIMULATION_MODE) {
-            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'})).catch((err) => {
+            db.put(uid, JSON.stringify({
+                'status': 'running',
+                'step': 'SecreC code run. Now generating output.'
+            })).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE SIMULATION] Request(' + uid + ') Program executed.\n');
@@ -552,45 +645,56 @@ app.post('/smpc/decision_tree/numerical', function(req, res) {
 
         if (plot) {
             if (classifier === "ID3") {
-                return _exec('python web/id3_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json --plot', {cwd: parent, shell: '/bin/bash'});
+                return _exec('python web/id3_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json --plot', {
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             } else if (classifier === "C45") {
-                return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json --plot', {cwd: parent, shell: '/bin/bash'});
+                return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json --plot', {
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             }
         } else {
             if (classifier === "ID3") {
-                return _exec('python web/id3_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json', {cwd: parent, shell: '/bin/bash'});
+                return _exec('python web/id3_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json', {
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             } else if (classifier === "C45") {
-                return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json', {cwd: parent, shell: '/bin/bash'});
+                return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json', {
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             }
         }
     }).then((result) => {
         if (plot) {
-            console.log('['+print_msg+'] Request(' + uid + ') Plotting done.\n');
+            console.log('[' + print_msg + '] Request(' + uid + ') Plotting done.\n');
             let graph_name = result.toString();
-            graph_name = graph_name.slice(0,-1);
-            console.log('['+print_msg+']' + graph_name);
+            graph_name = graph_name.slice(0, -1);
+            console.log('[' + print_msg + ']' + graph_name);
             res.send(graph_name);
         } else {
-            console.log('['+print_msg+'] Request(' + uid + ') Response ready.\n');
+            console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
             const result_obj = {'status': 'succeeded', 'result': ''};
             result_obj.result = JSON.parse(result);
             db.put(uid, JSON.stringify(result_obj)).catch((err) => {
-              console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
             });
         }
     }).catch((err) => {
-        db.put(uid, JSON.stringify({'status':'failed'}))
-        .catch((err) => {
-            console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
-        });
-        console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+        db.put(uid, JSON.stringify({'status': 'failed'}))
+            .catch((err) => {
+                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
+            });
+        console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
         res.sendStatus(400);
     });
 });
 
 
-
-app.post('/smpc/decision_tree/categorical', function(req, res) {
+app.post('/smpc/decision_tree/categorical', function (req, res) {
     const parent = path.dirname(__basedir);
     const content = JSON.stringify(req.body);
     console.log(content);
@@ -601,11 +705,11 @@ app.post('/smpc/decision_tree/categorical', function(req, res) {
     attributes.push(class_attribute);
     const classifier = ('classifier' in req.body) ? req.body.classifier : "ID3";
 
-    db.put(uid, JSON.stringify({'status':'running'}));
+    db.put(uid, JSON.stringify({'status': 'running'}));
     let plot = ('plot' in req.body); // if plot exists in req.body
     if (!plot) {
         res.setHeader('Access-Control-Allow-Origin', '*');
-        res.status(202).json({"location" : "/smpc/queue?request="+uid});
+        res.status(202).json({"location": "/smpc/queue?request=" + uid});
     }
     // create array of requests for import
     let import_promises = [];
@@ -618,52 +722,85 @@ app.post('/smpc/decision_tree/categorical', function(req, res) {
     const print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
     // wait them all to finish
     Promise.all(import_promises)
-    .then(() => {
-        console.log(FgGreen + 'Importing Finished ' + ResetColor);
-        return _writeFile(parent+'/configuration_' + uid + '.json', content, 'utf8');
-    }).then(() => {
-        console.log('['+print_msg+'] Request(' + uid + ') Configuration file was saved.\n');
+        .then(() => {
+            console.log(FgGreen + 'Importing Finished ' + ResetColor);
+            return _writeFile(parent + '/configuration_' + uid + '.json', content, 'utf8');
+        }).then(() => {
+        console.log('[' + print_msg + '] Request(' + uid + ') Configuration file was saved.\n');
         if (SIMULATION_MODE) {
             if (classifier === "ID3") {
-                return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+                return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {
+                    stdio: [0, 1, 2],
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             } else if (classifier === "C45") {
-                return _exec('python dataset-scripts/c45_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+                return _exec('python dataset-scripts/c45_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {
+                    stdio: [0, 1, 2],
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             }
         } else {
             if (classifier === "ID3") {
-                return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+                return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json', {
+                    stdio: [0, 1, 2],
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             } else if (classifier === "C45") {
-                return _exec('python dataset-scripts/c45_main_generator.py configuration_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+                return _exec('python dataset-scripts/c45_main_generator.py configuration_' + uid + '.json', {
+                    stdio: [0, 1, 2],
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             }
         }
     }).then(() => {
-        console.log('['+print_msg+'] Request(' + uid + ') Main generated.\n');
+        console.log('[' + print_msg + '] Request(' + uid + ') Main generated.\n');
         const db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
-        db.put(uid, JSON.stringify({'status':'running', 'step':db_msg})).catch((err) => {
-            console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+        db.put(uid, JSON.stringify({'status': 'running', 'step': db_msg})).catch((err) => {
+            console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
         });
         return _unlinkIfExists(parent + '/decision-tree/.main_' + uid + '.sb.src');
     }).then(() => {
-        console.log('['+print_msg+'] Old .main_' + uid + '.sb.src deleted.\n');
+        console.log('[' + print_msg + '] Old .main_' + uid + '.sb.src deleted.\n');
         const exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh decision-tree/main_' : 'sharemind-scripts/sm_compile_and_run.sh decision-tree/main_';
-        return _exec(exec_arg + uid + '.sc', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+        return _exec(exec_arg + uid + '.sc', {stdio: [0, 1, 2], cwd: parent, shell: '/bin/bash'});
     }).then(() => {
         if (SIMULATION_MODE) {
-            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled. Now running.'})).catch((err) => {
+            db.put(uid, JSON.stringify({
+                'status': 'running',
+                'step': 'SecreC code compiled. Now running.'
+            })).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE SIMULATION] Request(' + uid + ') Program compiled.\n');
-            return _exec('set -o pipefail && sharemind-scripts/run.sh decision-tree/main_' + uid + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > out_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            return _exec('set -o pipefail && sharemind-scripts/run.sh decision-tree/main_' + uid + '.sb  2>&1 >/dev/null | sed --expression="s/,  }/ }/g" > out_' + uid + '.json', {
+                stdio: [0, 1, 2],
+                cwd: parent,
+                shell: '/bin/bash'
+            });
         } else {
-            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code compiled and run. Now generating output.'})).catch((err) => {
+            db.put(uid, JSON.stringify({
+                'status': 'running',
+                'step': 'SecreC code compiled and run. Now generating output.'
+            })).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE] Request(' + uid + ') Program executed.\n');
-            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" | sed --expression="s/,  }/ }/g" >  out_' + uid + '.json', {stdio:[0,1,2],cwd: parent, shell: '/bin/bash'});
+            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" | sed --expression="s/,  }/ }/g" >  out_' + uid + '.json', {
+                stdio: [0, 1, 2],
+                cwd: parent,
+                shell: '/bin/bash'
+            });
         }
     }).then(() => {
         if (SIMULATION_MODE) {
-            db.put(uid, JSON.stringify({'status':'running', 'step':'SecreC code run. Now generating output.'})).catch((err) => {
+            db.put(uid, JSON.stringify({
+                'status': 'running',
+                'step': 'SecreC code run. Now generating output.'
+            })).catch((err) => {
                 console.log(FgRed + '[NODE] ' + ResetColor + err);
             });
             console.log('[NODE SIMULATION] Request(' + uid + ') Program executed.\n');
@@ -671,42 +808,53 @@ app.post('/smpc/decision_tree/categorical', function(req, res) {
 
         if (plot) {
             if (classifier === "ID3") {
-                return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --plot --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
+                return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --plot --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             } else if (classifier === "C45") {
-                return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json --plot --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
+                return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json --plot --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             }
         } else {
             if (classifier === "ID3") {
-                return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
+                return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             } else if (classifier === "C45") {
-                return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {cwd: parent, shell: '/bin/bash'});
+                return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
             }
         }
     }).then((result) => {
         if (plot) {
-            console.log('['+print_msg+'] Request(' + uid + ') Plotting done.\n');
+            console.log('[' + print_msg + '] Request(' + uid + ') Plotting done.\n');
             let graph_name = result.toString();
-            graph_name = graph_name.slice(0,-1);
-            console.log('['+print_msg+']' + graph_name);
+            graph_name = graph_name.slice(0, -1);
+            console.log('[' + print_msg + ']' + graph_name);
             res.send(graph_name);
         } else {
-            console.log('['+print_msg+'] Request(' + uid + ') Response ready.\n');
+            console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
             const result_obj = {'status': 'succeeded', 'result': ''};
             result_obj.result = JSON.parse(result);
             db.put(uid, JSON.stringify(result_obj)).catch((err) => {
-              console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
             });
         }
     }).catch((err) => {
-        db.put(uid, JSON.stringify({'status':'failed'}))
-        .catch((err) => {
-            console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
-        });
-        console.log(FgRed + '['+print_msg+'] ' + ResetColor + err);
+        db.put(uid, JSON.stringify({'status': 'failed'}))
+            .catch((err) => {
+                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
+            });
+        console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
         res.sendStatus(400);
     });
 });
-
 
 
 const FgRed = "\x1b[31m";
