@@ -4,6 +4,8 @@ process.argv.forEach(function (val) {
         SIMULATION_MODE = true;
     }
 });
+const print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
+
 
 if (SIMULATION_MODE) {
     console.log('\n[NODE SIMULATION] Running in simulation mode\n');
@@ -37,7 +39,7 @@ morganBody(app, {stream: log_stream}); // log request body
 
 app.use(morgan(':remote-addr \\n\\n', {stream: log_stream})); // log request IP
 const db = level('./mydb');
-const cache = level('./cache-database');
+const cachedb = level('./cache-database');
 
 
 app.get('/', function (req, res) {
@@ -222,10 +224,10 @@ app.options('/*', function (req, res) {
 app.get('/smpc/queue', function (req, res) {
     let request = req.query.request;
     db.get(request)
-        .then((value) => {
-            res.setHeader('Access-Control-Allow-Origin', '*');
-            res.status(200).json(JSON.parse(value));
-        }).catch((err) => {
+    .then((value) => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.status(200).json(JSON.parse(value));
+    }).catch((err) => {
         console.log(FgRed + '[NODE] ' + ResetColor + err);
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(200).json({'status': 'notstarted'});
@@ -260,6 +262,7 @@ app.post('/smpc/histogram', function (req, res) {
         }
     }
 
+    let request_key;
     // if filters are defined
     if ('filters' in req.body) {
         const filters = req.body.filters;
@@ -270,112 +273,138 @@ app.post('/smpc/histogram', function (req, res) {
                 attributes_to_import.push(attrib);
             }
         }
-    }
-
-    let import_promises = [];
-    if (SIMULATION_MODE) {
-        import_promises = import_locally(attributes_to_import, datasources, res, parent, uid, 'cvi');
+        request_key = JSON.stringify({'attributes': attributes[0], 'datasources': datasources, 'filters': filters, 'plot': plot});
     } else {
-        import_promises = import_from_servers(attributes_to_import, datasources, res, parent, uid, '/smpc/import/cvi', 'MHMDdns_cvi.json');
+        request_key = JSON.stringify({'attributes': attributes[0], 'datasources': datasources, 'plot': plot});
     }
-    const print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
 
-    Promise.all(import_promises)
-        .then(() => {
-            console.log(FgGreen + 'Importing Finished ' + ResetColor);
-            return _writeFile(parent + '/configuration_' + uid + '.json', content, 'utf8');
-        }).then(() => {
-        console.log('[' + print_msg + '] Request(' + uid + ') Configuration file was saved.\n');
-        if (SIMULATION_MODE) {
-            return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {
-                stdio: [0, 1, 2],
-                cwd: parent,
-                shell: '/bin/bash'
-            });
-        } else {
-            return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json --DNS web/MHMDdns_cvi.json', {
-                stdio: [0, 1, 2],
-                cwd: parent,
-                shell: '/bin/bash'
-            });
-        }
-    }).then(() => {
-        console.log('[' + print_msg + '] Request(' + uid + ') Main generated.\n');
-        const db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
-        db.put(uid, JSON.stringify({'status': 'running', 'step': db_msg})).catch((err) => {
-            console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
-        });
-        return _unlinkIfExists(parent + '/histogram/.main_' + uid + '.sb.src');
-    }).then(() => {
-        console.log('[' + print_msg + '] Old .main_' + uid + '.sb.src deleted.\n');
-        const exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh histogram/main_' : 'sharemind-scripts/sm_compile_and_run.sh histogram/main_';
-        return _exec(exec_arg + uid + '.sc', {stdio: [0, 1, 2], cwd: parent, shell: '/bin/bash'});
-    }).then(() => {
-        if (SIMULATION_MODE) {
-            db.put(uid, JSON.stringify({
-                'status': 'running',
-                'step': 'SecreC code compiled. Now running.'
-            })).catch((err) => {
-                console.log(FgRed + '[NODE] ' + ResetColor + err);
-            });
-            console.log('[NODE SIMULATION] Request(' + uid + ') Program compiled.\n');
-            return _exec('sharemind-scripts/run.sh histogram/main_' + uid + '.sb 2> out_' + uid + '.txt', {
-                stdio: [0, 1, 2],
-                cwd: parent,
-                shell: '/bin/bash'
-            });
-        } else {
-            db.put(uid, JSON.stringify({
-                'status': 'running',
-                'step': 'SecreC code compiled and run. Now generating output.'
-            })).catch((err) => {
-                console.log(FgRed + '[NODE] ' + ResetColor + err);
-            });
-            console.log('[NODE] Request(' + uid + ') Program executed.\n');
-            return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {
-                stdio: [0, 1, 2],
-                cwd: parent,
-                shell: '/bin/bash'
-            });
-        }
-    }).then(() => {
-        if (SIMULATION_MODE) {
-            db.put(uid, JSON.stringify({
-                'status': 'running',
-                'step': 'SecreC code run. Now generating output.'
-            })).catch((err) => {
-                console.log(FgRed + '[NODE] ' + ResetColor + err);
-            });
-            console.log('[NODE SIMULATION] Request(' + uid + ') Program executed.\n');
-        }
+    // Check if request has been already computed
+    cachedb.get(request_key)
+    .then((value) => {
+        console.log('[' + print_msg + '] ' + FgGreen + 'Request(' + uid + ') Key: ' + request_key + ' found in cache-db!\n' + ResetColor);
 
         if (plot) {
-            return _exec('python plot.py ../configuration_' + uid + '.json');
-        } else {
-            return _exec('python web/response.py out_' + uid + '.txt', {cwd: parent, shell: '/bin/bash'});
-        }
-    }).then((result) => {
-        if (plot) {
-            console.log('[' + print_msg + '] Request(' + uid + ') Plotting done.\n');
-            let graph_name = result.toString();
-            graph_name = graph_name.slice(0, -1);
-            console.log('[' + print_msg + ']' + graph_name);
-            res.send(graph_name);
+            res.send(value.slice(1, -1)); // slice is for removing quotes from string.
         } else {
             console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
             const result_obj = {'status': 'succeeded', 'result': ''};
-            result_obj.result = JSON.parse(result);
+            result_obj.result = JSON.parse(value);
             db.put(uid, JSON.stringify(result_obj)).catch((err) => {
                 console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
             });
         }
-    }).catch((err) => {
-        db.put(uid, JSON.stringify({'status': 'failed'}))
+    }).catch(() => { // If request has not been computed
+        console.log('[' + print_msg + '] Request(' + uid + ') Key: ' + request_key + ' not found in cache-db.\n');
+
+        let import_promises = [];
+        if (SIMULATION_MODE) {
+            import_promises = import_locally(attributes_to_import, datasources, res, parent, uid, 'cvi');
+        } else {
+            import_promises = import_from_servers(attributes_to_import, datasources, res, parent, uid, '/smpc/import/cvi', 'MHMDdns_cvi.json');
+        }
+
+        Promise.all(import_promises)
+        .then(() => {
+                console.log(FgGreen + 'Importing Finished ' + ResetColor);
+                return _writeFile(parent + '/configuration_' + uid + '.json', content, 'utf8');
+        }).then(() => {
+            console.log('[' + print_msg + '] Request(' + uid + ') Configuration file was saved.\n');
+            if (SIMULATION_MODE) {
+                return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {
+                    stdio: [0, 1, 2],
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
+            } else {
+                return _exec('python dataset-scripts/main_generator.py configuration_' + uid + '.json --DNS web/MHMDdns_cvi.json', {
+                    stdio: [0, 1, 2],
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
+            }
+        }).then(() => {
+            console.log('[' + print_msg + '] Request(' + uid + ') Main generated.\n');
+            const db_msg = (SIMULATION_MODE) ? 'SecreC code generated. Now compiling.' : 'SecreC code generated. Now compiling and running.';
+            db.put(uid, JSON.stringify({'status': 'running', 'step': db_msg})).catch((err) => {
+                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
+            });
+            return _unlinkIfExists(parent + '/histogram/.main_' + uid + '.sb.src');
+        }).then(() => {
+            console.log('[' + print_msg + '] Old .main_' + uid + '.sb.src deleted.\n');
+            const exec_arg = (SIMULATION_MODE) ? 'sharemind-scripts/compile.sh histogram/main_' : 'sharemind-scripts/sm_compile_and_run.sh histogram/main_';
+            return _exec(exec_arg + uid + '.sc', {stdio: [0, 1, 2], cwd: parent, shell: '/bin/bash'});
+        }).then(() => {
+            if (SIMULATION_MODE) {
+                db.put(uid, JSON.stringify({
+                    'status': 'running',
+                    'step': 'SecreC code compiled. Now running.'
+                })).catch((err) => {
+                    console.log(FgRed + '[NODE] ' + ResetColor + err);
+                });
+                console.log('[NODE SIMULATION] Request(' + uid + ') Program compiled.\n');
+                return _exec('sharemind-scripts/run.sh histogram/main_' + uid + '.sb 2> out_' + uid + '.txt', {
+                    stdio: [0, 1, 2],
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
+            } else {
+                db.put(uid, JSON.stringify({
+                    'status': 'running',
+                    'step': 'SecreC code compiled and run. Now generating output.'
+                })).catch((err) => {
+                    console.log(FgRed + '[NODE] ' + ResetColor + err);
+                });
+                console.log('[NODE] Request(' + uid + ') Program executed.\n');
+                return _exec('grep --fixed-strings --text "`grep --text "' + uid + '" /etc/sharemind/server.log | tail -n 1 | cut -d " "  -f "7-8"`" /etc/sharemind/server.log | cut -d " "  -f "9-" >  out_' + uid + '.txt', {
+                    stdio: [0, 1, 2],
+                    cwd: parent,
+                    shell: '/bin/bash'
+                });
+            }
+        }).then(() => {
+            if (SIMULATION_MODE) {
+                db.put(uid, JSON.stringify({
+                    'status': 'running',
+                    'step': 'SecreC code run. Now generating output.'
+                })).catch((err) => {
+                    console.log(FgRed + '[NODE] ' + ResetColor + err);
+                });
+                console.log('[NODE SIMULATION] Request(' + uid + ') Program executed.\n');
+            }
+
+            if (plot) {
+                return _exec('python plot.py ../configuration_' + uid + '.json');
+            } else {
+                return _exec('python web/response.py out_' + uid + '.txt', {cwd: parent, shell: '/bin/bash'});
+            }
+        }).then((result) => {
+            if (plot) {
+                console.log('[' + print_msg + '] Request(' + uid + ') Plotting done.\n');
+                let graph_name = result.toString();
+                graph_name = graph_name.slice(0, -1);
+                console.log('[' + print_msg + '] Request(' + uid + ') ' + graph_name);
+                res.send(graph_name);
+            } else {
+                console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
+                const result_obj = {'status': 'succeeded', 'result': ''};
+                result_obj.result = JSON.parse(result);
+                db.put(uid, JSON.stringify(result_obj)).catch((err) => {
+                    console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
+                });
+            }
+
+            cachedb.put(request_key, JSON.stringify(result.replace(/\n/g, '')))
+            .catch((err) => {
+                console.log(FgRed + '[NODE] ' + ResetColor + err);
+            });
+        }).catch((err) => {
+            db.put(uid, JSON.stringify({'status': 'failed'}))
             .catch((err) => {
                 console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
             });
-        console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
-        res.sendStatus(400);
+            console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
+            res.sendStatus(400);
+        });
     });
 });
 
@@ -416,13 +445,12 @@ app.post('/smpc/count', function (req, res) {
         import_promises = import_from_servers(attributes, datasources, res, parent, uid, '/smpc/import', 'MHMDdns.json');
     }
 
-    const print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
     // wait them all to finish
     Promise.all(import_promises)
-        .then(() => {
-            console.log(FgGreen + 'Importing Finished ' + ResetColor);
-            return _writeFile(parent + '/configuration_' + uid + '.json', content, 'utf8');
-        }).then(() => {
+    .then(() => {
+        console.log(FgGreen + 'Importing Finished ' + ResetColor);
+        return _writeFile(parent + '/configuration_' + uid + '.json', content, 'utf8');
+    }).then(() => {
         console.log('[' + print_msg + '] Request(' + uid + ') Configuration file was saved.\n');
         if (SIMULATION_MODE) {
             return _exec('python dataset-scripts/count_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {
@@ -500,7 +528,7 @@ app.post('/smpc/count', function (req, res) {
             console.log('[' + print_msg + '] Request(' + uid + ') Plotting done.\n');
             let graph_name = result.toString();
             graph_name = graph_name.slice(0, -1);
-            console.log('[' + print_msg + ']' + graph_name);
+            console.log('[' + print_msg + '] Request(' + uid + ') ' + graph_name);
             res.send(graph_name);
         } else {
             console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
@@ -512,9 +540,9 @@ app.post('/smpc/count', function (req, res) {
         }
     }).catch((err) => {
         db.put(uid, JSON.stringify({'status': 'failed'}))
-            .catch((err) => {
-                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
-            });
+        .catch((err) => {
+            console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
+        });
         console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
         res.sendStatus(400);
     });
@@ -558,13 +586,12 @@ app.post('/smpc/decision_tree/numerical', function (req, res) {
         import_promises = import_from_servers(attributes_to_import, datasources, res, parent, uid, '/smpc/import/cvi', 'MHMDdns.json');
     }
 
-    const print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
     // wait them all to finish
     Promise.all(import_promises)
-        .then(() => {
-            console.log(FgGreen + 'Importing Finished ' + ResetColor);
-            return _writeFile(parent + '/configuration_' + uid + '.json', content, 'utf8');
-        }).then(() => {
+    .then(() => {
+        console.log(FgGreen + 'Importing Finished ' + ResetColor);
+        return _writeFile(parent + '/configuration_' + uid + '.json', content, 'utf8');
+    }).then(() => {
         console.log('[' + print_msg + '] Request(' + uid + ') Configuration file was saved.\n');
         if (SIMULATION_MODE) {
             if (classifier === "ID3") {
@@ -675,7 +702,7 @@ app.post('/smpc/decision_tree/numerical', function (req, res) {
             console.log('[' + print_msg + '] Request(' + uid + ') Plotting done.\n');
             let graph_name = result.toString();
             graph_name = graph_name.slice(0, -1);
-            console.log('[' + print_msg + ']' + graph_name);
+            console.log('[' + print_msg + '] Request(' + uid + ') ' + graph_name);
             res.send(graph_name);
         } else {
             console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
@@ -687,9 +714,9 @@ app.post('/smpc/decision_tree/numerical', function (req, res) {
         }
     }).catch((err) => {
         db.put(uid, JSON.stringify({'status': 'failed'}))
-            .catch((err) => {
-                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
-            });
+        .catch((err) => {
+            console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
+        });
         console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
         res.sendStatus(400);
     });
@@ -721,13 +748,12 @@ app.post('/smpc/decision_tree/categorical', function (req, res) {
         import_promises = import_from_servers(attributes, datasources, res, parent, uid, '/smpc/import', 'MHMDdns.json');
     }
 
-    const print_msg = (SIMULATION_MODE) ? 'NODE SIMULATION' : 'NODE';
     // wait them all to finish
     Promise.all(import_promises)
-        .then(() => {
-            console.log(FgGreen + 'Importing Finished ' + ResetColor);
-            return _writeFile(parent + '/configuration_' + uid + '.json', content, 'utf8');
-        }).then(() => {
+    .then(() => {
+        console.log(FgGreen + 'Importing Finished ' + ResetColor);
+        return _writeFile(parent + '/configuration_' + uid + '.json', content, 'utf8');
+    }).then(() => {
         console.log('[' + print_msg + '] Request(' + uid + ') Configuration file was saved.\n');
         if (SIMULATION_MODE) {
             if (classifier === "ID3") {
@@ -838,7 +864,7 @@ app.post('/smpc/decision_tree/categorical', function (req, res) {
             console.log('[' + print_msg + '] Request(' + uid + ') Plotting done.\n');
             let graph_name = result.toString();
             graph_name = graph_name.slice(0, -1);
-            console.log('[' + print_msg + ']' + graph_name);
+            console.log('[' + print_msg + '] Request(' + uid + ') ' + graph_name);
             res.send(graph_name);
         } else {
             console.log('[' + print_msg + '] Request(' + uid + ') Response ready.\n');
@@ -850,9 +876,9 @@ app.post('/smpc/decision_tree/categorical', function (req, res) {
         }
     }).catch((err) => {
         db.put(uid, JSON.stringify({'status': 'failed'}))
-            .catch((err) => {
-                console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
-            });
+        .catch((err) => {
+            console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
+        });
         console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
         res.sendStatus(400);
     });
