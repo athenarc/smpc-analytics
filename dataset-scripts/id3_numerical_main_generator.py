@@ -64,16 +64,7 @@ def main():
         numberOfDatasets = len(available_datasources)
         data_providers = '\n'.join([indentation + "string table_" + str(i) + " = " + quote(available_datasources[i] + '_' + uid) + ";" for i in range(len(available_datasources))])
 
-    main_f += '''
-    quote = bl_str("\\"");
-    comma = bl_str(", ");
-    eq_str = bl_str(" == ");
-    space = bl_str(" ");
-    colon = bl_str(": ");
-    left_curly_br = bl_str("{ ");
-    right_curly_br = bl_str("}");
 
-'''
     main_f += data_providers
     main_f += '''
     // Create the data-providers list
@@ -84,27 +75,33 @@ def main():
         main_f += '''
     tdbVmapAddString(providers_vmap, "0", table_'''+ str(i) +''');
 '''
-    attributesFromPOST = configuration['attributes']
-    attributes = [str(a['name']) for a in attributesFromPOST]
+    attributes = configuration['attributes']
+    attribute_names = [str(a['name']) for a in attributes]
 
+    total_attributes = attributes + [configuration['class_attribute']]
 
     class_attribute = configuration['class_attribute']['name']
-    original_attributes = list(range(len(attributes)+1))
-    imported_cells = [a['cells'] for a in attributesFromPOST] + [configuration['class_attribute']['cells']]
+    original_attributes = list(range(len(attribute_names)+1))
+    imported_cells = [a['cells'] for a in attributes] + [configuration['class_attribute']['cells']]
     main_f += '''
     original_attributes = {'''+','.join(map(str,original_attributes))+'''};
-    pd_shared3p uint64[[1]] original_attributes_without_class = {'''+','.join(map(str,original_attributes[:-1]))+'''};
-    class_index = ''' + str(len(attributes)) + ''';
+    uint64[[1]] original_attributes_without_class = {'''+','.join(map(str,original_attributes[:-1]))+'''};
+    class_index = ''' + str(len(attribute_names)) + ''';
+    possible_values = tdbVmapNew();
+    float64[[1]] values;
 '''
-    attribute_values = [int(a['cells']) for a in attributesFromPOST]
-    columns = len(attributes) + 1
+    attribute_values = [int(a['cells']) for a in total_attributes]
+    columns = len(attribute_names) + 1
     possible_classes = list(range(int(configuration['class_attribute']['cells'])))
-    max_attribute_values = max(max(attribute_values), len(possible_classes))
-    possible_values = [possible_value + [-1]*(max_attribute_values-len(possible_value)) for possible_value in [list(range(p)) for p in attribute_values]]
-    possible_values.append(possible_classes + [-1]*(max_attribute_values-len(possible_classes))  )
+    for index, p in enumerate(attribute_values):
+        ps = list(range(p))
+        main_f += '''
+    values = {''' + ','.join(map(quote, ps)) + '''};
+    tdbVmapAddValue(possible_values, "''' + quote(index) + '''", values);
+'''
+
     main_f += '''
     columns = ''' + str(columns) + ''';
-    max_attribute_values = ''' + str(max_attribute_values) + ''';
 
     datasource = "DS1";
     categorical_attributes = {-1};
@@ -114,7 +111,7 @@ def main():
     mins = []
     maxs = []
     summary = pd.read_csv(args.summary, sep = ',')
-    for attribute in attributes+[class_attribute]:
+    for attribute in attribute_names+[class_attribute]:
         if attribute in summary['Field'].values:
             mins.append(summary[summary['Field']==attribute][' Min'].item())
             maxs.append(summary[summary['Field']==attribute][' Max'].item())
@@ -129,7 +126,6 @@ def main():
     print("Opening connection to db: ", datasource);
     tdbOpenConnection(datasource);
 
-    possible_values = reshape({'''+','.join([','.join(map(str,possible_value)) for possible_value in possible_values])+'''},columns,max_attribute_values);
 '''
 
     main_f += '''
@@ -146,8 +142,8 @@ def main():
 
     main_f += '''
     print("Running ID3 ...");
-    pd_shared3p xor_uint8[[1]] root = id3(original_example_indexes_vmap, original_attributes_without_class);
-    print(bl_strDeclassify(root));
+    string root = id3(original_example_indexes_vmap, original_attributes_without_class);
+    print(root);
 
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
         string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
