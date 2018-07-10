@@ -289,7 +289,7 @@ app.post('/smpc/histogram', function (req, res) {
         // if previous computation was a month ago, recompute it
         if (diff.days() > 30) {
             console.log('[' + print_msg + '] ' + FgYellow + 'Request(' + uid + ') Key: ' + request_key + ' has expired, goind to recompute it!\n' + ResetColor);
-            db.del(request_key).catch((err) => { // delete previous result
+            cachedb.del(request_key).catch((err) => { // delete previous result
                 console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
             });
             throw "Result has expired, goind to recompute it!"; // go to catch
@@ -467,7 +467,7 @@ app.post('/smpc/count', function (req, res) {
         // if previous computation was a month ago, recompute it
         if (diff.days() > 30) {
             console.log('[' + print_msg + '] ' + FgYellow + 'Request(' + uid + ') Key: ' + request_key + ' has expired, goind to recompute it!\n' + ResetColor);
-            db.del(request_key).catch((err) => { // delete previous result
+            cachedb.del(request_key).catch((err) => { // delete previous result
                 console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
             });
             throw "Result has expired, goind to recompute it!"; // go to catch
@@ -647,7 +647,7 @@ app.post('/smpc/decision_tree/numerical', function (req, res) {
         // if previous computation was a month ago, recompute it
         if (diff.days() > 30) {
             console.log('[' + print_msg + '] ' + FgYellow + 'Request(' + uid + ') Key: ' + request_key + ' has expired, goind to recompute it!\n' + ResetColor);
-            db.del(request_key).catch((err) => { // delete previous result
+            cachedb.del(request_key).catch((err) => { // delete previous result
                 console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
             });
             throw "Result has expired, goind to recompute it!"; // go to catch
@@ -849,7 +849,7 @@ app.post('/smpc/decision_tree/categorical', function (req, res) {
         // if previous computation was a month ago, recompute it
         if (diff.days() > 30) {
             console.log('[' + print_msg + '] ' + FgYellow + 'Request(' + uid + ') Key: ' + request_key + ' has expired, goind to recompute it!\n' + ResetColor);
-            db.del(request_key).catch((err) => { // delete previous result
+            cachedb.del(request_key).catch((err) => { // delete previous result
                 console.log(FgRed + '[' + print_msg + '] ' + ResetColor + err);
             });
             throw "Result has expired, goind to recompute it!"; // go to catch
