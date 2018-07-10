@@ -244,6 +244,7 @@ app.post('/smpc/histogram', function (req, res) {
     const uid = uuidv4();
     const attributes = req.body.attributes;
     const datasources = req.body.datasources;
+    const use_cache = req.body.cache;
 
     db.put(uid, JSON.stringify({'status': 'running'}));
     let plot = ('plot' in req.body); // if plot exists in req.body
@@ -280,8 +281,16 @@ app.post('/smpc/histogram', function (req, res) {
     }
 
     // Check if request has been already computed
+    let not_use_cache = false;
+    if ('cache' in req.body) {
+        not_use_cache = use_cache.toUpperCase() === "NO";
+    }
     cachedb.get(request_key)
     .then((value) => {
+        if (not_use_cache) {
+            console.log('[' + print_msg + '] ' + FgYellow + 'Request(' + uid + ') User has set the flag cache to NO in request body, goind to recompute it!\n' + ResetColor);
+            throw "User has set the flag cache to NO in request body, goind to recompute it!"; // go to catch
+        }
         console.log('[' + print_msg + '] ' + FgGreen + 'Request(' + uid + ') Key: ' + request_key + ' found in cache-db!\n' + ResetColor);
 
         let value_array = value.split(", date:");
@@ -432,6 +441,7 @@ app.post('/smpc/count', function (req, res) {
     const uid = uuidv4();
     const attributes = req.body.attributes;
     const datasources = req.body.datasources;
+    const use_cache = req.body.cache;
     let attrib;
 
     let plot = ('plot' in req.body); // if plot exists in req.body
@@ -458,8 +468,16 @@ app.post('/smpc/count', function (req, res) {
     }
 
     // Check if request has been already computed
+    let not_use_cache = false;
+    if ('cache' in req.body) {
+        not_use_cache = use_cache.toUpperCase() === "NO";
+    }
     cachedb.get(request_key)
     .then((value) => {
+        if (not_use_cache) {
+            console.log('[' + print_msg + '] ' + FgYellow + 'Request(' + uid + ') User has set the flag cache to NO in request body, goind to recompute it!\n' + ResetColor);
+            throw "User has set the flag cache to NO in request body, goind to recompute it!"; // go to catch
+        }
         console.log('[' + print_msg + '] ' + FgGreen + 'Request(' + uid + ') Key: ' + request_key + ' found in cache-db!\n' + ResetColor);
 
         let value_array = value.split(", date:");
@@ -617,6 +635,7 @@ app.post('/smpc/decision_tree/numerical', function (req, res) {
     const datasources = req.body.datasources;
     const class_attribute = req.body.class_attribute.name;
     const classifier = ('classifier' in req.body) ? req.body.classifier : "ID3";
+    const use_cache = req.body.cache;
 
     db.put(uid, JSON.stringify({'status': 'running'}));
     let plot = ('plot' in req.body); // if plot exists in req.body
@@ -637,9 +656,17 @@ app.post('/smpc/decision_tree/numerical', function (req, res) {
     attributes_to_import.push(class_attribute);
 
     // Check if request has been already computed
+    let not_use_cache = false;
+    if ('cache' in req.body) {
+        not_use_cache = use_cache.toUpperCase() === "NO";
+    }
     let request_key = JSON.stringify({'attributes': attributes[0], 'class_attribute': class_attribute, 'classifier': classifier, 'datasources': datasources, 'plot': plot});
     cachedb.get(request_key)
     .then((value) => {
+        if (not_use_cache) {
+            console.log('[' + print_msg + '] ' + FgYellow + 'Request(' + uid + ') User has set the flag cache to NO in request body, goind to recompute it!\n' + ResetColor);
+            throw "User has set the flag cache to NO in request body, goind to recompute it!"; // go to catch
+        }
         console.log('[' + print_msg + '] ' + FgGreen + 'Request(' + uid + ') Key: ' + request_key + ' found in cache-db!\n' + ResetColor);
 
         let value_array = value.split(", date:");
@@ -830,6 +857,7 @@ app.post('/smpc/decision_tree/categorical', function (req, res) {
     const datasources = req.body.datasources;
     const class_attribute = req.body.class_attribute;
     const classifier = ('classifier' in req.body) ? req.body.classifier : "ID3";
+    const use_cache = req.body.cache;
 
     db.put(uid, JSON.stringify({'status': 'running'}));
     let plot = ('plot' in req.body); // if plot exists in req.body
@@ -839,10 +867,18 @@ app.post('/smpc/decision_tree/categorical', function (req, res) {
     }
 
     // Check if request has been already computed
+    let not_use_cache = false;
+    if ('cache' in req.body) {
+        not_use_cache = use_cache.toUpperCase() === "NO";
+    }
     let request_key = JSON.stringify({'attributes': attributes, 'class_attribute': class_attribute, 'classifier': classifier, 'datasources': datasources, 'plot': plot});
     attributes.push(class_attribute);
     cachedb.get(request_key)
     .then((value) => {
+        if (not_use_cache) {
+            console.log('[' + print_msg + '] ' + FgYellow + 'Request(' + uid + ') User has set the flag cache to NO in request body, goind to recompute it!\n' + ResetColor);
+            throw "User has set the flag cache to NO in request body, goind to recompute it!"; // go to catch
+        }
         console.log('[' + print_msg + '] ' + FgGreen + 'Request(' + uid + ') Key: ' + request_key + ' found in cache-db!\n' + ResetColor);
         let value_array = value.split(", date:");
         let diff = new DateDiff(new Date(), new Date(value_array[1]));
