@@ -861,7 +861,8 @@ function sendFormWithId(id, computation_t) {
         success: function (response) {
             document.getElementById('loading-wrapper_' + formId).style.display = "none"; // hide the loading sign
             document.getElementById(tabId).innerHTML = '<iframe width="900" height="800" frameborder="0" scrolling="no" src="' + response + '"></iframe>';
-        }
+        },
+        timeout: 2000*60*60 // ((2 sec * 60 = 2 min) * 60 = 2 hours)
     }).fail(function () {
         document.getElementById('loading-wrapper_' + formId).style.display = "none"; // hide the loading sign
         document.getElementById(tabId).innerHTML =
