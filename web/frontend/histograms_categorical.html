@@ -19,7 +19,7 @@
         <a class="btn btn-warning btn-sm" href="histogram_datasets.html" role="button">back</a>
         <a class="btn btn-info btn-sm" href="index.html" role="button">Home</a>
       </div>
-      
+
       <h2>Secure Histogram Computations</h2>
 
       <p>Select attributes for histogram creation</p>
@@ -38,11 +38,11 @@
       For instance, for attribute <i>Age</i>, provide the <i>M01.060</i> MeSH ID, which has the following subcategories: <i>    Adolescent [M01.060.057], Adult [M01.060.116], Child [M01.060.406], Infant [M01.060.703]</i>.
       </br>
       </br>
-      <a class="btn btn-info" href="https://meshb.nlm.nih.gov/treeView" role="button" target="_blank">MeSH Browser Tree View</a> 
+      <a class="btn btn-info" href="https://meshb.nlm.nih.gov/treeView" role="button" target="_blank">MeSH Browser Tree View</a>
     </div>
     </br>
     </br>
-    
+
     <div class="card"><div class="card-body">
       <ul class="nav nav-tabs active" id="tabs">
           <li class="nav-item active">
@@ -59,30 +59,30 @@
               <div id="loading-content"></div>
             </div>
 
-            
+
             <form action="/smpc/count" method="post" id="hist_1">
               </br>
               <div id="attribute_container_1">
                 Attributes for Aggregation
-                
+
                 </br>
                 <div class="btn-group">
                   <input type="text" name="count_attributes" class="form-control" id="usr">
                 </div>
               </div>
-              
+
               </br>
               <p>
                 <input type="button" id="filter_button_1" onclick="addAttributeToFormWithId(this.id, 'count_attributes')" class="btn btn-default" value="Add Attribute">
               </p>
-              
+
               <div id="filter_container_1">
               </div>
               <br>
               <p>
                 <input type="button" id="filter_button_1" onclick="addFilterToFormWithIdCategorical(this.id)" class="btn btn-default" value="Add Filter">
               </p>
-              
+
               <p>
                 <ul class="list-group">
                     <li class="list-group-item">
@@ -91,9 +91,9 @@
                     <li class="list-group-item">
                       <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2 &ensp;
                     </li>
-                    <li class="list-group-item">
+                    <!-- <li class="list-group-item">
                       <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3 &ensp;
-                    </li>
+                    </li> -->
                 </ul>
               </p>
               <p>

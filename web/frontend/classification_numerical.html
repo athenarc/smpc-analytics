@@ -15,7 +15,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="jumbotron">      
+    <div class="jumbotron">
       <div style="float: right;">
         <a class="btn btn-warning btn-sm" href="classification_datasets.html" role="button">back</a>
         <a class="btn btn-success btn-sm" href="index.html" role="button">Home</a>
@@ -25,7 +25,7 @@
 
       <p>Select attributes for decision tree creation</p>
     </div>
-    
+
     <div>
       <h3>CardioVascular Imaging (CVI)</h3>
       Cardiovascular disease is a class of diseases that involve the heart or blood vessels.
@@ -59,7 +59,7 @@
 
             <form action="/smpc/decision_tree/categorical" method="post" id="tree_1">
               </br>
-              
+
               <b>Select Classifier : </b>
               <div class="btn-group" data-toggle="buttons" id="classifier_selector_1">
           			<label class="btn btn-default active" onclick="selectClassifier('ID3', 1)">
@@ -71,10 +71,10 @@
 
                 <input style="display:none;" type="text" name="classifier_algorithm_1" id="classifier_algorithm_1" value="ID3">
               </div>
-            
+
               </br>
               </br>
-      
+
               <p>
                 <select class="selectpicker" name="class_attribute">
                   <option value="" selected disabled>Class Attribute</option>
@@ -106,10 +106,10 @@
                   <option>SBP (mmHg)</option>
                   <option>SVR (mmHg/L/min)</option>
                 </select>
-                
+
                 <span style="float:right;"> Class Attribute Cells : <input type="number" name="class_cells" min="1" max="15" value="5"></span>
               </p>
-                    
+
               <p>
                 <ul class="list-group">
                     <li class="list-group-item">
@@ -231,9 +231,9 @@
                     <li class="list-group-item">
                       <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2
                     </li>
-                    <li class="list-group-item">
+                    <!-- <li class="list-group-item">
                       <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3
-                    </li>
+                    </li> -->
                 </ul>
               </p>
               <p>

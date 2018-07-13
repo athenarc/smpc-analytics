@@ -226,7 +226,7 @@ function addHistogramCategoricalTab() {
           <p>
             <input type="button" id="filter_button_` + nextTab + `" onclick="addFilterToFormWithIdCategorical(this.id)" class="btn btn-default" value="Add Filter">
           </p>
-          
+
           <p>
             <ul class="list-group">
                 <li class="list-group-item">
@@ -235,9 +235,9 @@ function addHistogramCategoricalTab() {
                 <li class="list-group-item">
                   <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2
                 </li>
-                <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3
-                </li>
+                <!-- <li class="list-group-item">
+                  <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3 &ensp;
+                </li> -->
             </ul>
           </p>
           <p>
@@ -275,7 +275,7 @@ function addDecisionTreeNumericalTab() {
       </div>` +
         `<form action="/smpc/decision_tree/numerical" method="post" id="tree_` + nextTab + `">
         </br>
-        
+
         <b>Select Classifier : </b>
         <div class="btn-group" data-toggle="buttons" id="classifier_selector_` + nextTab + `">
           <label class="btn btn-default active" onclick="selectClassifier('ID3',` + nextTab + `)">
@@ -290,7 +290,7 @@ function addDecisionTreeNumericalTab() {
 
         </br>
         </br>
-        
+
         <p>
           <select class="selectpicker" name="class_attribute">
             <option value="" selected disabled>Class Attribute</option>
@@ -322,7 +322,7 @@ function addDecisionTreeNumericalTab() {
             <option>SBP (mmHg)</option>
             <option>SVR (mmHg/L/min)</option>
           </select>
-          
+
           <span style="float:right;"> Class Attribute Cells : <input type="number" name="class_cells" min="1" max="15" value="5"></span>
         </p>
         <p>
@@ -445,9 +445,9 @@ function addDecisionTreeNumericalTab() {
               <li class="list-group-item">
                 <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2 &ensp;
               </li>
-              <li class="list-group-item">
+              <!-- <li class="list-group-item">
                 <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3 &ensp;
-              </li>
+              </li> -->
           </ul>
         </p>
         <p>
@@ -486,7 +486,7 @@ function addDecisionTreeCategoricalTab() {
       </div>` +
         `<form action="/smpc/decision_tree/categorical" method="post" id="tree_` + nextTab + `">
           </br>
-          
+
           <b>Select Classifier : </b>
           <div class="btn-group" data-toggle="buttons" id="classifier_selector_` + nextTab + `">
             <label class="btn btn-default active" onclick="selectClassifier('ID3',` + nextTab + `)">
@@ -498,10 +498,10 @@ function addDecisionTreeCategoricalTab() {
 
             <input style="display:none;" type="text" name="classifier_algorithm_` + nextTab + `" id="classifier_algorithm_` + nextTab + `" value="ID3">
           </div>
-        
+
           </br>
           </br>
-          
+
           <div class="btn-group">
             Class Attribute
             <input type="text" name="class_attribute" class="form-control" id="usr">
@@ -532,9 +532,9 @@ function addDecisionTreeCategoricalTab() {
                 <li class="list-group-item">
                   <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2
                 </li>
-                <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3
-                </li>
+                <!-- <li class="list-group-item">
+                  <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3 &ensp;
+                </li> -->
             </ul>
           </p>
           <p>

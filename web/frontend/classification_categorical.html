@@ -20,7 +20,7 @@
         <a class="btn btn-warning btn-sm" href="classification_datasets.html" role="button">back</a>
         <a class="btn btn-success btn-sm" href="index.html" role="button">Home</a>
       </div>
-      
+
       <h2>Decision Trees Secure Creation</h2>
 
       <p>Select attributes for decision tree creation</p>
@@ -39,7 +39,7 @@
       For instance, for attribute <i>Age</i>, provide the <i>M01.060</i> MeSH ID, which has the following subcategories: <i>    Adolescent [M01.060.057], Adult [M01.060.116], Child [M01.060.406], Infant [M01.060.703]</i>.
       </br>
       </br>
-      <a class="btn btn-success" href="https://meshb.nlm.nih.gov/treeView" role="button" target="_blank">MeSH Browser Tree View</a> 
+      <a class="btn btn-success" href="https://meshb.nlm.nih.gov/treeView" role="button" target="_blank">MeSH Browser Tree View</a>
     </div>
     </br>
     </br>
@@ -63,7 +63,7 @@
 
             <form action="/smpc/decision_tree/categorical" method="post" id="tree_1">
               </br>
-              
+
               <b>Select Classifier : </b>
               <div class="btn-group" data-toggle="buttons" id="classifier_selector_1">
                 <label class="btn btn-default active" onclick="selectClassifier('ID3', 1)">
@@ -78,7 +78,7 @@
 
               </br>
               </br>
-              
+
               <div class="btn-group">
                 Class Attribute
                 <input type="text" name="class_attribute" class="form-control" id="usr">
@@ -88,18 +88,18 @@
 
               <div id="attribute_container_1">
                 Attributes for Classification
-                
+
                 </br>
                 <div class="btn-group">
                   <input type="text" name="count_attributes" class="form-control" id="usr">
                 </div>
               </div>
-              
+
               </br>
               <p>
                 <input type="button" id="filter_button_1" onclick="addAttributeToFormWithId(this.id, 'count_attributes')" class="btn btn-default" value="Add Attribute">
               </p>
-              
+
               </br>
               <p>
                 <ul class="list-group">
@@ -109,15 +109,15 @@
                     <li class="list-group-item">
                       <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2
                     </li>
-                    <li class="list-group-item">
+                    <!-- <li class="list-group-item">
                       <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3
-                    </li>
+                    </li> -->
                 </ul>
               </p>
               <p>
                 <input type="button" id="button_tree_1" onclick="sendFormWithId(this.id, '\/smpc\/decision_tree\/categorical')" class="btn btn-success" value="Compute Decision Tree">
               </p>
-              
+
             </form>
           </div>
       </div>
