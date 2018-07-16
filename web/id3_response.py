@@ -27,9 +27,7 @@ def main():
         for line in results:
             if line.startswith('{'):
                 tree = json.loads(line)
-                print(tree)
                 preprocessed_tree = preprocess(tree)
-                print(preprocessed_tree)
                 converted, nodes, edges, leaves, id, subtrees = convert_tree(preprocessed_tree)
                 break
     if args.plot:
@@ -57,8 +55,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
         return new_tree, nodes, edges, leaves, id, subtrees_map
 
     if not isinstance(tree,dict): # if tree is a leaf
-        print([mesh_dict_inverted[name] for name,index in mesh_mapping[class_attribute_id].items() if index == tree])
-        subtree = str([mesh_dict_inverted[name] for name,index in mesh_mapping[class_attribute_id].items() if index == tree][0])
+        subtree = str([mesh_dict_inverted[name] for name,index in mesh_mapping[class_attribute_id].items() if str(index) == str(tree)][0])
 
         if subtree not in leaves:
             id += 1
