@@ -41,7 +41,7 @@ def main():
         for line in results:
             if line.startswith('{'):
                 tree = json.loads(line)
-                converted, nodes, edges, leaves, id = convert_tree(tree)
+                converted, nodes, edges, leaves, id, subtrees = convert_tree(tree)
                 break
     if args.plot:
         plotted_file = plot(nodes, edges, leaves)
@@ -50,11 +50,21 @@ def main():
         print(json.dumps(converted))
 
 
-def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '', branch = ''):
+def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '', branch = '', subtrees_map = {}):
     new_tree ={}
     class_attribute = configuration['class_attribute']['name']
     first_node = True
     graph_node_id = ''
+
+    if str(tree) in subtrees_map:
+        graph_node = subtrees_map[str(tree)]
+        graph_node_id = graph_node['data']['id']
+        edge_source = parent['data']['id']
+        edge_target = graph_node_id
+        edge_node = { 'data': { 'source': edge_source, 'target': edge_target, 'label': branch } }
+        edges.append(edge_node)
+        return new_tree, nodes, edges, leaves, id, subtrees_map
+
     if not isinstance(tree,dict): # if tree is a leaf
         attribute_min = mins[-1]
         attribute_max = maxs[-1]
@@ -80,7 +90,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
             edge_target = graph_node_id
             edge_node = { 'data': { 'source': edge_source, 'target': edge_target, 'label': branch } }
             edges.append(edge_node)
-        return subtree, nodes, edges, leaves, id
+        return subtree, nodes, edges, leaves, id, subtrees_map
     for node, subtree in tree.items():
         id += 1
 
@@ -102,6 +112,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
             graph_node = {'data' : { 'id' : graph_node_id, 'label' : graph_node_label} }
             nodes.append(graph_node)
             first_node = False
+            subtrees_map[str(tree)] = graph_node
 
             if parent != '':
                 edge_source = parent['data']['id']
@@ -109,10 +120,9 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
                 edge_node = { 'data': { 'source': edge_source, 'target': edge_target, 'label': branch } }
                 edges.append(edge_node)
 
-        subtree,nodes,edges,leaves, id = convert_tree(tree = subtree, id = id, nodes = nodes, edges = edges, leaves = leaves, parent = graph_node, branch = value_name)
+        subtree, nodes, edges, leaves, id, subtrees_map = convert_tree(tree = subtree, id = id, nodes = nodes, edges = edges, leaves = leaves, parent = graph_node, branch = value_name, subtrees_map = subtrees_map)
         new_tree[new_node] = subtree
-
-    return new_tree, nodes, edges, leaves, id
+    return new_tree, nodes, edges, leaves, id, subtrees_map
 
 def plot(nodes, edges, leaves):
     class_name = configuration['class_attribute']['name']
