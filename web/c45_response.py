@@ -125,7 +125,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
                 edges.append(edge_node)
 
         branch = str(operator + ' ' + threshold)
-        subtree, nodes, edges, leaves, id, subtrees_map = convert_tree(tree = subtree, id = id, nodes = nodes, edges = edges, leaves = leaves, parent = graph_node, branch = value_name, subtrees_map = subtrees_map)
+        subtree, nodes, edges, leaves, id, subtrees_map = convert_tree(tree = subtree, id = id, nodes = nodes, edges = edges, leaves = leaves, parent = graph_node, branch = branch, subtrees_map = subtrees_map)
         new_tree[new_node] = subtree
 
     return new_tree, nodes, edges, leaves, id, subtrees_map
