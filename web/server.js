@@ -660,7 +660,7 @@ app.post('/smpc/decision_tree/numerical', function (req, res) {
     if ('cache' in req.body) {
         not_use_cache = use_cache.toUpperCase() === "NO";
     }
-    let request_key = JSON.stringify({'attributes': attributes[0], 'class_attribute': class_attribute, 'classifier': classifier, 'datasources': datasources, 'plot': plot});
+    let request_key = JSON.stringify({'attributes': attributes, 'class_attribute': class_attribute, 'classifier': classifier, 'datasources': datasources, 'plot': plot});
     cachedb.get(request_key)
     .then((value) => {
         if (not_use_cache) {
@@ -1061,5 +1061,5 @@ app.post('/smpc/decision_tree/categorical', function (req, res) {
 
 const FgRed = "\x1b[31m";
 const FgGreen = "\x1b[32m";
-const FgYellow = "\x1b[33m"
+const FgYellow = "\x1b[33m";
 const ResetColor = "\x1b[0m";
