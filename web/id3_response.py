@@ -27,11 +27,15 @@ def main():
         for line in results:
             if line.startswith('{'):
                 tree = json.loads(line)
+                print(tree)
                 preprocessed_tree = preprocess(tree)
+                print(preprocessed_tree)
                 converted, nodes, edges, leaves, id, subtrees = convert_tree(preprocessed_tree)
                 break
     if args.plot:
-        plotted_file = plot(nodes, edges, leaves)
+        class_name = mesh_dict_inverted[configuration['class_attribute']]
+        filename = 'graphs/id3'+'_'+str(os.getpid())+'.html'
+        plotted_file = plot(nodes, edges, leaves, class_name, filename)
         print(plotted_file)
     else:
         print(json.dumps(converted))
@@ -53,6 +57,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
         return new_tree, nodes, edges, leaves, id, subtrees_map
 
     if not isinstance(tree,dict): # if tree is a leaf
+        print([mesh_dict_inverted[name] for name,index in mesh_mapping[class_attribute_id].items() if index == tree])
         subtree = str([mesh_dict_inverted[name] for name,index in mesh_mapping[class_attribute_id].items() if index == tree][0])
 
         if subtree not in leaves:
@@ -98,111 +103,6 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
         new_tree[new_node] = subtree
 
     return new_tree, nodes, edges, leaves, id, subtrees_map
-
-def plot(nodes, edges, leaves):
-    class_name = mesh_dict_inverted[configuration['class_attribute']]
-    html = '''<!DOCTYPE>
-    <html>
-      <head>
-        <title>Decision Tree for class '''+class_name+'''</title>
-        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
-        <link href="style.css" rel="stylesheet" />
-
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.2.11/cytoscape.js"></script>
-        <script src="https://cdn.rawgit.com/cpettitt/dagre/v0.7.4/dist/dagre.min.js"></script>
-        <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
-
-      </head>
-      <body>
-        <h1>Decision Tree for class '''+class_name+'''</h1>
-        <div id="cy"></div>
-        <script>
-          var cy = window.cy = cytoscape({
-            container: document.getElementById('cy'),
-            boxSelectionEnabled: false,
-            autounselectify: true,
-
-            layout: {
-              name: 'dagre'
-            },
-
-            style: [
-              {
-                selector: 'node',
-                style: {
-                  'content': 'data(label)',
-                  'text-opacity': 0.7,
-                  'text-valign': 'center',
-                  'text-halign': 'center',
-                  'background-color': '#5cb85c'
-                }
-              },
-              {
-                selector: 'edge',
-                style: {
-                  'curve-style': 'bezier',
-                  'width': 1,
-                  'target-arrow-shape': 'triangle',
-                  'line-color': '#d7efd7',
-                  'target-arrow-color': '#d7efd7'
-                }
-              },
-              {
-                selector: 'edge',
-                style: {
-                  'label': '',
-                  'text-opacity': 0.5
-                }
-              },
-              {
-                selector: '.edge_with_label',
-                style: {
-                  'label': 'data(label)',
-                  'text-opacity': 0.5
-                }
-              },
-              {
-                  selector: '.leafClass',
-                  style: {
-                    'content': 'data(label)',
-                    'text-opacity': 0.7,
-                    'text-valign': 'center',
-                    'text-halign': 'center',
-                    'background-color': '#EDB76B'
-                  }
-                }
-            ],
-            elements: {
-                nodes: ['''
-    html += str(',\n'.join(map(str,nodes)))
-    html += '''],
-                edges: ['''
-    html += str(',\n'.join(map(str,edges)))
-    html += ''']
-                    },
-                });
-    '''
-    for leaf, id in leaves.items():
-        html += ''' cy.$("[id=\'''' + id + '''\']").classes('leafClass');
-    '''
-    html += '''
-    cy.on('tap', 'edge', function(evt) {
-        if (cy.$("[id='" + String(evt.target.id()) + "']").hasClass('edge_with_label')) {
-            cy.$("[id='" + String(evt.target.id()) + "']").classes('edge');
-        } else {
-            cy.$("[id='" + String(evt.target.id()) + "']").classes('edge_with_label');
-        }
-    });
-    '''
-    html += '''</script>
-          </body>
-        </html>
-    '''
-    filename = 'graphs/id3'+'_'+str(os.getpid())+'.html'
-    with open('web/' + filename, 'w') as output:
-        output.write(html)
-    return filename
-
 
 if __name__ == '__main__':
     main()
