@@ -2,6 +2,7 @@ import sys
 import os
 import argparse
 import json
+from tree_response import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('id3_output', help= 'JSON file with the id3 output.')
@@ -26,7 +27,8 @@ def main():
         for line in results:
             if line.startswith('{'):
                 tree = json.loads(line)
-                converted, nodes, edges, leaves, id, subtrees = convert_tree(tree)
+                preprocessed_tree = preprocess(tree)
+                converted, nodes, edges, leaves, id, subtrees = convert_tree(preprocessed_tree)
                 break
     if args.plot:
         plotted_file = plot(nodes, edges, leaves)
