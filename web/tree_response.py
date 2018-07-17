@@ -22,7 +22,16 @@ def allEqual(iterator):
     return len(set(iterator)) <= 1
 
 
-def plot(nodes, edges, leaves, class_name, filename):
+def plot(nodes, edges, leaves, class_name, filename, postprocess = True):
+    if postprocess:
+        edge_map = {}
+        for edge in edges:
+            key = edge['data']['source'] + edge['data']['target']
+            if key not in edge_map:
+                edge_map[key] = edge
+            else:
+                edge_map[key]['data']['label'] += '\n' + edge['data']['label']
+        edges = list(edge_map.values())
     html = '''<!DOCTYPE>
     <html>
       <head>
@@ -79,6 +88,7 @@ def plot(nodes, edges, leaves, class_name, filename):
               {
                 selector: '.edge_with_label',
                 style: {
+                  'text-wrap' : 'wrap',
                   'label': 'data(label)',
                   'text-opacity': 0.5
                 }
