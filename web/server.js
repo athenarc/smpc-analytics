@@ -70,10 +70,12 @@ if (fs.existsSync('./sslcert/fullchain.pem')) {
     }).listen(http_port);
 
     // app.listen(port, () => console.log('Example app listening on port ' + port + '!'));
-    https.createServer(options, app).listen(https_port, () => console.log('Example app listening on port ' + http_port + '!'));
+    server = https.createServer(options, app).listen(https_port, () => console.log('Example app listening on port ' + http_port + '!'));
+    server.setTimeout(2000*60*60);  // ((2 sec * 60 = 2 min) * 60 = 2 hours)
 } else {
     const port = 3000;
-    app.listen(port, () => console.log('Example app listening on port ' + port + '!'));
+    server = app.listen(port, () => console.log('Example app listening on port ' + port + '!'));
+    server.setTimeout(2000*60*60);  // ((2 sec * 60 = 2 min) * 60 = 2 hours)
 }
 
 
