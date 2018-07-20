@@ -163,4 +163,5 @@ app.post('/smpc/import/cvi', function(req, res) {
 
 
 
-app.listen(3000, () => console.log('MHMD-Driver app listening on port 3000!'));
+server = app.listen(3000, () => console.log('MHMD-Driver app listening on port 3000!'));
+server.setTimeout(600000);
