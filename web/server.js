@@ -701,7 +701,7 @@ app.post('/smpc/decision_tree/numerical', function (req, res) {
         if (SIMULATION_MODE) {
             import_promises = import_locally(attributes_to_import, datasources, res, parent, uid, 'cvi');
         } else {
-            import_promises = import_from_servers(attributes_to_import, datasources, res, parent, uid, '/smpc/import/cvi', 'MHMDdns.json');
+            import_promises = import_from_servers(attributes_to_import, datasources, res, parent, uid, '/smpc/import/cvi', 'MHMDdns_cvi.json');
         }
 
         // wait them all to finish
