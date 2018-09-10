@@ -220,6 +220,9 @@ def split_attribute(examples, attributes):
     best_threshold = -1
     best_attribute = -1
     best_splitted = -1
+    
+    ent = entropy(examples)
+    
     for attribute in attributes:
         print("Attribute " + attribute);
         attribute_index = attribute_index = original_attributes.index(attribute)
@@ -228,13 +231,15 @@ def split_attribute(examples, attributes):
             for value in possible_values[attribute]:
                 subset = [example for example in examples if example[attribute_index] == value] # subset of examples that have attribute = value
                 splitted.append(subset)
-            gain = information_gain(examples, splitted)
+                
+            gain = information_gain(ent, len(examples), splitted)
             if gain > max_gain:
                 max_gain = gain
                 best_attribute = attribute
                 best_splitted = splitted
         else:
             examples = sorted(examples, key=lambda l:l[attribute_index])
+        
             for i in range(len(examples)-1):
                 example = examples[i]
                 next_example = examples[i+1]
@@ -251,7 +256,8 @@ def split_attribute(examples, attributes):
                         else:
                             less.append(e)
                     splitted = [less, greater]
-                    gain = information_gain(examples, splitted)
+                    
+                    gain = information_gain(ent, len(examples), splitted)
                     # print("GAIN ", gain)
                     # print("GAIN ", max_gain)
                     if gain > max_gain:
@@ -284,10 +290,9 @@ def entropy(examples):
     return entropy
 
 
-def information_gain(examples, subsets):
-    gain = entropy(examples)
+def information_gain(gain, length, subsets):
     for subset in subsets:
-        percentage = float(len(subset)) / len(examples)
+        percentage = float(len(subset)) / length
         if percentage != 0:
             gain -= (percentage*entropy(subset))
     return gain
