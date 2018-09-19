@@ -628,7 +628,23 @@ app.post('/smpc/count', function (req, res) {
 });
 
 
-app.post('/smpc/decision_tree/numerical', function (req, res) {
+app.post('/smpc/decision_tree', function (req, res) {
+    const content = JSON.stringify(req.body);
+    console.log(content);
+    const dataset = req.body.dataset;
+    if (!('dataset' in req.body)) { // if dataset is not contained in the request body
+        res.sendStatus(400);
+    }
+    if (dataset.toUpperCase() === "cvi".toUpperCase()) { // check if dataset is CVI
+        decision_tree_cvi(req, res);
+    } else if (dataset.toUpperCase() === "mesh".toUpperCase()) { // check if dataset is MeSH
+        decision_tree_mesh(req, res);
+    } else { // return error
+        res.sendStatus(400);
+    }
+});
+
+function decision_tree_cvi(req, res) {
     const parent = path.dirname(__basedir);
     const content = JSON.stringify(req.body);
     console.log(content);
@@ -847,10 +863,10 @@ app.post('/smpc/decision_tree/numerical', function (req, res) {
             res.sendStatus(400);
         });
     });
-});
+}
 
 
-app.post('/smpc/decision_tree/categorical', function (req, res) {
+function decision_tree_mesh(req, res) {
     const parent = path.dirname(__basedir);
     const content = JSON.stringify(req.body);
     console.log(content);
@@ -1058,7 +1074,7 @@ app.post('/smpc/decision_tree/categorical', function (req, res) {
             res.sendStatus(400);
         });
     });
-});
+}
 
 
 const FgRed = "\x1b[31m";

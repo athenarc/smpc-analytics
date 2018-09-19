@@ -61,7 +61,7 @@
             </div>
 
 
-            <form action="/smpc/decision_tree/categorical" method="post" id="tree_1">
+            <form action="/smpc/decision_tree" method="post" id="tree_1">
               </br>
 
               <b>Select Classifier : </b>
@@ -115,7 +115,7 @@
                 </ul>
               </p>
               <p>
-                <input type="button" id="button_tree_1" onclick="sendFormWithId(this.id, '\/smpc\/decision_tree\/categorical')" class="btn btn-success" value="Compute Decision Tree">
+                <input type="button" id="button_tree_1" onclick="sendFormWithId(this.id, '\/smpc\/decision_tree', '\/smpc\/decision_tree\/categorical')" class="btn btn-success" value="Compute Decision Tree">
               </p>
 
             </form>

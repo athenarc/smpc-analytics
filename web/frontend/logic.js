@@ -172,7 +172,7 @@ function addHistogramNumericalTab() {
           </ul>
         </p>
         <p>
-          <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/histogram')" class="btn btn-primary" value="Compute Histogram">
+          <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id, '/smpc/histogram', '\/smpc\/histogram')" class="btn btn-primary" value="Compute Histogram">
         </p>
         </form>` +
         '</div>').appendTo('.tab-content');
@@ -241,7 +241,7 @@ function addHistogramCategoricalTab() {
             </ul>
           </p>
           <p>
-            <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/count')" class="btn btn-primary" value="Compute Histogram">
+            <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id, '/smpc/count', '\/smpc\/count')" class="btn btn-primary" value="Compute Histogram">
           </p>
 
         </form>` +
@@ -273,7 +273,7 @@ function addDecisionTreeNumericalTab() {
         <div id="loading-text">Loading</div>
         <div id="loading-content"></div>
       </div>` +
-        `<form action="/smpc/decision_tree/numerical" method="post" id="tree_` + nextTab + `">
+        `<form action="/smpc/decision_tree" method="post" id="tree_` + nextTab + `">
         </br>
 
         <b>Select Classifier : </b>
@@ -451,7 +451,7 @@ function addDecisionTreeNumericalTab() {
           </ul>
         </p>
         <p>
-          <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/decision_tree\/numerical')" class="btn btn-success" value="Compute Decision Tree">
+          <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '/smpc/decision_tree', '\/smpc\/decision_tree\/numerical')" class="btn btn-success" value="Compute Decision Tree">
         </p>
         </form>` +
         '</div>').appendTo('.tab-content');
@@ -484,7 +484,7 @@ function addDecisionTreeCategoricalTab() {
         <div id="loading-text">Loading</div>
         <div id="loading-content"></div>
       </div>` +
-        `<form action="/smpc/decision_tree/categorical" method="post" id="tree_` + nextTab + `">
+        `<form action="/smpc/decision_tree" method="post" id="tree_` + nextTab + `">
           </br>
 
           <b>Select Classifier : </b>
@@ -538,7 +538,7 @@ function addDecisionTreeCategoricalTab() {
             </ul>
           </p>
           <p>
-            <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/decision_tree\/categorical')" class="btn btn-success" value="Compute Decision Tree">
+            <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/decision_tree', '/smpc/decision_tree\/categorical')" class="btn btn-success" value="Compute Decision Tree">
           </p>
 
         </form>` +
@@ -747,6 +747,7 @@ function objectifyForm(formArray, computation_t) { // serialize data function
             const element = form[j];
 
             if (computation_t === '/smpc/decision_tree/categorical') {
+                finalJson.dataset = 'MeSH';
                 if (element.name === 'class_attribute') {
                     finalJson.class_attribute = element.value;
                 }
@@ -755,6 +756,7 @@ function objectifyForm(formArray, computation_t) { // serialize data function
                     finalJson.classifier = element.value;
                 }
             } else if (computation_t === '/smpc/decision_tree/numerical') {
+                finalJson.dataset = 'CVI';
                 if (element.name === 'class_attribute') {
                     finalJson.class_attribute = {'name': element.value, 'cells': -1};
                 }
@@ -845,14 +847,14 @@ function objectifyForm(formArray, computation_t) { // serialize data function
     return returnArray[0];
 }
 
-function sendFormWithId(id, computation_t) {
+function sendFormWithId(id, uri, computation_t) {
     const formId = id.substring(7); // get the hist id from the button id
     const tabId = "tab" + formId.substring(5); // get the tab id
     const jsonReq = objectifyForm($('#' + formId), computation_t);
 
     $.ajax({
         type: 'POST',
-        url: computation_t,
+        url: uri,
         data: jsonReq,
         beforeSend: function () {
             document.getElementById(formId).style.display = "none"; // hide the attribute list
