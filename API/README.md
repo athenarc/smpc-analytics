@@ -27,6 +27,48 @@ The request is a JSON string consisting of the following parameters.
 * `attributes` <span style="color:red">_required_</span> A list of the ids of the Mesh terms for which the counts should be computed.
 * `datasources` <span style="color:blue">_optional_</span> A list of the datasources (strings) from which the counts will be computed. If this key is left empty or not specified, all available datasources will be used.
 
+#### /smpc/decision-tree **[POST]**
+>Train a decision tree classifier on specific test and target attributes.
+
+You can request a decision tree building based on specified training attributes and also a specified class / target attribute.
+
+An example of the requests body can be found below.
+
+```json
+{
+  "attributes": [
+    {
+      "name": "Height (cm)",
+      "cells": "3"
+    },
+    {
+      "name": "Weight (kg)",
+      "cells": "3"
+    }
+  ],
+  "classifier": "ID3",
+  "class_attribute": {
+    "name": "Patient Age",
+    "cells": "3"
+  },
+  "dataset": "cvi",
+  "datasources": [
+    "HospitalA",
+    "HospitalB"
+  ]
+}
+```
+The request is a JSON object consisting of the following parameters.
+* `attributes` <span style="color:red">_required_</span> A list of the training attributes. Each attribute is a JSON object of the following form:
+    * `name` <span style="color:red">_required_</span> The name of the attribute
+    * `cells` <span style="color:blue">_optional_</span> The desired cells / ranges. This is required only if the attribute is continuous and the classification algorithm is ID3.
+* `class_attribute` <span style="color:red">_required_</span> The class / target attribute. The class attribute is a JSON object of the following form:
+    * `name` <span style="color:red">_required_</span> The name of the attribute
+    * `cells` <span style="color:blue">_optional_</span> The desired cells / ranges. This is required only if the class attribute is continuous.
+* `dataset` <span style="color:red">_required_</span> The dataset to be used for the classification training.
+* `classifier` <span style="color:red">_required_</span> The classification algorithm. One of `[ID3, C45]`.
+* `datasources` <span style="color:blue">_optional_</span> A list of the datasources (strings) from which the counts will be computed. If this key is left empty or not specified, all available datasources will be used.
+
 
 ##### Server's response
 The secure count computation is a potentially long running operation. For that reason the server's response to such a request is always `HTTP/1.1 202 Accepted`, along with a location in which one should periodically poll for the computation's status and/or result. An example response can be found below.
