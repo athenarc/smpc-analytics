@@ -27,6 +27,16 @@ The request is a JSON string consisting of the following parameters.
 * `attributes` <span style="color:red">_required_</span> A list of the ids of the Mesh terms for which the counts should be computed.
 * `datasources` <span style="color:blue">_optional_</span> A list of the datasources (strings) from which the counts will be computed. If this key is left empty or not specified, all available datasources will be used.
 
+##### Server's response
+The secure count computation is a potentially long running operation. For that reason the server's response to such a request is always `HTTP/1.1 202 Accepted`, along with a location in which one should periodically poll for the computation's status and/or result. An example response can be found below.
+```json
+{
+  "location": "/smpc/queue?request=d491977f-88e7-4993-aaeb-c8244b320faf"
+}
+```
+In order to check for the secure count computation's status, and/or retrieve the result you should periodically poll the above location using the `/smpc/queue` GET request, which is described below.
+
+
 #### /smpc/decision-tree **[POST]**
 >Train a decision tree classifier on specific test and target attributes.
 
@@ -71,10 +81,10 @@ The request is a JSON object consisting of the following parameters.
 
 
 ##### Server's response
-The secure count computation is a potentially long running operation. For that reason the server's response to such a request is always `HTTP/1.1 202 Accepted`, along with a location in which one should periodically poll for the computation's status and/or result. An example response can be found below.
+The secure decision tree creation is a long running operation. For that reason the server's response to such a request is always `HTTP/1.1 202 Accepted`, along with a location in which one should periodically poll for the computation's status and/or result. An example response can be found below.
 ```json
 {
-  "location": "/smpc/queue?request=d491977f-88e7-4993-aaeb-c8244b320faf"
+  "location": "/smpc/queue?request=bc801fcc-1521-4143-92e4-bbd93f9bb131"
 }
 ```
 In order to check for the secure count computation's status, and/or retrieve the result you should periodically poll the above location using the `/smpc/queue` GET request, which is described below.
@@ -85,11 +95,21 @@ In order to check for the secure count computation's status, and/or retrieve the
 The status of an ongoing computation request can be accessed through the `/smpc/queue` GET request by specifying its id.
 
 The only parameter this GET request accepts is the id of the desired computation request, as shown below.
-* `request` <span style="color:red">_required_</span> A string id identifying the computation request as it was provided by the response of `/smpc/count` POST request.
+* `request` <span style="color:red">_required_</span> A string id identifying the computation request as it was provided by the response of `/smpc/count` or `/smpc/decision_tree` POST requests.
 
 ##### Server's response
 
-The server responds with the specified computation's status, and possibly with its current computation step, or the final computation result, in the event that the computation ended successfully. The result for a count computation is a list with pairs of `label`, `value` corresponding to the appropriate counts.
+The server responds with the specified computation's status, and possibly with its current computation step, or the final computation result, in the event that the computation ended successfully. 
+
+The response is a JSON object containing the specified computation's status, and possibly its current step or result which is too a JSON object. The server's response has the following structure.
+* `status` <span style="color:red">_required_</span> A string indicating the computation's status. One of `[running, succeeded, failed, notstarted]`.
+* `step` <span style="color:blue">_optional_</span> A string indicating the current step of the computation. This is present in case that the computation is in the `running` state.
+* `result` <span style="color:blue">_optional_</span> A JSON object with the computation's result in case its status is `succeeded`.
+The JSON object contains a single key namely `data` with the computation result.
+
+###### Response for /smpc/count
+
+The result for a count computation is a list with tuples of `label`, `value`, `mesh` corresponding to the appropriate counts.
 
 ```json
 {
@@ -97,18 +117,22 @@ The server responds with the specified computation's status, and possibly with i
     "result": {
         "data": [
             {
+                "mesh": "M01.060.703",
                 "value": 0,
                 "label": "Infant"
             },
             {
+                "mesh": "M01.060.057",
                 "value": 63,
                 "label": "Adolescent"
             },
             {
+                "mesh": "M01.060.116",
                 "value": 9936,
                 "label": "Adult"
             },
             {
+                "mesh": "M01.060.406",
                 "value": 0,
                 "label": "Child"
             }
@@ -116,32 +140,35 @@ The server responds with the specified computation's status, and possibly with i
     }
 }
 ```
-The response is a JSON object containing the specified computation's status, and possibly its current step or result which is too a JSON object. The server's response has the following structure.
 
-* `status` <span style="color:red">_required_</span> A string indicating the computation's status. One of `[running, succeeded, failed, notstarted]`.
-* `step` <span style="color:blue">_optional_</span> A string indicating the current step of the computation. This is present in case that the computation is in the `running` state.
-* `result` <span style="color:blue">_optional_</span> A JSON object with the computation's result in case its status is `succeeded`.
-The JSON object contains a single key namely `data` with the computation result.
-    * `data` <span style="color:red">_required_</span> A list of JSON objects each one corresponding to a count. Each such object has the following keys.
-        * `label` A string, the value name corresponding to that count. Can be a tuple, triple etc. depending on the number of queried Mesh terms.
-        * `value` An integer, the actual count for that value.
-
-___
-<!-- ### MHMD Driver
-The MHMD Driver located on each hospital’s premises should support a RESTful API with current functionality the secure data importing into the SMPC cluster.  
-#### /smpc/import **[POST]**
->Securely import data into the SMPC Platform.
+The `result` JSON object has the following structure:
+* `data` <span style="color:red">_required_</span> A list of JSON objects each one corresponding to a count. Each such object has the following keys.
+    * `label` A string, the value name corresponding to that count. Can be a tuple, triple etc. depending on the number of queried Mesh terms.
+    * `value` An integer, the actual count for that value.
+    * `mesh` The MeSH code of that attribute.
 
 
-The secure importing of a dataset into the SMPC cluster is initiated with the `/smpc/import` POST request.
+###### Response for /smpc/decision_tree
 
-The request's body contains a list of the desired attributes / Mesh term ids for which data should be imported into he SMPC cluster. An example request body can be found below.
+The result for a decision tree building is a JSON object which is a serialization of the classification tree. The JSON keys represent the test nodes and their values represent the corresponding subtrees.
+
+An example response can be found below.
+
 ```json
 {
-    "attributes": [
-        "M01.060"
-    ]
+    "status": "succeeded",
+    "result": {
+        "Height (cm) == [176.67, 200.00)": "[39.67, 61.33)",
+        "Height (cm) == [130.01, 153.34)": {
+            "Weight (kg) == [80.00, 100.00)": "[18.00, 39.67)",
+            "Weight (kg) == [40.00, 60.00)": "[18.00, 39.67)",
+            "Weight (kg) == [60.00, 80.00)": "[61.33, 83.00)"
+        },
+        "Height (cm) == [153.34, 176.67)": {
+            "Weight (kg) == [80.00, 100.00)": "[18.00, 39.67)",
+            "Weight (kg) == [40.00, 60.00)": "[39.67, 61.33)",
+            "Weight (kg) == [60.00, 80.00)": "[39.67, 61.33)"
+        }
+    }
 }
 ```
-The request body is a JSON string with the single following key:
-* `attributes`<span style="color:red">_required_</span> A list of the Mesh term ids for which data will be securely imported. -->
