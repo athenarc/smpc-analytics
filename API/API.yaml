@@ -437,7 +437,7 @@ components:
                     type: string
                   value:
                     type: integer
-          example: {"data":[{"value":0,"label":"Prisoners"},{"value":0,"label":"Vegetarians"},{"value":0,"label":"Transients and Migrants"},{"value":10,"label":"Men"},{"value":0,"label":"Students"},{"value":0,"label":"Child, Abandoned"},{"value":0,"label":"Transplant Recipients"},{"value":0,"label":"Tissue Donors"},{"value":0,"label":"Refugees"},{"value":0,"label":"Spouses"},{"value":0,"label":"Pedestrians"},{"value":0,"label":"Child, Exceptional"},{"value":0,"label":"Minors"},{"value":0,"label":"Parents"},{"value":0,"label":"Emigrants and Immigrants"},{"value":0,"label":"Consultants"},{"value":0,"label":"Child, Foster"},{"value":0,"label":"Siblings"},{"value":0,"label":"Veterans"},{"value":0,"label":"Drug Users"},{"value":0,"label":"Sexual and Gender Minorities"},{"value":0,"label":"Sex Workers"},{"value":0,"label":"Child, Unwanted"},{"value":0,"label":"Jehovah's Witnesses"},{"value":0,"label":"Homebound Persons"},{"value":0,"label":"Occupational Groups"},{"value":0,"label":"Famous Persons"},{"value":0,"label":"Legal Guardians"},{"value":0,"label":"Terminally Ill"},{"value":0,"label":"Patients"},{"value":0,"label":"Homeless Persons"},{"value":0,"label":"Visitors to Patients"},{"value":0,"label":"Slaves"},{"value":0,"label":"Smokers"},{"value":0,"label":"Bedridden Persons"},{"value":0,"label":"Athletes"},{"value":0,"label":"Vulnerable Populations"},{"value":0,"label":"Abortion Applicants"},{"value":0,"label":"Adult Children"},{"value":0,"label":"Crime Victims"},{"value":9,"label":"Women"},{"value":0,"label":"Single Person"},{"value":0,"label":"Missionaries"},{"value":0,"label":"Caregivers"},{"value":0,"label":"Volunteers"},{"value":0,"label":"Criminals"},{"value":0,"label":"Survivors"},{"value":0,"label":"Working Poor"},{"value":0,"label":"Medically Uninsured"},{"value":0,"label":"Disabled Persons"},{"value":0,"label":"Disaster Victims"},{"value":0,"label":"Mentors"},{"value":0,"label":"Friends"},{"value":0,"label":"Child of Impaired Parents"},{"value":0,"label":"Sexual Partners"},{"value":0,"label":"Population Groups"},{"value":0,"label":"Age Groups"},{"value":0,"label":"Research Subjects"},{"value":0,"label":"Alcoholics"},{"value":0,"label":"Grandparents"},{"value":0,"label":"Multiple Birth Offspring"},{"value":0,"label":"Child, Orphaned"},{"value":0,"label":"Child, Adopted"}]}
+          example: {"data":[{"mesh":"M01.060.703","value":0,"label":"Infant"},{"mesh":"M01.060.057","value":63,"label":"Adolescent"},{"mesh":"M01.060.116","value":9936,"label":"Adult"},{"mesh":"M01.060.406","value":0,"label":"Child"}]}
 
     ComputationAccepted:
       required:
@@ -448,4 +448,4 @@ components:
         location:
           type: string
       example: {"location" : "/smpc/queue?request=1"}
-
+ 
