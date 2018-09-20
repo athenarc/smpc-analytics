@@ -78,6 +78,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /smpc/decision_tree/:
+    post:
+      tags:
+        - SMPC
+      summary: Build a decision tree on selected attributes.
+      description: "Train a decision tree classifier on specific test and target attributes."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Tree"
+      responses:
+        '202':
+          description: Decision Tree computation accepted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComputationAccepted"
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: An error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /smpc/queue:
     get:
       tags:
@@ -329,6 +360,41 @@ components:
         attribute:
           type: string
           example: "Persons"
+    Tree:
+      required:
+        - attributes
+        - class_attribute
+        - classifier
+        - dataset
+      properties:
+        attributes:
+          description: "List of training attributes."
+          type: "array"
+          items:
+            type: "object"
+            "required": [ "name" ]
+            properties:
+              name:
+                type: "string"
+              cells:
+                type: "integer"
+        dataset:
+          description: "The dataset on which which the tree will be built."
+          type: "string"
+          example: "cvi"
+        classifier:
+          description: "The classification algorithm."
+          type: "string"
+          enum:
+            - "ID3"
+            - "C45"
+        datasources:
+          description: "Datasources on which the tree will be built. Optional. All datasources will be considered if left blank."
+          type: "array"
+          items:
+            type: "string"
+          example: ["HospitalA", "HospitalB"]
+      example: {"attributes":[{"name":"Height (cm)","cells":"3"},{"name":"Weight (kg)","cells":"3"}],"classifier":"ID3","class_attribute":{"name":"Patient Age","cells":"3"},"dataset":"cvi","datasources":["HospitalA","HospitalB"]}
     Count:
       required:
         - attribute
