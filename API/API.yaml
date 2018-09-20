@@ -427,16 +427,6 @@ components:
           type: string
         result:
           type: object
-          properties:
-            data:
-              type: array
-              items:
-                type: object
-                properties:
-                  label:
-                    type: string
-                  value:
-                    type: integer
           example: {"data":[{"mesh":"M01.060.703","value":0,"label":"Infant"},{"mesh":"M01.060.057","value":63,"label":"Adolescent"},{"mesh":"M01.060.116","value":9936,"label":"Adult"},{"mesh":"M01.060.406","value":0,"label":"Child"}]}
 
     ComputationAccepted:
