@@ -44,7 +44,8 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('configuration', help = 'Configuration file of the request')
-    parser.add_argument('--mapping', help = 'File with the mesh term mapping (values to integers).', default = 'mhmd-driver/mesh_mapping.json')
+    parser.add_argument('--mesh_mapping', help = 'File with the mesh term mapping (values to integers).', default = 'mhmd-driver/mesh_mapping.json')
+    parser.add_argument('--cvi_mapping', help = 'File with the cvi categorical attributes mapping (values to integers).', default = 'datasets/analysis_test_data/cvi_mapping.json')
     parser.add_argument('--summary', help = 'CSV file with the summary of the dataset.', default = 'datasets/analysis_test_data/cvi_summary.csv')
     parser.add_argument('--DNS', help = 'File with the Hospitals names and IPS.', default = 'web/MHMDdns.json')
     args = parser.parse_args()
@@ -53,7 +54,8 @@ def main():
 
     uid = args.configuration.split('_')[-1].split('.')[0]
     configuration = json.load(open(args.configuration))
-    mapping = json.load(open(args.mapping))
+    mesh_mapping = json.load(open(args.mesh_mapping))
+    cvi_mapping = json.load(open(args.cvi_mapping))
     summary = pd.read_csv(args.summary, sep = ',')
 
     if 'datasources' in configuration:
@@ -92,20 +94,30 @@ def main():
     main_f += '''
     columns = ''' + quote(columns) + ''';
 '''
+    possible_values = {}
+    categorical_attributes = []
+    for counter, attribute in enumerate([attr['name'] for attr in attributes] + [class_attribute]):
+        if attribute in cvi_mapping: # if attribute is categorical
+            possible_values[counter] = list(range(len(cvi_mapping[attribute])))
+            categorical_attributes.append(counter)
+        else:
+            categorical_attributes.append(-1)
+    
     if 'cells' in configuration['class_attribute']:
-        categorical_attributes = [-1]
         class_min = summary[summary['Field'] == class_attribute][' Min'].item()
         class_max = summary[summary['Field'] == class_attribute][' Max'].item()
         class_cells = int(configuration['class_attribute']['cells'])
-        main_f += '''
-    values = {''' + ','.join(map(quote, list(range(class_cells)))) + '''};
-    tdbVmapAddValue(possible_values, "''' + quote(class_index) + '''", values);
- '''
+        possible_values[class_index] = list(range(class_cells))
     else:
-        categorical_attributes = [class_index]
         class_min = -1
         class_max = -1
         class_cells = -1
+
+    for attribute, values in possible_values.items():
+        main_f += '''
+    values = {''' + ','.join(map(quote, values)) + '''};
+    tdbVmapAddValue(possible_values, "''' + quote(attribute) + '''", values);
+ '''
 
     main_f += '''
     categorical_attributes = {''' + ','.join(map(quote,categorical_attributes)) + '''};
