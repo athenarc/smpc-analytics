@@ -9,10 +9,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('c45_output', help= 'JSON file with the C4.5 output.')
 parser.add_argument('configuration', help= 'Configuration file of the request.')
 parser.add_argument('--summary', help = 'CSV file with the summary of the dataset.', default = 'datasets/analysis_test_data/cvi_summary.csv')
+parser.add_argument('--cvi_mapping', help = 'File with the cvi categorical attributes mapping (values to integers).', default = 'datasets/analysis_test_data/cvi_mapping.json')
 parser.add_argument('--plot', help = 'Flag to indicate if output should be plotted / visualized or not.', action = 'store_true')
 args = parser.parse_args()
 
 configuration = {}
+cvi_mapping = {}
 mins = []
 maxs = []
 attributes = []
@@ -21,13 +23,16 @@ class_cells = -1
 
 def main():
     global configuration
+    global cvi_mapping
     global attributes
     global class_cells
     global mins
     global maxs
     configuration = json.load(open(args.configuration))
+    cvi_mapping = json.load(open(args.cvi_mapping))
     attributes = [a['name'] for a in configuration['attributes']]
-    class_cells = int(configuration['class_attribute']['cells'])
+    if 'cells' in configuration['class_attribute']:
+        class_cells = int(configuration['class_attribute']['cells'])
     class_attribute = configuration['class_attribute']['name']
     total_attributes = attributes + [class_attribute]
     summary = pd.read_csv(args.summary, sep = ',')
@@ -77,13 +82,17 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
         return new_tree, nodes, edges, leaves, id, subtrees_map
 
     if not isinstance(tree,dict): # if tree is a leaf
-        class_min = mins[-1]
-        class_max = maxs[-1]
-        value_index = int(tree)
-        cell_width = (class_max - class_min) / class_cells
-        start = class_min + value_index * cell_width
-        end = start + cell_width
-        value_name = '['+"{0:.2f}".format(start)+', '+"{0:.2f}".format(end)+')'
+        if 'cells' in configuration['class_attribute']: 
+            class_min = mins[-1]
+            class_max = maxs[-1]
+            value_index = int(tree)
+            cell_width = (class_max - class_min) / class_cells
+            start = class_min + value_index * cell_width
+            end = start + cell_widthconfiguration
+            value_name = '['+"{0:.2f}".format(start)+', '+"{0:.2f}".format(end)+')'
+        else:
+            possible_values = cvi_mapping[class_attribute]
+            value_name = [value for value, counter in possible_values.items() if counter == int(tree)][0]
         subtree = value_name
 
         if subtree not in leaves:
