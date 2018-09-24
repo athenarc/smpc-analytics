@@ -53,6 +53,7 @@ def main():
     if args.plot:
         class_name = configuration['class_attribute']['name']
         filename = 'graphs/c45'+'_'+str(os.getpid())+'.html'
+        print(nodes, edges)
         plotted_file = plot(nodes, edges, leaves, class_name, filename)
         print(plotted_file)
     else:
@@ -99,7 +100,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
             id += 1
             graph_node_id = subtree + '_' + str(id)
             graph_node_label =  subtree
-            graph_node = {'data' : { 'id' : graph_node_id, 'label' : graph_node_label} }
+            graph_node = {'data' : { 'id' : str(graph_node_id), 'label' : str(graph_node_label)} }
             nodes.append(graph_node)
             leaves[subtree] = (graph_node_id)
         else:
@@ -107,7 +108,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
         if parent != '':
             edge_source = parent['data']['id']
             edge_target = graph_node_id
-            edge_node = { 'data': { 'source': edge_source, 'target': edge_target, 'label': branch } }
+            edge_node = { 'data': { 'source': str(edge_source), 'target': str(edge_target), 'label': str(branch) } }
             edges.append(edge_node)
         return subtree, nodes, edges, leaves, id, subtrees_map
     for node, subtree in tree.items():
@@ -124,7 +125,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
         if first_node:
             graph_node_id = attribute_name + '_' + str(id)
             graph_node_label =  attribute_name
-            graph_node = {'data' : { 'id' : graph_node_id, 'label' : graph_node_label} }
+            graph_node = {'data' : { 'id' : str(graph_node_id), 'label' : str(graph_node_label)} }
             nodes.append(graph_node)
             first_node = False
             subtrees_map[str(tree)] = graph_node
@@ -132,7 +133,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
             if parent != '':
                 edge_source = parent['data']['id']
                 edge_target = graph_node_id
-                edge_node = { 'data': { 'source': edge_source, 'target': edge_target, 'label': branch } }
+                edge_node = { 'data': { 'source': str(edge_source), 'target': str(edge_target), 'label': str(branch) } }
                 edges.append(edge_node)
 
         branch = str(operator + ' ' + value_name)
