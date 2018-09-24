@@ -82,7 +82,10 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
         return new_tree, nodes, edges, leaves, id, subtrees_map
 
     if not isinstance(tree,dict): # if tree is a leaf
-        if 'cells' in configuration['class_attribute']: 
+        if class_attribute in cvi_mapping:
+            possible_values = cvi_mapping[class_attribute]
+            value_name = [value for value, counter in possible_values.items() if counter == int(tree)][0]
+        else: 
             class_min = mins[-1]
             class_max = maxs[-1]
             value_index = int(tree)
@@ -90,9 +93,6 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
             start = class_min + value_index * cell_width
             end = start + cell_widthconfiguration
             value_name = '['+"{0:.2f}".format(start)+', '+"{0:.2f}".format(end)+')'
-        else:
-            possible_values = cvi_mapping[class_attribute]
-            value_name = [value for value, counter in possible_values.items() if counter == int(tree)][0]
         subtree = value_name
 
         if subtree not in leaves:
@@ -115,9 +115,11 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
 
         attribute_index, threshold, operator = split_node(node);
         attribute_name = str(attributes[attribute_index])
-        attribute_min = mins[attribute_index]
-        attribute_max = maxs[attribute_index]
-        new_node = attribute_name + ' ' + operator + ' ' + threshold
+        value_name = threshold
+        if attribute_name in cvi_mapping:
+            possible_values = cvi_mapping[attribute_name]
+            value_name = [value for value, counter in possible_values.items() if counter == int(float(threshold))][0]
+        new_node = attribute_name + ' ' + operator + ' ' + value_name
 
         if first_node:
             graph_node_id = attribute_name + '_' + str(id)
@@ -133,7 +135,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
                 edge_node = { 'data': { 'source': edge_source, 'target': edge_target, 'label': branch } }
                 edges.append(edge_node)
 
-        branch = str(operator + ' ' + threshold)
+        branch = str(operator + ' ' + value_name)
         subtree, nodes, edges, leaves, id, subtrees_map = convert_tree(tree = subtree, id = id, nodes = nodes, edges = edges, leaves = leaves, parent = graph_node, branch = branch, subtrees_map = subtrees_map)
         new_tree[new_node] = subtree
 
