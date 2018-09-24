@@ -135,7 +135,10 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
                 edge_node = { 'data': { 'source': str(edge_source), 'target': str(edge_target), 'label': str(branch) } }
                 edges.append(edge_node)
 
-        branch = str(operator + ' ' + value_name)
+        if operator == '==':
+            branch = str(value_name)
+        else:
+            branch = str(operator + ' ' + value_name)
         subtree, nodes, edges, leaves, id, subtrees_map = convert_tree(tree = subtree, id = id, nodes = nodes, edges = edges, leaves = leaves, parent = graph_node, branch = branch, subtrees_map = subtrees_map)
         new_tree[new_node] = subtree
 
