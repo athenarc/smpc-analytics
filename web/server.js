@@ -50,6 +50,8 @@ app.get('/', function (req, res) {
 app.use(express.static(path.join(__dirname, 'frontend'))); // public/static files
 app.use("/visuals", express.static(__dirname + '/visuals'));
 app.use("/graphs", express.static(__dirname + '/graphs'));
+app.use("/.well-known/acme-challenge/", express.static(__dirname + '/.well-known/acme-challenge/'));
+
 
 
 if (fs.existsSync('./sslcert/fullchain.pem')) {
