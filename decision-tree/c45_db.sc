@@ -410,10 +410,10 @@ string c45(uint64 example_indexes_vmap, uint64[[1]] attributes) {
             } else {
                 branch += c45(subset_vmap, new_attribs);
             }
+            branches += branch;
             if (v != length -1) {
                 branches += ", ";
             }
-            branches += branch;
         }
     } else{
         string branch = "\"" + itoa(best_attribute)+ " <= " + itoa(best_threshold) + "\"" + ": ";
