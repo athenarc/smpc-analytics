@@ -53,7 +53,6 @@ def main():
     if args.plot:
         class_name = configuration['class_attribute']['name']
         filename = 'graphs/c45'+'_'+str(os.getpid())+'.html'
-        print(nodes, edges)
         plotted_file = plot(nodes, edges, leaves, class_name, filename)
         print(plotted_file)
     else:
@@ -92,7 +91,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
             value_index = int(tree)
             cell_width = (class_max - class_min) / class_cells
             start = class_min + value_index * cell_width
-            end = start + cell_widthconfiguration
+            end = start + cell_width
             value_name = '['+"{0:.2f}".format(start)+', '+"{0:.2f}".format(end)+')'
         subtree = value_name
 
