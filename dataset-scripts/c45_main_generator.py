@@ -98,7 +98,7 @@ def main():
     categorical_attributes = []
     for counter, attribute in enumerate([attr['name'] for attr in attributes] + [class_attribute]):
         if attribute in cvi_mapping: # if attribute is categorical
-            possible_values[counter] = list(range(len(cvi_mapping[attribute])))
+            possible_values[counter] = [mapping for value, mapping in cvi_mapping[attribute].items()]
             categorical_attributes.append(counter)
         else:
             categorical_attributes.append(-1)

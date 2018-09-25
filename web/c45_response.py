@@ -84,7 +84,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
     if not isinstance(tree,dict): # if tree is a leaf
         if class_attribute in cvi_mapping:
             possible_values = cvi_mapping[class_attribute]
-            value_name = [value for value, counter in possible_values.items() if counter == int(tree)][0]
+            value_name = [value for value, mapping in possible_values.items() if int(mapping) == int(float(tree))][0]
         else: 
             class_min = mins[-1]
             class_max = maxs[-1]
@@ -118,7 +118,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
         value_name = threshold
         if attribute_name in cvi_mapping:
             possible_values = cvi_mapping[attribute_name]
-            value_name = [value for value, counter in possible_values.items() if counter == int(float(threshold))][0]
+            value_name = [value for value, mapping in possible_values.items() if int(mapping) == int(float(threshold))][0]
         new_node = attribute_name + ' ' + operator + ' ' + value_name
 
         if first_node:

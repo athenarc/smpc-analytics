@@ -77,6 +77,18 @@ D uint64 index_of_max(D T[[1]] arr) {
     return idx;
 }
 
+template <domain D, type T>
+D T max_of_second_array_based_on_first(D T[[1]] arr1, T[[1]] arr2) {
+    D T max1 = arr1[0];
+    D T max2 = arr2[0];
+    for (uint64 i = 1; i < size(arr1); i++) {
+        D uint64 gt = (uint64)(arr1[i] > max1);
+        max1 = gt * arr1[i] + (1 - gt) * max1;
+        max2 = gt * arr2[i] + (1 - gt) * max2;
+    }
+    return max2;
+}
+
 
 template <domain D, type T>
 D uint64 index_of(D T[[1]] arr, D T element) {
@@ -354,11 +366,12 @@ pd_shared3p int64 most_common_label(uint64 example_indexes_vmap) {
             label_column = (float64)((int64)((label_column - class_min) / width));
         }
         for (uint64 a = 0; a < size(possible_classes); a++) {
-            pd_shared3p uint64[[1]] eq = (uint64)((int64)label_column == (int64) a)* (uint64)(example_indexes != 0);
+            float64 label = possible_classes[a];
+            pd_shared3p uint64[[1]] eq = (uint64)((int64)label_column == (int64) label)* (uint64)(example_indexes != 0);
             label_counts[a] += sum(eq);
         }
     }
-    return (int64)index_of_max(label_counts);
+    return (int64)max_of_second_array_based_on_first(label_counts, (uint64)possible_classes);
 }
 
 
