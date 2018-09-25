@@ -38,7 +38,7 @@ def main():
     global mesh_dict_inverted
     global configuration
     global dataset
-    
+
     configuration = json.load(open(args.configuration))
     attributes = configuration['attributes']
     class_attribute = configuration['class_attribute']
@@ -79,16 +79,16 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
     class_attribute = configuration['class_attribute']['name']
     first_node = True
     graph_node_id = ''
-    
+
     if str(tree) in subtrees_map:
         graph_node = subtrees_map[str(tree)]
         graph_node_id = graph_node['data']['id']
         edge_source = parent['data']['id']
         edge_target = graph_node_id
-        edge_node = { 'data': { 'source': edge_source, 'target': edge_target, 'label': branch } }
+        edge_node = { 'data': { 'source': str(edge_source), 'target': str(edge_target), 'label': str(branch) } }
         edges.append(edge_node)
         return new_tree, nodes, edges, leaves, id, subtrees_map
-    
+
     if not isinstance(tree,dict): # if tree is a leaf
         if dataset == 'mesh':
             value_name = str([mesh_dict_inverted[name] for name,index in mesh_mapping[class_attribute].items() if str(index) == str(tree)][0])
@@ -106,12 +106,12 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
                 end = start + cell_width
                 value_name = '['+"{0:.2f}".format(start)+', '+"{0:.2f}".format(end)+')'
         subtree = value_name
-                
+
         if subtree not in leaves:
             id += 1
             graph_node_id = subtree + '_' + str(id)
             graph_node_label =  subtree
-            graph_node = {'data' : { 'id' : graph_node_id, 'label' : graph_node_label} }
+            graph_node = {'data' : { 'id' : str(graph_node_id), 'label' : str(graph_node_label)} }
             nodes.append(graph_node)
             leaves[subtree] = (graph_node_id)
         else:
@@ -119,7 +119,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
         if parent != '':
             edge_source = parent['data']['id']
             edge_target = graph_node_id
-            edge_node = { 'data': { 'source': edge_source, 'target': edge_target, 'label': branch } }
+            edge_node = { 'data': { 'source': str(edge_source), 'target': str(edge_target), 'label': str(branch) } }
             edges.append(edge_node)
         return subtree, nodes, edges, leaves, id, subtrees_map
     for node, subtree in tree.items():
@@ -144,13 +144,13 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
                 start = attribute_min + value_index * cell_width
                 end = start + cell_width
                 value_name = '['+"{0:.2f}".format(start)+', '+"{0:.2f}".format(end)+')'
-            
+
         new_node = attribute_name + ' == ' + value_name
-        
+
         if first_node:
             graph_node_id = attribute_name + '_' + str(id)
             graph_node_label =  attribute_name
-            graph_node = {'data' : { 'id' : graph_node_id, 'label' : graph_node_label} }
+            graph_node = {'data' : { 'id' : str(graph_node_id), 'label' : str(graph_node_label)} }
             nodes.append(graph_node)
             first_node = False
             subtrees_map[str(tree)] = graph_node
@@ -158,7 +158,7 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
             if parent != '':
                 edge_source = parent['data']['id']
                 edge_target = graph_node_id
-                edge_node = { 'data': { 'source': edge_source, 'target': edge_target, 'label': branch } }
+                edge_node = { 'data': { 'source': str(edge_source), 'target': str(edge_target), 'label': str(branch) } }
                 edges.append(edge_node)
 
         subtree, nodes, edges, leaves, id, subtrees_map = convert_tree(tree = subtree, id = id, nodes = nodes, edges = edges, leaves = leaves, parent = graph_node, branch = value_name, subtrees_map = subtrees_map)
@@ -167,5 +167,3 @@ def convert_tree(tree, id = 0, nodes = [], edges = [], leaves = {}, parent = '',
 
 if __name__ == '__main__':
     main()
-        
-        
