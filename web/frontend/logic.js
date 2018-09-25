@@ -321,6 +321,13 @@ function addDecisionTreeNumericalTab() {
             <option>RVEF (ratio)</option>
             <option>SBP (mmHg)</option>
             <option>SVR (mmHg/L/min)</option>
+            <option>Vascular RF</option>
+            <option>Gender</option>
+            <option>risk_name</option>
+            <option>Diabetic RF</option>
+            <option>Hypertension RF</option>
+            <option>Smoking RF</option>
+            <option>Ethnicity</option>
           </select>
 
           <span style="float:right;"> Class Attribute Cells : <input type="number" name="class_cells" min="1" max="15" value="5"></span>
@@ -434,6 +441,27 @@ function addDecisionTreeNumericalTab() {
             <li class="list-group-item">
               <input type="checkbox" name="attributes_` + nextTab + `" value="SVR (mmHg/L/min)"> SVR (mmHg/L/min)
               <span style="float:right;"><input type="number" name="cells_` + nextTab + `" min="1" max="15" style="display:none;" placeholder="3"></span>
+            </li>
+            <li class="list-group-item">
+                <input type="checkbox" name="attributes_` + nextTab + `" value="Vascular RF">  Vascular RF &ensp;
+            </li>
+            <li class="list-group-item">
+                <input type="checkbox" name="attributes_` + nextTab + `" value="Gender"> Gender &ensp;
+            </li>
+            <li class="list-group-item">
+                <input type="checkbox" name="attributes_` + nextTab + `" value="risk_name"> risk_name &ensp;
+            </li>
+            <li class="list-group-item">
+                <input type="checkbox" name="attributes_` + nextTab + `" value="Diabetic RF"> Diabetic RF &ensp;
+            </li>
+            <li class="list-group-item">
+                <input type="checkbox" name="attributes_` + nextTab + `" value="Hypertension RF"> Hypertension RF &ensp;
+            </li>
+            <li class="list-group-item">
+                <input type="checkbox" name="attributes_` + nextTab + `" value="Smoking RF"> Smoking RF &ensp;
+            </li>
+            <li class="list-group-item">
+                <input type="checkbox" name="attributes_` + nextTab + `" value="Ethnicity"> Ethnicity &ensp;
             </li>
           </ul>
         </p>
