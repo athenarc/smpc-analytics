@@ -103,7 +103,7 @@ def main():
         else:
             categorical_attributes.append(-1)
     
-    if 'cells' in configuration['class_attribute']:
+    if class_attribute not in cvi_mapping:
         class_min = summary[summary['Field'] == class_attribute][' Min'].item()
         class_max = summary[summary['Field'] == class_attribute][' Max'].item()
         class_cells = int(configuration['class_attribute']['cells'])
