@@ -83,6 +83,19 @@ D uint64 index_of_max(D T[[1]] arr) {
     return idx;
 }
 
+template <domain D, type T>
+D T max_of_second_array_based_on_first(D T[[1]] arr1, T[[1]] arr2) {
+    D T max1 = arr1[0];
+    D T max2 = arr2[0];
+    for (uint64 i = 1; i < size(arr1); i++) {
+        D uint64 gt = (uint64)(arr1[i] > max1);
+        max1 = gt * arr1[i] + (1 - gt) * max1;
+        max2 = gt * arr2[i] + (1 - gt) * max2;
+    }
+    return max2;
+}
+
+
 
 template <domain D, type T>
 D uint64 index_of(D T[[1]] arr, D T element) {
@@ -167,8 +180,6 @@ pd_shared3p bool all_examples_same(uint64 example_indexes_vmap) {
         pd_shared3p uint64 partial_res = 0;
         string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
         pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
-        uint64 rows = tdbGetRowCount(datasource, table);
-        uint64 columns = tdbGetColumnCount(datasource, table);
         pd_shared3p float64[[1]] label_column = tdbReadColumn(datasource, table, class_index);
         pd_shared3p int64 positive_indexes = sum(example_indexes);
         if (!_exists(categorical_attributes, class_index) ){ // If class attribute is NOT categorical, Compute corresponding cells (integers from floats).
@@ -240,11 +251,11 @@ pd_shared3p float64 information_gain(uint64 example_indexes_vmap, uint64 attribu
             pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
             uint64 rows = tdbGetRowCount(datasource, table);
             pd_shared3p float64[[1]] attribute_column(rows) = tdbReadColumn(datasource, table, attribute);
-            pd_shared3p float64 min = imported_mins[attribute];
-            pd_shared3p float64 max = imported_maxs[attribute];
-            int64 number_of_cells = imported_cells[attribute];
-            pd_shared3p float64 width = (max - min) / (float64) number_of_cells;
             if (!_exists(categorical_attributes, attribute)){
+                pd_shared3p float64 min = imported_mins[attribute];
+                pd_shared3p float64 max = imported_maxs[attribute];
+                int64 number_of_cells = imported_cells[attribute];
+                pd_shared3p float64 width = (max - min) / (float64) number_of_cells;
                 attribute_column = (float64)((int64)((attribute_column - min) / width)); // If attribute is NOT categorical, change the column.
             }
             pd_shared3p int64[[1]] partial_subset(rows) = (int64)(attribute_column == value) * (int64)(example_indexes != 0);
@@ -289,11 +300,12 @@ pd_shared3p int64 most_common_label(uint64 example_indexes_vmap) {
             label_column = (float64)((int64)((label_column - min) / width));
         }
         for (uint64 a = 0; a < size(possible_classes); a++) {
-            pd_shared3p uint64[[1]] eq = (uint64)((int64)label_column == (int64) a)* (uint64)(example_indexes != 0);
+            float64 label = possible_classes[a];
+            pd_shared3p uint64[[1]] eq = (uint64)((int64)label_column == (int64) label)* (uint64)(example_indexes != 0);
             label_counts[a] += sum(eq);
         }
     }
-    return (int64)index_of_max(label_counts);
+    return (int64)max_of_second_array_based_on_first(label_counts, (uint64)possible_classes);
 }
 
 
@@ -339,13 +351,13 @@ string id3(uint64 example_indexes_vmap, uint64[[1]] attributes) {
             string table = tdbVmapGetString(providers_vmap, "0", i :: uint64);
             uint64 rows = tdbGetRowCount(datasource, table);
             pd_shared3p float64[[1]] best_attribute_column(rows) = tdbReadColumn(datasource, table, best_attribute_original_index);
-            pd_shared3p float64 min = imported_mins[best_attribute_original_index];
-            pd_shared3p float64 max = imported_maxs[best_attribute_original_index];
-            pd_shared3p int64 number_of_cells = imported_cells[best_attribute_original_index];
-            pd_shared3p float64 width = (max - min) / (float64) number_of_cells;
             pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
 
             if (!_exists(categorical_attributes, best_attribute)){
+                pd_shared3p float64 min = imported_mins[best_attribute_original_index];
+                pd_shared3p float64 max = imported_maxs[best_attribute_original_index];
+                pd_shared3p int64 number_of_cells = imported_cells[best_attribute_original_index];
+                pd_shared3p float64 width = (max - min) / (float64) number_of_cells;
                 best_attribute_column = (float64)((int64)((best_attribute_column - min) / width)); // If attribute is NOT categorical, change the column.
             }
             pd_shared3p int64[[1]] partial_subset(rows) = (int64)(best_attribute_column == value) * (int64)(example_indexes != 0);
