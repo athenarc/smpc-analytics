@@ -731,7 +731,7 @@ function decision_tree_cvi(req, res) {
             console.log('[' + print_msg + '] Request(' + uid + ') Configuration file was saved.\n');
             if (SIMULATION_MODE) {
                 if (classifier === "ID3") {
-                    return _exec('python dataset-scripts/id3_numerical_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {
+                    return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json --DNS web/localDNS.json', {
                         stdio: [0, 1, 2],
                         cwd: parent,
                         shell: '/bin/bash'
@@ -745,7 +745,7 @@ function decision_tree_cvi(req, res) {
                 }
             } else {
                 if (classifier === "ID3") {
-                    return _exec('python dataset-scripts/id3_numerical_main_generator.py configuration_' + uid + '.json', {
+                    return _exec('python dataset-scripts/id3_main_generator.py configuration_' + uid + '.json', {
                         stdio: [0, 1, 2],
                         cwd: parent,
                         shell: '/bin/bash'
@@ -810,7 +810,7 @@ function decision_tree_cvi(req, res) {
 
             if (plot) {
                 if (classifier === "ID3") {
-                    return _exec('python web/id3_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json --plot', {
+                    return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --plot', {
                         cwd: parent,
                         shell: '/bin/bash'
                     });
@@ -822,7 +822,7 @@ function decision_tree_cvi(req, res) {
                 }
             } else {
                 if (classifier === "ID3") {
-                    return _exec('python web/id3_numerical_response.py out_' + uid + '.json configuration_' + uid + '.json', {
+                    return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json', {
                         cwd: parent,
                         shell: '/bin/bash'
                     });
@@ -891,6 +891,17 @@ function decision_tree_mesh(req, res) {
     if ('cache' in req.body) {
         not_use_cache = use_cache.toUpperCase() === "NO";
     }
+    // create list of attribute names from the POST request
+    let attrib;
+    const attributes_to_import = [];
+    for (let i = 0; i < attributes.length; i++) {
+        attrib = attributes[i].name;
+        if (attributes_to_import.indexOf(attrib) === -1) { // if attribute does not exist in list (avoid duplicate imports)
+            attributes_to_import.push(attrib);
+        }
+    }
+    attributes_to_import.push(class_attribute.name);
+
     let request_key = JSON.stringify({'attributes': attributes, 'class_attribute': class_attribute, 'classifier': classifier, 'datasources': datasources, 'plot': plot});
     attributes.push(class_attribute);
     cachedb.get(request_key)
@@ -928,9 +939,9 @@ function decision_tree_mesh(req, res) {
         // create array of requests for import
         let import_promises = [];
         if (SIMULATION_MODE) {
-            import_promises = import_locally(attributes, datasources, res, parent, uid, 'mesh');
+            import_promises = import_locally(attributes_to_import, datasources, res, parent, uid, 'mesh');
         } else {
-            import_promises = import_from_servers(attributes, datasources, res, parent, uid, '/smpc/import', 'MHMDdns.json');
+            import_promises = import_from_servers(attributes_to_import, datasources, res, parent, uid, '/smpc/import', 'MHMDdns.json');
         }
 
         // wait them all to finish
@@ -1021,24 +1032,24 @@ function decision_tree_mesh(req, res) {
 
             if (plot) {
                 if (classifier === "ID3") {
-                    return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --plot --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {
+                    return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --plot', {
                         cwd: parent,
                         shell: '/bin/bash'
                     });
                 } else if (classifier === "C45") {
-                    return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json --plot --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {
+                    return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json --plot', {
                         cwd: parent,
                         shell: '/bin/bash'
                     });
                 }
             } else {
                 if (classifier === "ID3") {
-                    return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {
+                    return _exec('python web/id3_response.py out_' + uid + '.json configuration_' + uid + '.json', {
                         cwd: parent,
                         shell: '/bin/bash'
                     });
                 } else if (classifier === "C45") {
-                    return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json --mapping mhmd-driver/mesh_mapping.json --mtrees_inverted mhmd-driver/m_inv.json', {
+                    return _exec('python web/c45_response.py out_' + uid + '.json configuration_' + uid + '.json', {
                         cwd: parent,
                         shell: '/bin/bash'
                     });
