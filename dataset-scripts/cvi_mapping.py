@@ -3,6 +3,13 @@ import json
 from huepy import *
 import os.path
 import argparse
+import hashlib
+
+def hash(value):
+    hash = hashlib.sha256(value).hexdigest()
+    hash_int64 = int(hash, 16) % (2 **40)
+    new_value = str(hash_int64)
+    return str(hash_int64)
 
 def main():
 
@@ -13,7 +20,7 @@ def main():
 
     possible_values = json.load(open(args.values))
 
-    mapping = {attribute : {value : counter for counter, value in enumerate(values)} for attribute, values in possible_values.items()}
+    mapping = {attribute : {value : hash(value) for value in values} for attribute, values in possible_values.items()}
 
     json.dump(mapping, open(args.cvi_mapping, 'w'))
 

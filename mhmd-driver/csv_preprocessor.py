@@ -64,7 +64,7 @@ def main():
                 else:
                     if str(df[attribute].dtype) == 'object':
                         hash = hashlib.sha256(value).hexdigest()
-                        hash_int64 = int(hash, 16) % (2 ** 63)
+                        hash_int64 = int(hash, 16) % (2 ** 40)
                         # print(attribute + '\n\t' + value + ' : ' + str(hash_int64) + '\n')
                         new_value = str(hash_int64)
                         mapped_values[value] = str(hash_int64)
