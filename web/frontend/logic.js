@@ -172,7 +172,7 @@ function addHistogramNumericalTab() {
           </ul>
         </p>
         <p>
-          <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id, '/smpc/histogram', '\/smpc\/histogram')" class="btn btn-primary" value="Compute Histogram">
+          <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/histogram', '\/smpc\/histogram')" class="btn btn-primary" value="Compute Histogram">
         </p>
         </form>` +
         '</div>').appendTo('.tab-content');
@@ -241,7 +241,7 @@ function addHistogramCategoricalTab() {
             </ul>
           </p>
           <p>
-            <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id, '/smpc/count', '\/smpc\/count')" class="btn btn-primary" value="Compute Histogram">
+            <input type="button" id="button_hist_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/count', '\/smpc\/count')" class="btn btn-primary" value="Compute Histogram">
           </p>
 
         </form>` +
@@ -479,7 +479,7 @@ function addDecisionTreeNumericalTab() {
           </ul>
         </p>
         <p>
-          <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '/smpc/decision_tree', '\/smpc\/decision_tree\/numerical')" class="btn btn-success" value="Compute Decision Tree">
+          <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/decision_tree', '\/smpc\/decision_tree\/numerical')" class="btn btn-success" value="Compute Decision Tree">
         </p>
         </form>` +
         '</div>').appendTo('.tab-content');
@@ -566,7 +566,7 @@ function addDecisionTreeCategoricalTab() {
             </ul>
           </p>
           <p>
-            <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/decision_tree', '/smpc/decision_tree\/categorical')" class="btn btn-success" value="Compute Decision Tree">
+            <input type="button" id="button_tree_` + nextTab + `" onclick="sendFormWithId(this.id, '\/smpc\/decision_tree', '\/smpc\/decision_tree\/categorical')" class="btn btn-success" value="Compute Decision Tree">
           </p>
 
         </form>` +
