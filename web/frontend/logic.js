@@ -161,13 +161,13 @@ function addHistogramNumericalTab() {
         <p>
           <ul class="list-group">
               <li class="list-group-item">
-                <input type="checkbox" name="datasources" value="t1" checked="true"> Dataset 1 &ensp;
+                <input type="checkbox" name="datasources" value="t1" checked="true"> Hospital 1 &ensp;
               </li>
               <li class="list-group-item">
-                <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2 &ensp;
+                <input type="checkbox" name="datasources" value="t2" checked="true"> Hospital 2 &ensp;
               </li>
               <!-- <li class="list-group-item">
-                <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3 &ensp;
+                <input type="checkbox" name="datasources" value="t3" checked="true"> Hospital 3 &ensp;
               </li> -->
           </ul>
         </p>
@@ -230,13 +230,13 @@ function addHistogramCategoricalTab() {
           <p>
             <ul class="list-group">
                 <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="t1" checked="true"> Dataset 1
+                  <input type="checkbox" name="datasources" value="t1" checked="true"> Hospital 1
                 </li>
                 <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2
+                  <input type="checkbox" name="datasources" value="t2" checked="true"> Hospital 2
                 </li>
                 <!-- <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3 &ensp;
+                  <input type="checkbox" name="datasources" value="t3" checked="true"> Hospital 3 &ensp;
                 </li> -->
             </ul>
           </p>
@@ -468,13 +468,13 @@ function addDecisionTreeNumericalTab() {
         <p>
           <ul class="list-group">
               <li class="list-group-item">
-                <input type="checkbox" name="datasources" value="t1" checked="true"> Dataset 1 &ensp;
+                <input type="checkbox" name="datasources" value="t1" checked="true"> Hospital 1 &ensp;
               </li>
               <li class="list-group-item">
-                <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2 &ensp;
+                <input type="checkbox" name="datasources" value="t2" checked="true"> Hospital 2 &ensp;
               </li>
               <!-- <li class="list-group-item">
-                <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3 &ensp;
+                <input type="checkbox" name="datasources" value="t3" checked="true"> Hospital 3 &ensp;
               </li> -->
           </ul>
         </p>
@@ -555,13 +555,13 @@ function addDecisionTreeCategoricalTab() {
           <p>
             <ul class="list-group">
                 <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="t1" checked="true"> Dataset 1
+                  <input type="checkbox" name="datasources" value="t1" checked="true"> Hospital 1
                 </li>
                 <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="t2" checked="true"> Dataset 2
+                  <input type="checkbox" name="datasources" value="t2" checked="true"> Hospital 2
                 </li>
                 <!-- <li class="list-group-item">
-                  <input type="checkbox" name="datasources" value="t3" checked="true"> Dataset 3 &ensp;
+                  <input type="checkbox" name="datasources" value="t3" checked="true"> Hospital 3 &ensp;
                 </li> -->
             </ul>
           </p>
