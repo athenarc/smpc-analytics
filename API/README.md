@@ -143,32 +143,93 @@ The result for a count computation is a list with tuples of `label`, `value`, `m
 
 The `result` JSON object has the following structure:
 * `data` <span style="color:red">_required_</span> A list of JSON objects each one corresponding to a count. Each such object has the following keys.
-    * `label` A string, the value name corresponding to that count. Can be a tuple, triple etc. depending on the number of queried Mesh terms.
-    * `value` An integer, the actual count for that value.
-    * `mesh` The MeSH code of that attribute.
+    * `label` <span style="color:red">_required_</span> A string, the value name corresponding to that count. Can be a tuple, triple etc. depending on the number of queried Mesh terms.
+    * `value` <span style="color:red">_required_</span> An integer, the actual count for that value.
+    * `mesh` <span style="color:red">_required_</span> The MeSH code of that attribute.
 
 
 ###### Response for /smpc/decision_tree
 
 The result for a decision tree building is a JSON object which is a serialization of the classification tree. The JSON keys represent the test nodes and their values represent the corresponding subtrees.
 
-An example response can be found below.
+Two example responses originated from different decision tree trainings can be found below.
+
+
+> Tree generated with the ID3 algorithm
 
 ```json
 {
     "status": "succeeded",
     "result": {
-        "Height (cm) == [176.67, 200.00)": "[39.67, 61.33)",
-        "Height (cm) == [130.01, 153.34)": {
-            "Weight (kg) == [80.00, 100.00)": "[18.00, 39.67)",
-            "Weight (kg) == [40.00, 60.00)": "[18.00, 39.67)",
-            "Weight (kg) == [60.00, 80.00)": "[61.33, 83.00)"
+        "Patient Age == [39.67, 61.33)": {
+            "Height (cm) == [153.34, 176.67)": {
+                "Weight (kg) == [80.00, 100.00)": "non-diabetic",
+                "Weight (kg) == [60.00, 80.00)": {
+                    "Gender == female": "non-diabetic",
+                    "Gender == male": "diabetic"
+                },
+                "Weight (kg) == [40.00, 60.00)": "non-diabetic"
+            },
+            "Height (cm) == [130.01, 153.34)": "non-diabetic",
+            "Height (cm) == [176.67, 200.00)": "non-diabetic"
         },
-        "Height (cm) == [153.34, 176.67)": {
-            "Weight (kg) == [80.00, 100.00)": "[18.00, 39.67)",
-            "Weight (kg) == [40.00, 60.00)": "[39.67, 61.33)",
-            "Weight (kg) == [60.00, 80.00)": "[39.67, 61.33)"
+        "Patient Age == [18.00, 39.67)": {
+            "Weight (kg) == [80.00, 100.00)": "non-diabetic",
+            "Weight (kg) == [60.00, 80.00)": {
+                "Gender == female": {
+                    "Height (cm) == [153.34, 176.67)": "non-diabetic",
+                    "Height (cm) == [130.01, 153.34)": "diabetic",
+                    "Height (cm) == [176.67, 200.00)": "non-diabetic"
+                },
+                "Gender == male": "non-diabetic"
+            },
+            "Weight (kg) == [40.00, 60.00)": "non-diabetic"
+        },
+        "Patient Age == [61.33, 83.00)": {
+            "Weight (kg) == [80.00, 100.00)": {
+                "Height (cm) == [153.34, 176.67)": "non-diabetic",
+                "Height (cm) == [130.01, 153.34)": "non-diabetic",
+                "Height (cm) == [176.67, 200.00)": "diabetic"
+            },
+            "Weight (kg) == [60.00, 80.00)": {
+                "Height (cm) == [153.34, 176.67)": "diabetic",
+                "Height (cm) == [130.01, 153.34)": "non-diabetic",
+                "Height (cm) == [176.67, 200.00)": "non-diabetic"
+            },
+            "Weight (kg) == [40.00, 60.00)": "diabetic"
         }
     }
 }
 ```
+> Tree generated with the C4.5 algorithm
+
+```json
+{
+    "status": "succeeded",
+    "result": {
+        "Patient Age > 51.50": {
+            "Weight (kg) > 89.64": "diabetic",
+            "Weight (kg) <= 89.64": {
+                "Height (cm) > 138.23": "non-diabetic",
+                "Height (cm) <= 138.23": "diabetic"
+            }
+        },
+        "Patient Age <= 51.50": {
+            "Weight (kg) > 61.33": {
+                "Height (cm) > 167.22": "non-diabetic",
+                "Height (cm) <= 167.22": {
+                    "Gender == female": "non-diabetic",
+                    "Gender == male": "diabetic"
+                }
+            },
+            "Weight (kg) <= 61.33": "non-diabetic"
+        }
+    }
+}
+```
+
+
+
+
+
+
