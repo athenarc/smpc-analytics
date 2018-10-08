@@ -202,6 +202,12 @@ categorical_attributes = ['flower']
 # class_attribute = 'Play ball?'
 class_attribute = 'flower'
 
+def log_2(x):
+    if x != 0:
+        # print "---- log(", x, ")"
+        return math.log(x, 2)
+    return 0
+
 def all_examples_same(examples):
     same = True
     for i in range(len(examples)-1):
@@ -212,19 +218,15 @@ def all_examples_same(examples):
 
 
 def split_attribute(examples, attributes):
-    print("Example len is ",len(examples))
-    print("attributes ", attributes);
-    # print("Examples are ",examples);
-    splitted = []
     max_gain = -1 * float('inf')
     best_threshold = -1
     best_attribute = -1
     best_splitted = -1
     
-    ent = entropy(examples)
+    ent, counts = entropy(examples)
+    gain, entropy_less, entropy_greater = -1, -1, -1
     
     for attribute in attributes:
-        print("Attribute " + attribute);
         attribute_index = attribute_index = original_attributes.index(attribute)
         if attribute in categorical_attributes:
             splitted = []
@@ -238,15 +240,13 @@ def split_attribute(examples, attributes):
                 best_attribute = attribute
                 best_splitted = splitted
         else:
+            splitted, difference = [], []
+            counts_less, counts_greater = [0], [0]
             examples = sorted(examples, key=lambda l:l[attribute_index])
-        
             for i in range(len(examples)-1):
                 example = examples[i]
                 next_example = examples[i+1]
-                # print('{0:g}'.format(example[attribute_index]))
-                # print('{0:g}'.format(next_example[attribute_index]))
                 if example[attribute_index] != next_example[attribute_index]:
-                    # print("i = "+str(i))
                     threshold = (example[attribute_index] + next_example[attribute_index]) / 2
                     less = []
                     greater = []
@@ -255,18 +255,23 @@ def split_attribute(examples, attributes):
                             greater.append(e)
                         else:
                             less.append(e)
-                    splitted = [less, greater]
                     
-                    gain = information_gain(ent, len(examples), splitted)
-                    # print("GAIN ", gain)
-                    # print("GAIN ", max_gain)
+                    prev_splitted = splitted    # store the previous subsets
+                    splitted = [less, greater]  # update the new ones
+                    
+                    if prev_splitted != []:
+                        new_elems = len(splitted[0]) - len(prev_splitted[0])    # check the difference in the less subsets
+                        difference = splitted[0][-1 * new_elems:]              # keep the last new elements of the less list
+
+                    gain, entropy_less, entropy_greater, counts_less, counts_greater = information_gain_incremental(ent, len(examples), splitted, difference, counts_less, counts_greater, prev_splitted == [] )
+                    
+                
                     if gain > max_gain:
                         max_gain = gain
                         best_attribute = attribute
                         best_threshold = threshold
                         best_splitted = splitted
-    print("Best "+best_attribute)
-    print('\n')
+                    
     return best_attribute, best_threshold, best_splitted
 
 
@@ -282,20 +287,61 @@ def most_common_label(examples):
 
 def entropy(examples):
     entropy = 0.0
+    counts = []
     for value in possible_values[class_attribute]: # [Yes, No]
         count = sum([1 for example in examples if example[-1] == value]) # count occurencies of value in examples
         percentage = float(count) / len(examples)
-        if percentage != 0:
-            entropy -= (percentage * math.log(percentage, 2))
-    return entropy
+        entropy -= (percentage * log_2(percentage))
+        counts.append(count)
+    return entropy, counts
 
 
 def information_gain(gain, length, subsets):
     for subset in subsets:
         percentage = float(len(subset)) / length
         if percentage != 0:
-            gain -= (percentage*entropy(subset))
+            gain -= (percentage*entropy(subset, "inf gain"))
     return gain
+
+
+def combine_entropies(difference, total_length, prev_counts, addition):
+    e = 0.0
+    if len(difference) != 0:
+        entropy_diff, counts_diff = entropy(difference) # No need to calculate entropy_diff. Just counts
+        # if we are dealing with the less subset
+        if addition:
+            counts = [count_prev + count_diff for count_diff, count_prev in zip(counts_diff, prev_counts)]
+        else:
+            counts = [count_prev - count_diff for count_diff, count_prev in zip(counts_diff, prev_counts)]
+    else:
+        counts = prev_counts
+    percentages = [float(count) / total_length for count in counts]
+    e = - sum([p * log_2(p) for p in percentages])
+        
+    return e, counts
+
+
+def information_gain_incremental(gain, length, splitted, difference, counts_less, counts_greater, first_iteration):
+    # less
+    percentage = float(len(splitted[0])) / length
+    if percentage != 0:
+        if first_iteration:
+            entropy_less, counts_less = entropy(splitted[0])
+        else:
+            entropy_less, counts_less = combine_entropies(difference, len(splitted[0]), counts_less, True)
+        gain -= (percentage * entropy_less)
+        
+    # greater
+    percentage = float(len(splitted[1])) / length
+    if percentage != 0:
+        if first_iteration:
+            entropy_greater, counts_greater = entropy(splitted[1])
+        else:
+            entropy_greater, counts_greater  = combine_entropies(difference, len(splitted[1]), counts_greater, False)
+        gain -= (percentage * entropy_greater)
+        
+    return gain, entropy_less, entropy_greater, counts_less, counts_greater
+
 
 
 def c45(examples, attributes):
