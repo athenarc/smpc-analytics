@@ -300,7 +300,7 @@ def information_gain(gain, length, subsets):
     for subset in subsets:
         percentage = float(len(subset)) / length
         if percentage != 0:
-            gain -= (percentage*entropy(subset, "inf gain"))
+            gain -= (percentage*entropy(subset))
     return gain
 
 
