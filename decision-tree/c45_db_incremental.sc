@@ -183,7 +183,7 @@ pd_shared3p bool all_examples_same(uint64 example_indexes_vmap) {
 }
 
 
-pd_shared3p float64 entropy(uint64 example_indexes_vmap) {
+uint64 entropy(uint64 example_indexes_vmap) {
     pd_shared3p float64 entropy = 0.0;
     pd_shared3p int64 total_count = 0;
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
@@ -191,6 +191,7 @@ pd_shared3p float64 entropy(uint64 example_indexes_vmap) {
         total_count += sum(example_indexes);
     }
     float64[[1]] possible_classes = tdbVmapGetValue(possible_values, itoa(class_index), 0::uint64);
+    pd_shared3p uint64[[1]] counts(size(possible_classes)); // TODO
     for (uint64 c = 0; c < size(possible_classes); c++) {
         pd_shared3p uint64 equal_count = 0;
         float64 label = possible_classes[c];
@@ -206,10 +207,41 @@ pd_shared3p float64 entropy(uint64 example_indexes_vmap) {
             pd_shared3p uint64[[1]] eq = (uint64)(label_column == label) * (uint64)(example_indexes != 0);
             equal_count += sum(eq);
         }
+        counts[c] = equal_count;
         pd_shared3p float64 percentage = (float64)equal_count / (float64)total_count;
         entropy -= (percentage * log2(percentage));
     }
-    return entropy;
+    uint64 entropy_vmap = tdbVmapNew();
+    tdbVmapAddValue(entropy_vmap, "entropy", entropy); 
+    tdbVmapAddValue(entropy_vmap, "counts", counts); 
+    return entropy_vmap;
+}
+
+uint64 combine_entropies(uint64 difference, pd_shared3p int64 total_length, pd_shared3p uint64[[1]] prev_counts, bool addition) {
+    pd_shared3p uint64[[1]] counts;
+    if(declassify(sum(difference, data_providers_num) != 0)){ // TODO maybe do oblivious selection.
+        uint64 entropy_diff_vmap = entropy(difference);
+        pd_shared3p float64 entropy_diff = tdbVmapGetValue(entropy_diff_vmap, "entropy", 0::uint64)[0];
+        pd_shared3p uint64[[1]] counts_diff = tdbVmapGetValue(entropy_diff_vmap, "counts", 0::uint64);
+        if (addition) {
+            counts = prev_counts + counts_diff;
+        } else { 
+            counts = prev_counts - counts_diff;
+        }
+    } else {
+        counts = prev_counts;
+    }
+    pd_shared3p float64[[1]] percentages = (float64)counts / (float64)total_length;
+    pd_shared3p float64 entropy = 0.0;
+    for (uint64 i = 0 ; i < size(percentages) ; i++) {
+        pd_shared3p float64 percentage = percentages[i];
+        entropy -= percentage * log2(percentage);
+    } 
+    
+    uint64 entropy_vmap = tdbVmapNew();
+    tdbVmapAddValue(entropy_vmap, "entropy", entropy);
+    tdbVmapAddValue(entropy_vmap, "counts", counts); 
+    return entropy_vmap;
 }
 
 
@@ -224,10 +256,57 @@ pd_shared3p float64 information_gain(pd_shared3p float64 gain, pd_shared3p int64
             subset_count += sum(partial_subset);
         }
         pd_shared3p float64 percentage = (float64)subset_count / (float64)total_count;
-        pd_shared3p bool neq = (percentage != 0);
-        gain -= (float64)neq * percentage * entropy(subset_vmap);
+        uint64 entropy_vmap = entropy(subset_vmap);
+        pd_shared3p float64 entropy = tdbVmapGetValue(entropy_vmap, "entropy", 0::uint64)[0];
+        gain -= percentage * entropy;
     }
     return gain;
+}
+
+uint64 information_gain_incremental(pd_shared3p float64 gain, pd_shared3p int64 total_length, uint64 splitted, uint64 difference, pd_shared3p uint64[[1]] counts_less, pd_shared3p uint64[[1]] counts_greater, bool first_iteration) {
+    // less
+    pd_shared3p int64 less_length = 0;
+    uint64 less_vmap = tdbVmapGetValue(splitted, "subsets", 0::uint64)[0];
+    for (uint64 j = 0 ; j < data_providers_num ; j++) {
+        pd_shared3p int64[[1]] partial_less = tdbVmapGetValue(less_vmap, "0", j);
+        less_length += sum(partial_less);
+    }
+    pd_shared3p float64 percentage = (float64)less_length / (float64)total_length;
+    uint64 entropy_less_vmap;
+    if(first_iteration){
+        entropy_less_vmap = entropy(less_vmap);
+    } else {
+        entropy_less_vmap = combine_entropies(difference, less_length, counts_less, true);
+    }
+    pd_shared3p float64 entropy_less = tdbVmapGetValue(entropy_less_vmap, "entropy", 0::uint64)[0];
+    counts_less = tdbVmapGetValue(entropy_less_vmap, "counts", 0::uint64);
+    gain -= percentage * entropy_less;
+    
+    // greater
+    pd_shared3p int64 greater_length = 0;
+    uint64 greater_vmap = tdbVmapGetValue(splitted, "subsets", 1::uint64)[0];
+    for (uint64 j = 0 ; j < data_providers_num ; j++) {
+        pd_shared3p int64[[1]] partial_greater = tdbVmapGetValue(greater_vmap, "0", j);
+        greater_length += sum(partial_greater);
+    }
+    percentage = (float64)greater_length / (float64)total_length;
+    uint64 entropy_greater_vmap;
+    if(first_iteration){
+        entropy_greater_vmap = entropy(greater_vmap);
+    } else {
+        entropy_greater_vmap = combine_entropies(difference, greater_length, counts_greater, false);
+    }
+    pd_shared3p float64 entropy_greater = tdbVmapGetValue(entropy_greater_vmap, "entropy", 0::uint64)[0];
+    counts_greater = tdbVmapGetValue(entropy_greater_vmap, "counts", 0::uint64);
+    gain -= percentage * entropy_greater;
+    
+    uint64 gain_vmap = tdbVmapNew();
+    tdbVmapAddValue(gain_vmap, "gain", gain); 
+    tdbVmapAddValue(gain_vmap, "entropy_less", entropy_less); 
+    tdbVmapAddValue(gain_vmap, "entropy_greater", entropy_greater); 
+    tdbVmapAddValue(gain_vmap, "counts_less", counts_less); 
+    tdbVmapAddValue(gain_vmap, "counts_greater", counts_greater); 
+    return gain_vmap;
 }
 
 
@@ -245,7 +324,12 @@ uint64 split_attribute(uint64 example_indexes_vmap, uint64[[1]] attributes) {
         total_rows += rows;
     }
     
-    pd_shared3p float64 ent = entropy(example_indexes_vmap);
+    uint64 entropy_vmap = entropy(example_indexes_vmap);
+    pd_shared3p float64 ent = tdbVmapGetValue(entropy_vmap, "entropy", 0::uint64)[0];
+    pd_shared3p float64 entropy_less = -1;
+    pd_shared3p float64 entropy_greater = -1;
+    pd_shared3p float64 gain = -1;
+    
     pd_shared3p int64 total_count = 0;
     for (uint64 i = 0 ; i < data_providers_num ; i++) {
         pd_shared3p int64[[1]] example_indexes = tdbVmapGetValue(example_indexes_vmap, "0", i :: uint64);
@@ -295,6 +379,11 @@ uint64 split_attribute(uint64 example_indexes_vmap, uint64[[1]] attributes) {
             combined_array = sort(combined_array, 1::uint64); // Sort both example_indexes and attribute column, based on attribute column
             pd_shared3p int64 last_found_position = -1;
 
+            uint64 prev_splitted = 0;
+            uint64 splitted = 0;
+            uint64 difference = 0;
+            pd_shared3p uint64[[1]] counts_less = 0;
+            pd_shared3p uint64[[1]] counts_greater = 0;
             for (uint64 i = 0 ; i < total_rows-1 ; i++) { // FIXME Try to find a way to SIMD this.
                 pd_shared3p float64 example_index = -1;
                 pd_shared3p float64 example_value = -1;
@@ -323,7 +412,6 @@ uint64 split_attribute(uint64 example_indexes_vmap, uint64[[1]] attributes) {
                 last_found_position = found_position;
 
                 pd_shared3p float64 threshold = ((example_value + next_example_value) / 2);
-                uint64 splitted = tdbVmapNew();
                 uint64 less = tdbVmapNew();
                 uint64 greater = tdbVmapNew();
                 for (uint64 j = 0 ; j < data_providers_num ; j++) {
@@ -336,9 +424,34 @@ uint64 split_attribute(uint64 example_indexes_vmap, uint64[[1]] attributes) {
                     tdbVmapAddValue(less, "0", partial_less);
                     tdbVmapAddValue(greater, "0", partial_greater);
                 }
+                prev_splitted = splitted;
+                splitted = tdbVmapNew();
                 tdbVmapAddValue(splitted, "subsets", less);
                 tdbVmapAddValue(splitted, "subsets", greater);
-                pd_shared3p float64 gain = (neq * new_example * found_two) * information_gain(ent, total_count, splitted) + (1 - neq * new_example * found_two) * (-1) * (float64)UINT64_MAX;
+                
+                if (prev_splitted != 0) {
+                    uint64 splitted_less = tdbVmapGetValue(splitted, "subsets", 0::uint64)[0];
+                    uint64 prev_splitted_less = tdbVmapGetValue(prev_splitted, "subsets", 0::uint64)[0];
+                    difference = tdbVmapNew();
+                    pd_shared3p uint64 new_elems = (uint64)sum(splitted_less, data_providers_num) - (uint64)sum(prev_splitted_less, data_providers_num);
+                    pd_shared3p int64[[1]] l1 = tdbVmapGetValue(splitted_less, "0", 0::uint64);
+                    pd_shared3p int64[[1]] l2 = tdbVmapGetValue(prev_splitted_less, "0", 0::uint64);
+                    for (uint64 j = 0 ; j < data_providers_num ; j++) {
+                        string table = tdbVmapGetString(providers_vmap, "0", j :: uint64);
+                        uint64 rows = tdbGetRowCount(datasource, table);
+                        
+                        pd_shared3p int64[[1]] partial_less = tdbVmapGetValue(splitted_less, "0", j);
+                        pd_shared3p int64[[1]] prev_partial_less = tdbVmapGetValue(prev_splitted_less, "0", j);
+                        pd_shared3p int64[[1]] partial_difference = partial_less - prev_partial_less;
+                        tdbVmapAddValue(difference, "0", partial_difference);
+                    }
+                }
+                uint64 gain_vmap = information_gain_incremental(ent, total_count, splitted, difference, counts_less, counts_greater, (prev_splitted == 0));
+                gain = (neq * new_example * found_two) * tdbVmapGetValue(gain_vmap, "gain", 0::uint64)[0] + (1 - neq * new_example * found_two) * (-1) * (float64)UINT64_MAX;
+                entropy_less = tdbVmapGetValue(gain_vmap, "entropy_less", 0::uint64)[0];
+                entropy_greater = tdbVmapGetValue(gain_vmap, "entropy_greater", 0::uint64)[0];
+                counts_less = tdbVmapGetValue(gain_vmap, "counts_less", 0::uint64);
+                counts_greater = tdbVmapGetValue(gain_vmap, "counts_greater", 0::uint64);
                 pd_shared3p uint64 gt = (uint64) (gain > max_gain);
                 max_gain = (float64)gt * gain + ((float64)(1 - gt)) * max_gain;
                 best_threshold = (float64)gt * threshold + (float64)(1 - gt) * best_threshold;
