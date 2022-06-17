@@ -1,4 +1,4 @@
-numpy==1.11.0
+numpy==1.21.0
 plotly==2.5.1
 huepy==0.9.8.1
 pandas==0.22.0
